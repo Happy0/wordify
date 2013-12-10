@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Pos, LetterBag
+  exposed-modules:     Pos, LetterBag, Tile
   -- other-modules:       
   build-depends:       base ==4.6.*, containers ==0.5.*
   hs-source-dirs:      src

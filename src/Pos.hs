@@ -1,12 +1,15 @@
 
-module Pos (posAt, above, below, left, right) where
+module Pos (posAt, above, below, left, right, xPos, yPos, gridValue) where
 
 import qualified Data.Map as Map
 
-data Pos = Pos Int Int String deriving Show
+data Pos = Pos {xPos :: Int, yPos :: Int, gridValue :: String} deriving (Eq,Show)
 
-posMin = 1
-posMax = 15
+posMin :: Int
+posMin = 1 
+
+posMax :: Int
+posMax = 15 
 
 posAt :: (Int, Int) -> Maybe Pos
 posAt (x, y) = Map.lookup (x,y) posMap
@@ -34,3 +37,4 @@ posMap = Map.fromList coordTuples
     where
         coordTuples = zipWith makeTuple (sequence [[posMin..posMax], [posMin..posMax]]) $ cycle ['A'..'O']
         makeTuple (x:y:_) gridLetter =  ((y,x) , Pos y x (gridLetter : show x) )
+
