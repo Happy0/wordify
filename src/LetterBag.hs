@@ -41,19 +41,20 @@ shuffleBag (LetterBag tiles size) = do
 	shuffled <- shuffle tiles size
 	return (LetterBag shuffled size)
 
--- Taken from http://www.haskell.org/haskellwiki/Random_shuffle
-shuffle :: [a] -> Int -> IO [a]
-shuffle xs bagSize = do
-        ar <- newArray bagSize xs
-        forM [1..bagSize] $ \i -> do
-            j <- randomRIO (i,bagSize)
-            vi <- readArray ar i
-            vj <- readArray ar j
-            writeArray ar j vi
-            return vj
-  where
-    newArray :: Int -> [a] -> IO (IOArray Int a)
-    newArray size xs =  newListArray (1,size) xs
+	where
+		-- Taken from http://www.haskell.org/haskellwiki/Random_shuffle
+		shuffle :: [a] -> Int -> IO [a]
+		shuffle xs bagSize = do
+		        ar <- newArray bagSize xs
+		        forM [1..bagSize] $ \i -> do
+		            j <- randomRIO (i,bagSize)
+		            vi <- readArray ar i
+		            vj <- readArray ar j
+		            writeArray ar j vi
+		            return vj
+		  
+		newArray :: Int -> [a] -> IO (IOArray Int a)
+		newArray size xs =  newListArray (1,size) xs
 
 parseBag :: String -> Either ParseError [Tile]
 parseBag contents = parse bagFile "Malformed letter bag file" contents
