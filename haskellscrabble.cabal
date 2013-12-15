@@ -18,5 +18,6 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Pos, LetterBag, Tile
   -- other-modules:       
-  build-depends:       base ==4.6.*, containers ==0.5.*
+  build-depends:       base ==4.6.*, containers ==0.5.*, array, random, mtl, transformers,
+                       parsec
   hs-source-dirs:      src
