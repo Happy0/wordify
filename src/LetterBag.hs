@@ -1,4 +1,4 @@
-module LetterBag (lettersLeft, shuffleBag) where
+module LetterBag (makeBag, lettersLeft, shuffleBag) where
 
 import Tile
 import System.Random
@@ -6,7 +6,6 @@ import Data.Array.IO
 import Control.Monad
 import qualified Control.Exception as Exc
 import ScrabbleError
-import Control.Monad
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Combinator
 import Text.Parsec.Token
@@ -29,8 +28,10 @@ makeBag path =
 				  case tiles of 
 					Left e -> 
 						 return (Left (MalformedLetterBagFile path))
-					Right list -> 
-						 return (Right (LetterBag list (length list)))
+					Right list -> do
+						 let letterBag = LetterBag list (length list)
+						 shuffledBag <- shuffleBag letterBag
+						 return (Right shuffledBag)
 
 
 -- Shuffles a letter bag
@@ -54,9 +55,8 @@ shuffle xs bagSize = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray size xs =  newListArray (1,size) xs
 
-
 parseBag :: String -> Either ParseError [Tile]
-parseBag contents = parse bagFile "Malformed bag file" contents
+parseBag contents = parse bagFile "Malformed letter bag file" contents
 	where
 		bagFile =
 			do tiles <- many bagLine
