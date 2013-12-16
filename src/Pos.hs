@@ -12,7 +12,7 @@ posMax :: Int
 posMax = 15 
 
 posAt :: (Int, Int) -> Maybe Pos
-posAt (x, y) = Map.lookup (x,y) posMap
+posAt = flip Map.lookup posMap
 
 -- The position above the given position, if it exists.
 above :: Pos -> Maybe Pos

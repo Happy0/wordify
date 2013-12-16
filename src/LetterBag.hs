@@ -1,4 +1,4 @@
-module LetterBag (makeBag, lettersLeft, shuffleBag) where
+module LetterBag (makeBag, takeLetters, exchangeLetters, shuffleBag, lettersLeft) where
 
 import Tile
 import System.Random
@@ -21,7 +21,6 @@ makeBag path =
 		case fileContents of 
 			Left e ->
 				return ( Left (LetterBagFileNotFound path))
-
 			Right str -> do
 				  let tiles = parseBag str
 
@@ -33,8 +32,39 @@ makeBag path =
 						 shuffledBag <- shuffleBag letterBag
 						 return (Right shuffledBag)
 
+{-
+	Takes 'n' numbers from a letter bag, yielding 'Nothing'
+	if there is not enough tiles left in the bag or a 'Just'
+	tuple where the left value is the taken tiles, and the right
+	value is the new bag.
+-}
+takeLetters :: LetterBag -> Int -> Maybe ([Tile], LetterBag)
+takeLetters (LetterBag tiles lettersLeft) numTake =
+	if (newNumLetters < 0) then Nothing
+	 else Just (taken, LetterBag newLetters newNumLetters)
+	where
+		newNumLetters = lettersLeft - numTake
+		(taken, newLetters) = splitAt numTake tiles
 
--- Shuffles a letter bag
+{-
+	Exchanges given tiles for the same number of tiles from the bag.
+	The exchanged letters are added to the bag, the bag is then shuffled, 
+	and then the same number of tiles as exchanged are drawn from the bag.
+
+	Returns 'Nothing' if there are not enough letters in the bag to exchange
+  the given tiles for. Otherwise returns 'Just' with a tuple with the tiles
+  given, and the new letterbag.
+-}
+exchangeLetters :: LetterBag -> [Tile] -> IO (Maybe ([Tile], LetterBag))
+exchangeLetters (LetterBag tiles lettersLeft) exchanged = do
+	let intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven)
+	shuffledBag <- shuffleBag intermediateBag
+	return $ takeLetters shuffledBag numLettersGiven
+	where
+		numLettersGiven = length exchanged
+
+
+-- Shuffles the contents of a letter bag
 shuffleBag :: LetterBag -> IO LetterBag
 shuffleBag (LetterBag _ 0) =  return (LetterBag [] 0)
 shuffleBag (LetterBag tiles size) = do
@@ -65,10 +95,10 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
 			   return (concat tiles)
 
 		bagLine =
-			do tiles <- try (letterTile) <|> blankTile
+			do tiles <- try (letterTiles) <|> blankTiles
 			   return tiles
 
-		letterTile =
+		letterTiles =
 			do 
 			   tileLetter <- anyChar
 			   space
@@ -78,7 +108,7 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
 			   newline
 			   return (replicate (read distribution) $ (Letter tileLetter (read value)) )
 
-		blankTile =
+		blankTiles =
 			do 
 				char <- char '_'
 				space
