@@ -100,7 +100,7 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
 
 		letterTiles =
 			do 
-			   tileLetter <- anyChar
+			   tileLetter <- letter
 			   space
 			   value <- many digit
 			   space
