@@ -17,7 +17,7 @@ makeBag :: FilePath -> IO (Either ScrabbleError (LetterBag))
 makeBag path =
 	do
 		fileContents <- Exc.try (readFile path) :: IO (Either Exc.IOException String)
-		
+		-- To do: Try to use 'either' function rather than case statements
 		case fileContents of 
 			Left e ->
 				return ( Left (LetterBagFileNotFound path))
@@ -65,8 +65,8 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
 			   return (concat tiles)
 
 		bagLine =
-			do tile <- try (letterTile) <|> blankTile
-			   return tile
+			do tiles <- try (letterTile) <|> blankTile
+			   return tiles
 
 		letterTile =
 			do 
