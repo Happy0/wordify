@@ -10,6 +10,7 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Combinator
 import Text.Parsec.Token
 import Text.ParserCombinators.Parsec.Char
+import Data.Char
 
 data LetterBag = LetterBag { tiles :: [Tile],  lettersLeft :: Int } deriving Show
 
@@ -106,7 +107,8 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
 			   space
 			   distribution <- many digit
 			   newline
-			   return (replicate (read distribution) $ (Letter tileLetter (read value)) )
+			   return (replicate (read distribution) $
+			    (Letter (toUpper tileLetter) (read value)) )
 
 		blankTiles =
 			do 
