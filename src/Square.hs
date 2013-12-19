@@ -1,4 +1,4 @@
-module Square (Square(Normal, DoubleLetter, DoubleWord, TripleWord), scoreWord) where
+module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord), scoreWord) where
 
 	import Tile
 	import Data.List
