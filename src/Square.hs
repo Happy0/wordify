@@ -1,7 +1,9 @@
-module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord), scoreWord) where
+module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord),
+		 isOccupied, scoreWord, squareIfOccupied) where
 
 	import Tile
 	import Data.List
+	import Data.Maybe
 
 	data Square = Normal (Maybe Tile)
 				| DoubleLetter (Maybe Tile)
@@ -54,3 +56,14 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
 	baseValue (DoubleWord (Just tile)) = tileValue tile
 	baseValue (TripleWord (Just tile)) = tileValue tile
 	baseValue _ = 0
+
+	squareIfOccupied :: Square -> Maybe Square
+	squareIfOccupied (Normal (Just tile)) = Just (Normal (Just tile))
+	squareIfOccupied (DoubleLetter (Just tile)) = Just (DoubleLetter (Just tile))
+	squareIfOccupied (TripleLetter (Just tile)) = Just (TripleLetter (Just tile))
+	squareIfOccupied (DoubleWord (Just tile)) = Just (DoubleWord (Just tile))
+	squareIfOccupied (TripleWord (Just tile)) = Just (TripleWord (Just tile))
+	squareIfOccupied _ = Nothing
+
+	isOccupied :: Square -> Bool
+	isOccupied = isJust . squareIfOccupied
