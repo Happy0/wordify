@@ -19,12 +19,12 @@ module Dictionary (isValidWord, makeDictionary) where
     do
       fileContents <- Exc.try (readFile filePath) :: IO (Either Exc.IOException String)
       case fileContents of 
-        Left e -> return $ Left (DictionaryFileNotFound filePath)
+        Left _ -> return $ Left (DictionaryFileNotFound filePath)
         Right dictContents -> 
           do
               let dictWords = parseFile dictContents
               case dictWords of 
-                Left e -> return $ Left (MalformedDictionaryFile filePath)
+                Left _ -> return $ Left (MalformedDictionaryFile filePath)
                 Right wordList -> return $ Right (Dictionary $ Set.fromList (toUpperCase wordList))
 
     where

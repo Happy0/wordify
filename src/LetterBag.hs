@@ -26,7 +26,7 @@ makeBag path =
 				  let tiles = parseBag str
 
 				  case tiles of 
-					Left e -> 
+					Left _ -> 
 						 return (Left (MalformedLetterBagFile path))
 					Right list -> do
 						 let letterBag = LetterBag list (length list)

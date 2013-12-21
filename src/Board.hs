@@ -10,6 +10,10 @@ module Board(emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied
 
   data Board = Board (Map.Map Pos Square) deriving Show
 
+  {-
+    Places a tile on a square and yields the new board, if the 
+    target square is empty. Otherwise yields 'Nothing'.
+  -}
   placeTile :: Board -> Tile -> Pos -> Maybe Board
   placeTile (Board (squares)) tile pos = 
     squareAt (Board squares) pos >>= boardIfSquareEmpty

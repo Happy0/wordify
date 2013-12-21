@@ -1,11 +1,11 @@
-module Tile (Tile(Letter, Blank), tileValue) where
+module Tile (Tile(Letter, Blank), tileValue, isPlayable) where
 
 {-
 A tile is a letter with a value, or a Blank tile
 which may have been given a letter. Blank tiles
 always have the value '0'.
 -}
-data Tile = Letter Char Int | Blank (Maybe Char) deriving Show
+data Tile = Letter Char Int | Blank (Maybe Char) deriving (Show, Eq, Ord)
 
 tileValue :: Tile -> Int
 tileValue (Letter _ val) = val
