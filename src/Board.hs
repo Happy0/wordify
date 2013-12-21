@@ -1,21 +1,31 @@
-module Board(emptyBoard, occupiedSquareAt, squareIsOccupied,
+module Board(emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
  lettersAbove, lettersBelow, lettersLeft, lettersRight) where
 
   import Square
   import Pos
   import Data.Maybe
+  import Tile
   import qualified Data.Map as Map
   import Control.Monad
 
   data Board = Board (Map.Map Pos Square) deriving Show
 
+  placeTile :: Board -> Tile -> Pos -> Maybe Board
+  placeTile (Board (squares)) tile pos = 
+    squareAt (Board squares) pos >>= boardIfSquareEmpty
+    where
+      boardIfSquareEmpty square = if (isOccupied square) then Nothing else
+       Just (Board $ Map.insert pos (newSquare square) squares)
+      newSquare square = putTileOn square tile
+
+  squareAt :: Board -> Pos -> Maybe Square
+  squareAt (Board squares)  = flip Map.lookup squares
+
   occupiedSquareAt :: Board -> Pos -> Maybe Square
-  occupiedSquareAt (Board positions) pos = Map.lookup pos positions >>= squareIfOccupied
+  occupiedSquareAt board pos = squareAt board pos >>= squareIfOccupied
 
   squareIsOccupied :: Board -> Pos -> Bool
   squareIsOccupied board pos = isJust $ occupiedSquareAt board pos
-
-  -- AddTile ...
  
   lettersAbove :: Board -> Pos -> [(Pos,Square)]
   lettersAbove board pos = walkFrom board pos above
@@ -38,7 +48,6 @@ module Board(emptyBoard, occupiedSquareAt, squareIsOccupied,
   walkFrom board pos direction = maybe (mzero) (\(next,sq) ->
    (next, sq) : (walkFrom board next direction) ) nextPos
     where
-      nextPos :: Maybe ((Pos, Square))
       nextPos = direction(pos) >>= (\nextPos -> occupiedSquareAt board nextPos >>=
         (\sq -> return (nextPos, sq) ))
 

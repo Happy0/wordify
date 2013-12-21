@@ -1,5 +1,5 @@
 module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord),
-		 isOccupied, scoreWord, squareIfOccupied) where
+		 isOccupied, scoreWord, squareIfOccupied, putTileOn) where
 
 	import Tile
 	import Data.List
@@ -10,6 +10,13 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
 				| TripleLetter (Maybe Tile)
 				| DoubleWord (Maybe Tile)
 				| TripleWord (Maybe Tile) deriving Show
+
+	putTileOn :: Square -> Tile -> Square
+	putTileOn (Normal _) tile = Normal $ Just tile
+	putTileOn (DoubleLetter _) tile = DoubleLetter $ Just tile
+	putTileOn (TripleLetter _) tile = TripleLetter $ Just tile
+	putTileOn (DoubleWord _) tile = DoubleWord $ Just tile
+	putTileOn (TripleWord _) tile = TripleWord $ Just tile
 
 	{-
 		Calculates the score of one played word.
