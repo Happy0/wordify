@@ -1,4 +1,4 @@
-module Player (Player, updateScore, giveTiles, removePlayedTiles) where
+module Player (Player, updateScore, giveTiles, removePlayedTiles, playerCanPlace) where
 
   import Tile
   import Data.List
@@ -9,16 +9,16 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
   type Score = Int
   type Name = String
 
-  data LetterRack = LetterRack [Tile]
+  data LetterRack = LetterRack [Tile] deriving Show
 
-  data Player = Player Name LetterRack Score
+  data Player = Player Name LetterRack Score deriving Show
 
   {-
     Returns true if the player cannot place any of the given tiles. A player cannot play
     a Blank tile that they have not given a letter, or a tile not on their rack.
   -}
-  playerCannotPlay :: Player -> [Tile] -> Bool
-  playerCannotPlay (Player _ (LetterRack rack) _ ) played = isJust $ find isInvalid playedList
+  playerCanPlace :: Player -> [Tile] -> Bool
+  playerCanPlace (Player _ (LetterRack rack) _ ) played = isNothing $ find isInvalid playedList
     where
       buildFrequencies tiles = foldl (addFrequency) (Map.empty) tiles
       addFrequency dict tile = if (Map.member tile dict) then Map.update (Just . succ) tile dict 
@@ -33,8 +33,8 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
         -- Tried to play a blank without a letter
         Blank Nothing -> True 
         -- Player doesn't have tiles
-        Blank _ -> freq < Map.findWithDefault 0 (Blank Nothing) rackFrequencies
-        Letter chr val -> freq < Map.findWithDefault 0 (Letter chr val) rackFrequencies
+        Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
+        Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
 
   updateScore :: Player -> Score -> Player
   updateScore (Player name letterRack score) newScore = Player name letterRack newScore
