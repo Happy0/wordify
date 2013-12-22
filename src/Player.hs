@@ -43,9 +43,8 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
   playerCanPlace (Player _ (LetterRack rack) _ ) played = isNothing $ find isInvalid playedList
     where
       buildFrequencies tiles = foldl (addFrequency) (Map.empty) tiles
-      addFrequency dict tile = if (Map.member tile dict) then Map.update (Just . succ) tile dict 
-        else Map.insert tile 1 dict
-      
+      addFrequency dict tile = Map.alter newFrequency tile dict
+      newFrequency m = Just $ maybe 1 (succ) m -- Default freq of one, or inc existing frequency
       playedFrequencies = buildFrequencies played
       rackFrequencies = buildFrequencies rack
       playedList = Map.toList playedFrequencies
