@@ -42,9 +42,9 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
   playerCanPlace :: Player -> [Tile] -> Bool
   playerCanPlace (Player _ (LetterRack rack) _ ) played = isNothing $ find isInvalid playedList
     where
-      buildFrequencies tiles = foldl (addFrequency) (Map.empty) tiles
+      buildFrequencies tiles = foldl addFrequency (Map.empty) tiles
       addFrequency dict tile = Map.alter newFrequency tile dict
-      newFrequency m = Just $ maybe 1 (succ) m -- Default freq of one, or inc existing frequency
+      newFrequency m = Just $ maybe 1 succ m -- Default freq of one, or inc existing frequency
       playedFrequencies = buildFrequencies played
       rackFrequencies = buildFrequencies rack
       playedList = Map.toList playedFrequencies
@@ -52,7 +52,7 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
       isInvalid (tile, freq) =
        case tile of
         -- Tried to play a blank without a letter
-        Blank Nothing -> True 
+        Blank Nothing -> False 
         -- Player doesn't have tiles
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies

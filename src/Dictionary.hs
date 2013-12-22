@@ -1,4 +1,4 @@
-module Dictionary (isValidWord, makeDictionary) where
+module Dictionary (Dictionary, isValidWord, makeDictionary) where
 
   import qualified Data.Set as Set
   import ScrabbleError

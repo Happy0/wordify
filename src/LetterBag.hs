@@ -1,4 +1,4 @@
-module LetterBag (makeBag, takeLetters, exchangeLetters, shuffleBag, lettersLeft) where
+module LetterBag (LetterBag, makeBag, takeLetters, exchangeLetters, shuffleBag, lettersLeft) where
 
 import Tile
 import System.Random

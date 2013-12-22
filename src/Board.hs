@@ -1,4 +1,4 @@
-module Board(emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
+module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
  lettersAbove, lettersBelow, lettersLeft, lettersRight) where
 
   import Square
