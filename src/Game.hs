@@ -12,46 +12,27 @@ module Game(makeGame) where
 
   data Game = Game { player1 :: Player
                      , player2 :: Player
-                     , player3 :: Maybe Player
-                     , player4 :: Maybe Player
+                     , optionalPlayers :: Maybe (Player, Maybe Player)
                      , board :: Board
                      , bag :: LetterBag
                      , dictionary :: Dictionary 
                      , currentPlayer :: Int
                      , moveNumber :: Int }
 
-  makeGame :: (Player, Player, Maybe Player, Maybe Player)-> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
-  makeGame (play1, play2, play3, play4) board bag dictionary = 
-    if numTiles < numPlayers * 7 then Left(NotEnoughLettersInStartingBag numTiles) else
-    Right (player1, Game player1 player2 player3 player4 board initialisedBag dictionary 1 1)
-
+  makeGame :: (Player, Player, Maybe (Player, Maybe Player))-> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
+  makeGame (play1, play2, optionalPlayers) board bag dictionary = Right $ (player1, Game player1 player2 optional board finalBag dictionary 1 1)
     where
-      numTiles = bagSize bag
-      numPlayers = length $ catMaybes [Just play1, Just play2, play3, play4]
-      (player1, firstBag) = givePlayerTiles play1 bag
-      (player2, secondBag) = givePlayerTiles play2 secondBag
-      (player3, thirdBag) = maybe (play3, secondBag) (\player -> justPlayer $ givePlayerTiles player secondBag) play3
-      (player4, initialisedBag) = maybe (play4, thirdBag) (\player -> justPlayer $ givePlayerTiles player thirdBag) play4
-      givePlayerTiles :: Player -> LetterBag -> (Player, LetterBag)
-      givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
-      justPlayer (player, bag) = (Just player, bag)
+          (player1, firstBag) = givePlayerTiles play1 bag
+          (player2, secondBag) = givePlayerTiles play2 firstBag
+          (optional, finalBag) = maybe (Nothing, secondBag) (\optional -> fillOptional optional secondBag) optionalPlayers
 
-  -- updateGame :: Game -> 
+          fillOptional (thirdPlayer, Nothing) bag = (Just (player3, Nothing), thirdBag)
+            where
+              (player3, thirdBag) = givePlayerTiles thirdPlayer bag
+          
+          fillOptional (thirdPlayer, (Just fourthPlayer)) bag = (Just (player3, Just (player4)), fourthBag)
+            where
+              (player3, thirdBag) = givePlayerTiles thirdPlayer bag
+              (player4, fourthBag) = givePlayerTiles fourthPlayer thirdBag
 
-  nextPlayer :: Game -> (Player, Game)
-  nextPlayer game = (player, game {currentPlayer = playerNo, moveNumber = succ $ moveNumber game})
-    
-    where
-      (playerNo, player) = head $ drop playing sequenceOfTurns 
-      playing = currentPlayer game
-      -- plz. im sorry
-      sequenceOfTurns = concat $ repeat $ zip [1 .. ] $ catMaybes [Just (player1 game), Just (player2 game), (player3 game), (player4 game)]
-
-  updateCurrentPlayer :: Game -> Player -> Game
-  updateCurrentPlayer game player
-    | (playing == 1) = game { player1 = player }
-    | (playing == 2) = game { player2  = player }
-    | (playing == 3) = game { player3 = Just $ player }
-    | (playing == 4) = game { player4 = Just $ player }
-    where
-      playing = currentPlayer game
+          givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
