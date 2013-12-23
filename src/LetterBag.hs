@@ -1,4 +1,4 @@
-module LetterBag (LetterBag, makeBag, takeLetters, exchangeLetters, shuffleBag, lettersLeft) where
+module LetterBag (LetterBag, makeBag, takeLetters, exchangeLetters, shuffleBag, bagSize) where
 
 import Tile
 import System.Random
@@ -12,7 +12,7 @@ import Text.Parsec.Token
 import Text.ParserCombinators.Parsec.Char
 import Data.Char
 
-data LetterBag = LetterBag { tiles :: [Tile],  lettersLeft :: Int } deriving Show
+data LetterBag = LetterBag { tiles :: [Tile],  bagSize :: Int } deriving Show
 
 makeBag :: FilePath -> IO (Either ScrabbleError (LetterBag))
 makeBag path =

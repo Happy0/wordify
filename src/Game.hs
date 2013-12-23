@@ -6,9 +6,7 @@ module Game(makeGame) where
   import LetterBag
   import Data.IntMap as IntMap
   import Data.List
-
-  type PlayerNumber = Int
-  type MovesMade = Int
+  import ScrabbleError
 
   data Game = Game { players :: IntMap Player
                      , board :: Board
@@ -17,17 +15,21 @@ module Game(makeGame) where
                      , playerNumber :: Int
                      , moveNumber :: Int }
 
-  makeGame :: [String] -> Board -> LetterBag -> Dictionary -> Maybe (Player, Game)
-  makeGame [] _ _ _ = Nothing
-  makeGame [x] _ _ _ = Nothing
-  makeGame (a:b:c:d:e:xs) _ _ _ = Nothing 
-  makeGame names board bag dictionary = Just $ (player1, Game playerMap board startBag dictionary 0 1)
+  makeGame :: [String] -> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
+  makeGame [] _ _ _ = Left $ InvalidNumberOfPlayers
+  makeGame [x] _ _ _ = Left $ InvalidNumberOfPlayers
+  makeGame (a:b:c:d:e:xs) _ _ _ = Left $ InvalidNumberOfPlayers
+  makeGame names board bag dictionary = if ( numTiles < numPlayers * 7) then Left (NotEnoughLettersInStartingBag numTiles)
+   else Right $ (player1, Game playerMap board startBag dictionary 0 1)
     where
       playerMap = IntMap.fromList $ zip [0 .. ] (player1 : playersWithRacks )
       (startBag, player1 : playersWithRacks) = mapAccumL givePlayerFromBag bag initPlayers
       initPlayers = Prelude.map makePlayer names
-      givePlayerFromBag bag player = -- Assume sensible letter bag input (big enough to distribute tiles)
+      givePlayerFromBag bag player = -- We have already checked there are enough tiles to distribute, use 'maybe' to appease compiler
         maybe ((bag, player)) (\(tiles, bag) -> (bag, giveTiles player tiles)) $ takeLetters bag 7
+
+      numPlayers = length $ names
+      numTiles = (bagSize bag)
 
   nextPlayerNumber :: Game -> Int
   nextPlayerNumber game = (succ $ playerNumber game) `mod` (size $ players game)
