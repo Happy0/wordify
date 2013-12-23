@@ -36,4 +36,39 @@ module Game(makeGame) where
                 (player3, thirdBag) = givePlayerTiles thirdPlayer bag
                 makePlayer4 player = givePlayerTiles player thirdBag
 
+  updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
+  updateGame game player newBoard newBag = (newPlayer, updatedPlayerGame {board = newBoard, bag = newBag, moveNumber = succ moveNo})
+    where
+      updatedPlayerGame = updateCurrentPlayer game player
+      (newPlayerNum, newPlayer) = nextPlayer game
+      moveNo = moveNumber game
 
+  updateCurrentPlayer :: Game -> Player -> Game
+  updateCurrentPlayer game player
+    | (playing == 1) = game {player1 = player}
+    | (playing == 2) = game {player2 = player}
+    | (playing == 3) = game {optionalPlayers = optional >>= (\(player3, player4) -> return (player, player4)) }
+    | (playing == 4) = game {optionalPlayers = optional >>= (\(player3, player4) -> return (player3, (player4 >> Just player))) }
+
+    where
+      playing = currentPlayer game
+      optional = optionalPlayers game
+
+  nextPlayer :: Game -> (Int, Player)
+  nextPlayer  game 
+    | (playing == 1) = (1, playr2)
+    | (playing == 2 || playing == 3) =
+     maybe ( (1, playr1) ) (\(player3, player4) -> 
+      if (playing == 2) then (3, player3 )
+      else 
+        case player4 of
+          Just (player4) -> (4, player4)
+          Nothing -> (1, playr1)
+        ) $ optional
+    | (playing == 4) = (1, playr1)
+
+    where
+      playing = currentPlayer game
+      playr2 = player2 game
+      playr1 = player1 game
+      optional = optionalPlayers game
