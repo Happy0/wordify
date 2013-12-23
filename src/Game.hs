@@ -25,14 +25,15 @@ module Game(makeGame) where
           (player1, firstBag) = givePlayerTiles play1 bag
           (player2, secondBag) = givePlayerTiles play2 firstBag
           (optional, finalBag) = maybe (Nothing, secondBag) (\optional -> fillOptional optional secondBag) optionalPlayers
-
-          fillOptional (thirdPlayer, Nothing) bag = (Just (player3, Nothing), thirdBag)
-            where
-              (player3, thirdBag) = givePlayerTiles thirdPlayer bag
-          
-          fillOptional (thirdPlayer, (Just fourthPlayer)) bag = (Just (player3, Just (player4)), fourthBag)
-            where
-              (player3, thirdBag) = givePlayerTiles thirdPlayer bag
-              (player4, fourthBag) = givePlayerTiles fourthPlayer thirdBag
-
           givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
+
+          fillOptional (thirdPlayer, optional) bag =
+             case optional of 
+                Nothing -> (Just (player3, Nothing), thirdBag)
+                Just (lastPlayer) -> let (player4, fourthBag) = makePlayer4 lastPlayer
+                                     in (Just (player3, (Just player4)), fourthBag)
+             where
+                (player3, thirdBag) = givePlayerTiles thirdPlayer bag
+                makePlayer4 player = givePlayerTiles player thirdBag
+
+
