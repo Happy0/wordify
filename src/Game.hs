@@ -7,6 +7,7 @@ module Game(makeGame) where
   import Data.IntMap as IntMap
   import Data.List
   import ScrabbleError
+  import Control.Applicative
 
   data Game = Game { players :: IntMap Player
                      , board :: Board
@@ -25,7 +26,8 @@ module Game(makeGame) where
       playerMap = IntMap.fromList $ zip [0 .. ] (player1 : playersWithRacks )
       (startBag, player1 : playersWithRacks) = mapAccumL givePlayerFromBag bag initPlayers
       initPlayers = Prelude.map makePlayer names
-      givePlayerFromBag bag player = -- We have already checked there are enough tiles to distribute, use 'maybe' to appease compiler
+      givePlayerFromBag bag player =
+       -- We have already checked there are enough tiles to distribute, use 'maybe' to appease compiler
         maybe ((bag, player)) (\(tiles, bag) -> (bag, giveTiles player tiles)) $ takeLetters bag 7
 
       numPlayers = length $ names
@@ -35,7 +37,7 @@ module Game(makeGame) where
   nextPlayerNumber game = (succ $ playerNumber game) `mod` (size $ players game)
 
   updateGame :: Game -> Player -> Board -> LetterBag -> Maybe (Player, Game)
-  updateGame game player newBoard newBag = fmap (\nextPlayer -> (nextPlayer, newGame) ) $ IntMap.lookup nextPlayer playerMap
+  updateGame game player newBoard newBag = (\nextPlayer -> (nextPlayer, newGame) ) <$> IntMap.lookup nextPlayer playerMap
     where
       newGame = Game (IntMap.insert currentPlayer player playerMap) newBoard newBag dict nextPlayer move
       currentPlayer = playerNumber game
