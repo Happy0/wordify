@@ -1,4 +1,4 @@
-module Player (Player, updateScore, giveTiles, removePlayedTiles) where
+module Player (Player, makePlayer, updateScore, giveTiles, removePlayedTiles) where
 
   import Tile
   import Data.List
@@ -13,6 +13,9 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
 
   data Player = Player Name LetterRack Score deriving Show
 
+  makePlayer :: String -> Player
+  makePlayer name = Player name (LetterRack []) 0
+
   updateScore :: Player -> Score -> Player
   updateScore (Player name letterRack score) newScore = Player name letterRack newScore
 
@@ -24,7 +27,9 @@ module Player (Player, updateScore, giveTiles, removePlayedTiles) where
    Player name (LetterRack $ newTiles ++ tiles) score
 
   {-
-    Removes played tiles from the player's tile rack. 
+    Removes played tiles from the player's tile rack, if it was possible for the player
+    to play those tiles in the first place. A player may play a tile on his rack, unless
+    it is a blank, which must first be assigned a letter. 
   -}
   removePlayedTiles :: Player -> [Tile] -> Maybe Player
   removePlayedTiles player tiles =
