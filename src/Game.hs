@@ -8,40 +8,32 @@ module Game(makeGame) where
   import Data.List
   import ScrabbleError
   import Control.Applicative
+  import Data.Maybe
 
-  data Game = Game { players :: IntMap Player
+  data Game = Game { player1 :: Player
+                     , player2 :: Player
+                     , player3 :: Maybe Player
+                     , player4 :: Maybe Player
                      , board :: Board
                      , bag :: LetterBag
                      , dictionary :: Dictionary 
-                     , playerNumber :: Int
+                     , currentPlayer :: Int
                      , moveNumber :: Int }
 
-  makeGame :: [String] -> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
-  makeGame [] _ _ _ = Left $ InvalidNumberOfPlayers
-  makeGame [x] _ _ _ = Left $ InvalidNumberOfPlayers
-  makeGame (a:b:c:d:e:xs) _ _ _ = Left $ InvalidNumberOfPlayers
-  makeGame names board bag dictionary = if ( numTiles < numPlayers * 7) then Left (NotEnoughLettersInStartingBag numTiles)
-   else Right $ (player1, Game playerMap board startBag dictionary 0 1)
+  makeGame :: (Player, Player, Maybe Player, Maybe Player)-> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
+  makeGame (play1, play2, play3, play4) board bag dictionary = 
+    if numTiles < numPlayers * 7 then Left(NotEnoughLettersInStartingBag numTiles) else
+    Right (player1, Game player1 player2 player3 player4 board initialisedBag dictionary 1 1)
+
     where
-      playerMap = IntMap.fromList $ zip [0 .. ] (player1 : playersWithRacks )
-      (startBag, player1 : playersWithRacks) = mapAccumL givePlayerFromBag bag initPlayers
-      initPlayers = Prelude.map makePlayer names
-      givePlayerFromBag bag player =
-       -- We have already checked there are enough tiles to distribute, use 'maybe' to appease compiler
-        maybe ((bag, player)) (\(tiles, bag) -> (bag, giveTiles player tiles)) $ takeLetters bag 7
+      numTiles = bagSize bag
+      numPlayers = length $ catMaybes [Just play1, Just play2, play3, play4]
+      (player1, firstBag) = givePlayerTiles play1 bag
+      (player2, secondBag) = givePlayerTiles play2 secondBag
+      (player3, thirdBag) = maybe (play3, secondBag) (\player -> justPlayer $ givePlayerTiles player secondBag) play3
+      (player4, initialisedBag) = maybe (play4, thirdBag) (\player -> justPlayer $ givePlayerTiles player thirdBag) play4
+      givePlayerTiles :: Player -> LetterBag -> (Player, LetterBag)
+      givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
+      justPlayer (player, bag) = (Just player, bag)
 
-      numPlayers = length $ names
-      numTiles = (bagSize bag)
-
-  nextPlayerNumber :: Game -> Int
-  nextPlayerNumber game = (succ $ playerNumber game) `mod` (size $ players game)
-
-  updateGame :: Game -> Player -> Board -> LetterBag -> Maybe (Player, Game)
-  updateGame game player newBoard newBag = (\nextPlayer -> (nextPlayer, newGame) ) <$> IntMap.lookup nextPlayer playerMap
-    where
-      newGame = Game (IntMap.insert currentPlayer player playerMap) newBoard newBag dict nextPlayer move
-      currentPlayer = playerNumber game
-      playerMap = players game
-      nextPlayer = nextPlayerNumber game
-      move = succ $ moveNumber game
-      dict = dictionary game
+  
