@@ -36,4 +36,22 @@ module Game(makeGame) where
       givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
       justPlayer (player, bag) = (Just player, bag)
 
-  
+  -- updateGame :: Game -> 
+
+  nextPlayer :: Game -> (Player, Game)
+  nextPlayer game = (player, game {currentPlayer = playerNo, moveNumber = succ $ moveNumber game})
+    
+    where
+      (playerNo, player) = head $ drop playing sequenceOfTurns 
+      playing = currentPlayer game
+      -- plz. im sorry
+      sequenceOfTurns = concat $ repeat $ zip [1 .. ] $ catMaybes [Just (player1 game), Just (player2 game), (player3 game), (player4 game)]
+
+  updateCurrentPlayer :: Game -> Player -> Game
+  updateCurrentPlayer game player
+    | (playing == 1) = game { player1 = player }
+    | (playing == 2) = game { player2  = player }
+    | (playing == 3) = game { player3 = Just $ player }
+    | (playing == 4) = game { player4 = Just $ player }
+    where
+      playing = currentPlayer game
