@@ -79,11 +79,8 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
 
       squares = (map . map) toSquare layout
       columns = zip [1..15] squares
-      -- pls
       labeledSquares= concatMap (\(x, xs) -> columnToMapping x xs) columns
-      -- im sry
       columnToMapping columnNo columnSquares = zipWith (\sq y -> ((columnNo,y),sq)) columnSquares [1..15]
-      -- ornicar pls
       posSquares = mapMaybe (\((x,y), sq) -> fmap (\pos -> (pos, sq)) (posAt (x,y))) labeledSquares
 
       toSquare :: String -> Square

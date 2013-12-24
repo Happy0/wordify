@@ -1,4 +1,5 @@
-module Game(Game, makeGame, updateGame) where
+module Game(Game, player1, player2, optionalPlayers,
+ board, bag, dictionary, currentPlayer, moveNumber, makeGame, updateGame) where
 
   import Player
   import Board
@@ -7,7 +8,6 @@ module Game(Game, makeGame, updateGame) where
   import Data.IntMap as IntMap
   import Data.List
   import ScrabbleError
-  import Control.Applicative
   import Data.Maybe
 
   data Game = Game { player1 :: Player
@@ -17,11 +17,26 @@ module Game(Game, makeGame, updateGame) where
                      , bag :: LetterBag
                      , dictionary :: Dictionary 
                      , currentPlayer :: Int
-                     , moveNumber :: Int }
+                     , moveNumber :: Int } deriving Show
+  
+  {-
+    Starts a new game. 
 
-  makeGame :: (Player, Player, Maybe (Player, Maybe Player))-> Board -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
-  makeGame (play1, play2, optionalPlayers) board bag dictionary = Right $ (player1, Game player1 player2 optional board finalBag dictionary 1 1)
+    A game has at least 2 players, and 2 optional players (player 3 and 4.) The players should be newly created,
+    as tiles from the letter bag will be distributed to each player.
+
+    Takes a letter bag and dictionary, which should be localised to the same language.
+
+    Yields a tuple with the first player and the initial game state. Returns a 'Left' if there are not enough
+    tiles in the letter bag to distribute to the players.
+  -}
+  makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
+  makeGame (play1, play2, optionalPlayers) bag dictionary =
+   if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
+    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1)
     where
+          lettersInBag = bagSize bag
+          numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
           (player1, firstBag) = givePlayerTiles play1 bag
           (player2, secondBag) = givePlayerTiles play2 firstBag
           (optional, finalBag) = maybe (Nothing, secondBag) (\optional -> fillOptional optional secondBag) optionalPlayers
@@ -36,6 +51,12 @@ module Game(Game, makeGame, updateGame) where
                 (player3, thirdBag) = givePlayerTiles thirdPlayer bag
                 makePlayer4 player = givePlayerTiles player thirdBag
 
+  {-
+    Updates the game with the new board and letter bag state, and the last player to play's state after replacing their played
+    tiles with new tiles from the letter bag. 
+
+    Yields a tuple with the next player to play, and the current game state.
+  -}
   updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
   updateGame game player newBoard newBag = (newPlayer, updatedPlayerGame {board = newBoard, bag = newBag, moveNumber = succ moveNo})
     where
@@ -55,6 +76,7 @@ module Game(Game, makeGame, updateGame) where
       playing = currentPlayer game
       optional = optionalPlayers game
 
+  {- Returns the next player to play. If there are optional players, loops back round to 'player 1' where appropriate. -}
   nextPlayer :: Game -> (Int, Player)
   nextPlayer game 
     | (playing == 1) = (2, playr2)
@@ -73,3 +95,4 @@ module Game(Game, makeGame, updateGame) where
       playr2 = player2 game
       playr1 = player1 game
       optional = optionalPlayers game
+
