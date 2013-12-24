@@ -22,7 +22,6 @@ instance Show ScrabbleError
   show (InvalidNumberOfPlayers) = "A game must have 2 - 4 players"
   show (NotEnoughLettersInStartingBag num) = "A starting bag must have enough tiles to distribute to the players to start a game. Bag has " ++ show num ++ " tiles."
 
-
 instance Error ScrabbleError where
   noMsg = MiscError "Unexpected internal error"
   strMsg err = MiscError err

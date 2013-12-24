@@ -58,7 +58,7 @@ module Game(Game, player1, player2, optionalPlayers,
     Yields a tuple with the next player to play, and the current game state.
   -}
   updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
-  updateGame game player newBoard newBag = (newPlayer, updatedPlayerGame {board = newBoard, bag = newBag, moveNumber = succ moveNo})
+  updateGame game player newBoard newBag = (newPlayer, updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo})
     where
       updatedPlayerGame = updateCurrentPlayer game player
       (newPlayerNum, newPlayer) = nextPlayer game
