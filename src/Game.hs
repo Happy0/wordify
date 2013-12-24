@@ -1,4 +1,4 @@
-module Game(makeGame) where
+module Game(Game, makeGame, updateGame) where
 
   import Player
   import Board
@@ -44,19 +44,20 @@ module Game(makeGame) where
       moveNo = moveNumber game
 
   updateCurrentPlayer :: Game -> Player -> Game
-  updateCurrentPlayer game player
-    | (playing == 1) = game {player1 = player}
-    | (playing == 2) = game {player2 = player}
-    | (playing == 3) = game {optionalPlayers = optional >>= (\(player3, player4) -> return (player, player4)) }
-    | (playing == 4) = game {optionalPlayers = optional >>= (\(player3, player4) -> return (player3, (player4 >> Just player))) }
+  updateCurrentPlayer game player =
+    case playing of
+      1 -> game {player1 = player}
+      2 -> game {player2 = player}
+      3 -> game {optionalPlayers = optional >>= (\(player3, player4) -> return (player, player4)) }
+      4 -> game {optionalPlayers = optional >>= (\(player3, player4) -> return (player3, (player4 >> Just player))) }
 
     where
       playing = currentPlayer game
       optional = optionalPlayers game
 
   nextPlayer :: Game -> (Int, Player)
-  nextPlayer  game 
-    | (playing == 1) = (1, playr2)
+  nextPlayer game 
+    | (playing == 1) = (2, playr2)
     | (playing == 2 || playing == 3) =
      maybe ( (1, playr1) ) (\(player3, player4) -> 
       if (playing == 2) then (3, player3 )
