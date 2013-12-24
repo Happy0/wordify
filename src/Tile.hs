@@ -12,9 +12,9 @@ tileValue (Letter _ val) = val
 tileValue (Blank _) = 0
 
 {-
-	isPlayble, applied to a played tile and compared against a tile
-	returns true if a player returned a letter tile on their rack,
-	or if the player played a Blank that has been given a letter
+  isPlayble, applied to a played tile and compared against a tile
+  returns true if a player returned a letter tile on their rack,
+  or if the player played a Blank that has been given a letter
 -}
 isPlayable :: Tile -> Tile -> Bool
 isPlayable (Letter a b) (Letter x y) = (a == x) && (b == y)

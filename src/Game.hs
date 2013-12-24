@@ -9,6 +9,7 @@ module Game(Game, player1, player2, optionalPlayers,
   import Data.List
   import ScrabbleError
   import Data.Maybe
+  import Control.Applicative
 
   data Game = Game { player1 :: Player
                      , player2 :: Player
@@ -69,8 +70,8 @@ module Game(Game, player1, player2, optionalPlayers,
     case playing of
       1 -> game {player1 = player}
       2 -> game {player2 = player}
-      3 -> game {optionalPlayers = optional >>= (\(player3, player4) -> return (player, player4)) }
-      4 -> game {optionalPlayers = optional >>= (\(player3, player4) -> return (player3, (player4 >> Just player))) }
+      3 -> game {optionalPlayers = (\(player3, player4) -> (player, player4)) <$> optional }
+      4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (player4 >> Just player))) <$> optional  }
 
     where
       playing = currentPlayer game
