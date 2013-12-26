@@ -2,7 +2,8 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
      isOccupied, scoreWord, squareIfOccupied, putTileOn) where
 
   import Tile
-  import Data.List
+  import Data.Sequence as Seq
+  import Data.Foldable as Foldable
   import Data.Maybe
 
   data Square = Normal (Maybe Tile)
@@ -26,15 +27,15 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
 
     The second list contains squares that are newly occupied.
   -}
-  scoreWord :: [Square] -> [Square] -> Int
+  scoreWord :: Seq Square -> Seq Square -> Int
   -- Calculate the base score then add the letter bonuses (doubleLetter, doubleWord),
   -- then multiply by word bonuses (DoubleWord, TripleWord)
   scoreWord xs ys = addBonuses (addBonuses baseScore letterBonuses) wordBonuses
     where
-      calcBaseScore squares = foldl (\acc square -> acc + baseValue square) (0) squares
-      addBonuses score squares = foldl (\acc square -> applyWordBonus square acc) score squares     
+      calcBaseScore squares = Foldable.foldl (\acc square -> acc + baseValue square) (0) squares
+      addBonuses score squares = Foldable.foldl (\acc square -> applyWordBonus square acc) score squares     
       baseScore = (calcBaseScore xs) + (calcBaseScore ys)
-      (wordBonuses, letterBonuses) = partition isWordBonus ys
+      (wordBonuses, letterBonuses) = Seq.partition isWordBonus ys
 
   {-
     The bonus operations that should be applied to the score of a word

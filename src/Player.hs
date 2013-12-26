@@ -4,20 +4,21 @@ module Player (Player, makePlayer, updateScore, giveTiles, removePlayedTiles) wh
   import Data.List
   import Data.Maybe
   import qualified Data.Map as Map
-  import Tile 
 
   type Score = Int
   type Name = String
 
   data LetterRack = LetterRack [Tile] deriving Show
 
-  data Player = Player Name LetterRack Score deriving Show
+  data Player = Player {name :: Name
+                       ,rack :: LetterRack
+                       , score :: Score } deriving Show
 
   makePlayer :: String -> Player
   makePlayer name = Player name (LetterRack []) 0
 
   updateScore :: Player -> Score -> Player
-  updateScore (Player name letterRack score) newScore = Player name letterRack newScore
+  updateScore player newScore = player {score = newScore}
 
   {-
     Adds tiles to the player's tile rack.

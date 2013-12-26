@@ -7,6 +7,7 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
   import Tile
   import qualified Data.Map as Map
   import Control.Monad
+  import Data.Sequence as Seq
 
   data Board = Board (Map.Map Pos Square) deriving Show
 
@@ -31,16 +32,16 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
   squareIsOccupied :: Board -> Pos -> Bool
   squareIsOccupied board pos = isJust $ occupiedSquareAt board pos
  
-  lettersAbove :: Board -> Pos -> [(Pos,Square)]
+  lettersAbove :: Board -> Pos -> Seq (Pos,Square)
   lettersAbove board pos = walkFrom board pos above
 
-  lettersBelow :: Board -> Pos -> [(Pos,Square)]
-  lettersBelow board pos = reverse $ walkFrom board pos below
+  lettersBelow :: Board -> Pos -> Seq (Pos,Square)
+  lettersBelow board pos = Seq.reverse $ walkFrom board pos below
 
-  lettersLeft :: Board -> Pos -> [(Pos,Square)]
-  lettersLeft board pos = reverse $ walkFrom board pos left
+  lettersLeft :: Board -> Pos -> Seq (Pos,Square)
+  lettersLeft board pos = Seq.reverse $ walkFrom board pos left
 
-  lettersRight :: Board -> Pos -> [(Pos,Square)]
+  lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
 
   {-
@@ -48,9 +49,9 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
     until an empty square is found or the boundary of the board
     is reached.
   -}
-  walkFrom :: Board -> Pos -> (Pos -> Maybe Pos) -> [(Pos,Square)]
+  walkFrom :: Board -> Pos -> (Pos -> Maybe Pos) -> Seq (Pos,Square)
   walkFrom board pos direction = maybe (mzero) (\(next,sq) ->
-   (next, sq) : (walkFrom board next direction) ) nextPos
+   (next, sq) <| (walkFrom board next direction) ) nextPos
     where
       nextPos = direction(pos) >>= (\nextPos -> occupiedSquareAt board nextPos >>=
         (\sq -> return (nextPos, sq) ))
@@ -78,9 +79,9 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
        ,["TW","N","N","DL","N","N","N","TW","N","N","N","DL","N","N","TW"]]
 
       squares = (map . map) toSquare layout
-      columns = zip [1..15] squares
+      columns = Prelude.zip [1..15] squares
       labeledSquares= concatMap (\(x, xs) -> columnToMapping x xs) columns
-      columnToMapping columnNo columnSquares = zipWith (\sq y -> ((columnNo,y),sq)) columnSquares [1..15]
+      columnToMapping columnNo columnSquares = Prelude.zipWith (\sq y -> ((columnNo,y),sq)) columnSquares [1..15]
       posSquares = mapMaybe (\((x,y), sq) -> fmap (\pos -> (pos, sq)) (posAt (x,y))) labeledSquares
 
       toSquare :: String -> Square

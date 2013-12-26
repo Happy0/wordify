@@ -1,15 +1,17 @@
 module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFile,
- MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag)) where
+ MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag, MisplacedLetter)) where
 
   import Control.Exception
   import Control.Monad.Error
+  import Pos
+  import Tile
 
   data ScrabbleError = LetterBagFileNotFound String
     | MalformedLetterBagFile FilePath
     | DictionaryFileNotFound FilePath
     | MalformedDictionaryFile FilePath
     | NotEnoughLettersInStartingBag Int
-    | PlayerFourOccupiedWithPlayerThreeEmpty
+    | MisplacedLetter Pos Tile
     | MiscError String
 
   instance Show ScrabbleError
