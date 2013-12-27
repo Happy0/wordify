@@ -4,14 +4,14 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
   import Control.Exception
   import Control.Monad.Error
   import Pos
-  import Tile
+  import Square
 
   data ScrabbleError = LetterBagFileNotFound String
     | MalformedLetterBagFile FilePath
     | DictionaryFileNotFound FilePath
     | MalformedDictionaryFile FilePath
     | NotEnoughLettersInStartingBag Int
-    | MisplacedLetter Pos Tile
+    | MisplacedLetter Pos Square
     | MiscError String
 
   instance Show ScrabbleError
