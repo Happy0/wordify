@@ -22,7 +22,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
     show (LetterBagFileNotFound path) = "Letter bag file " ++ path ++ " was not found"
     show (NotEnoughLettersInStartingBag num) = "A starting bag must have enough tiles to distribute to the players to start a game. Bag has " ++ show num ++ " tiles."
-    show (MisplacedLetter pos square) = "Placed tiles were not legally placed. Pos: " ++ show pos ++ ", " ++ show square
+    show (MisplacedLetter pos square) = "Placed tiles were not legally placed. Starting at tile placed at pos: " ++ show pos
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
 
   instance Error ScrabbleError where
