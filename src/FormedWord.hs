@@ -16,10 +16,9 @@ module FormedWord where
   data Direction = Horizontal | Vertical deriving Eq
 
   wordsFormed :: Board -> Map Pos Square -> Either ScrabbleError FormedWords
-  wordsFormed board tiles = formedWords >>= (\words -> 
-    case words of
+  wordsFormed board tiles = formedWords >>= (\formedWords -> 
+    case formedWords of
       x : xs -> Right $ FormedWords x xs board tiles
-      x : [] -> Right $ FormedWords x [] board tiles
       )
 
     where
@@ -27,7 +26,8 @@ module FormedWord where
       formedWords = maybe (Left $ MisplacedLetter maxPos lastTile) (\direction -> 
           middleFirstWord direction >>= (\middleFirstWord -> 
                           let (midWord, square) = middleFirstWord
-                          in Right $ (preceding direction minPos >< midWord >< after direction maxPos) : adjacentWords (swapDirection direction) ) ) getDirection
+                          in let mainWord = (preceding direction minPos >< midWord >< after direction maxPos)
+                          in Right $ mainWord : adjacentWords (swapDirection direction) ) ) getDirection
 
       preceding direction pos = case direction of
                                   Horizontal -> lettersLeft board pos
@@ -41,16 +41,20 @@ module FormedWord where
 
       adjacentWords direction = Prelude.map (\(pos, square) -> (preceding direction pos |> (pos, square)) >< after direction pos) placedList
 
-      middleFirstWord direction = foldM (\(word, lastPos) (pos, square) -> 
-          if (not $ stillOnPath lastPos pos direction) then Left $ MisplacedLetter pos square
-            else 
-              if (isDirectlyAfter pos lastPos direction) then Right $ (( word |> (pos, square)), pos) else
-                let between = after direction lastPos in
-                if expectedLettersInbetween direction lastPos pos between then Right $ ( word ><  ( between |> (pos,square) ), pos)
-                  else Left $ MisplacedLetter pos square
+      middleFirstWord direction = case placedList of 
+                                    x:[] -> Right (Seq.singleton x, minPos)
+                                    (x:xs) -> 
+                                      foldM (\(word, lastPos) (pos, square) -> 
+                                        if (not $ stillOnPath lastPos pos direction) then Left $ MisplacedLetter pos square
+                                          else 
+                                            if (isDirectlyAfter pos lastPos direction) then Right $ (( word |> (pos, square)), pos) else
+                                              let between = after direction lastPos in
+                                              if expectedLettersInbetween direction lastPos pos between then Right $ ( word ><  ( between |> (pos,square) ), pos)
+                                                else Left $ MisplacedLetter pos square
 
 
-        ) ( Seq.empty, minPos ) $ placedList
+                                      ) (Seq.singleton x, minPos ) $ xs
+
 
       placedList = Map.toList tiles
 
@@ -63,6 +67,9 @@ module FormedWord where
       isDirectlyAfter pos nextPos direction = (directionGetter direction nextPos) == (directionGetter direction pos) + 1
 
       getDirection
+        -- If only one tile is placed, we look for the first tile it connects with if any. If it connects with none, we return 'Nothing'
+        | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))  || not (Seq.null (lettersRight board minPos)) = Just Horizontal
+        | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos)) || not (Seq.null (lettersAbove board minPos)) = Just Vertical
         | (xPos minPos) == (xPos maxPos) = Just Horizontal
         | (yPos minPos) == (yPos maxPos) = Just Vertical
         | otherwise = Nothing
