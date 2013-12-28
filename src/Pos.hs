@@ -1,5 +1,5 @@
 
-module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue) where
+module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPos) where
 
   import qualified Data.Map as Map
 
@@ -28,7 +28,10 @@ module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue) where
 
   -- The position to the right of the given position, if it exists.
   right :: Pos -> Maybe Pos
-  right (Pos x y _) = posAt (x + 1, y) 
+  right (Pos x y _) = posAt (x + 1, y)
+
+  starPos :: Pos
+  starPos = Pos 8 8 "H8"
 
   {- A map keyed by tuples representing (x,y) co-ordinates, and valued by their
   corresponding Pos types -}
