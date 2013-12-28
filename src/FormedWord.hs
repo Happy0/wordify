@@ -127,7 +127,7 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWi
 
       stillOnPath lastPos thisPos direction = (directionGetter direction thisPos) == directionGetter direction lastPos
       expectedLettersInbetween direction lastPos currentPos between =
-       Seq.length between == (directionGetter direction currentPos - directionGetter direction lastPos)
+       Seq.length between + 1 == movingDirectionGetter direction currentPos - movingDirectionGetter direction lastPos
 
       swapDirection direction = if direction == Horizontal then Vertical else Horizontal
 
@@ -142,6 +142,7 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWi
         | otherwise = Nothing
 
       directionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
+      movingDirectionGetter direction pos = if direction == Horizontal then xPos pos else yPos pos
 
       isDirectlyAfter pos nextPos direction = 
-        (directionGetter direction nextPos) == (directionGetter direction pos) + 1
+        (movingDirectionGetter direction nextPos) == (movingDirectionGetter direction pos) + 1
