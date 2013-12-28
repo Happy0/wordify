@@ -1,4 +1,4 @@
-module FormedWord (wordsFormedMidGame, wordFormedFirstMove, mainWord, otherWords) where
+module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores) where
 
   import Pos
   import Square
@@ -9,12 +9,15 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, mainWord, otherWords
   import Data.Map as Map
   import Control.Applicative
   import Control.Monad
-  import Data.Foldable
+  import Data.Foldable as Foldable
+  import Data.Maybe
 
-  data FormedWords = FormedWords { mainWord :: FormedWord
-                                  , otherWords :: [FormedWord]
-                                  , board :: Board
-                                  , placed :: Map Pos Square } deriving Show
+  data FormedWords =  FirstWord FormedWord  | FormedWords {
+                                               mainWord :: FormedWord
+                                              , otherWords :: [FormedWord]
+                                              , placed :: Map Pos Square
+                                            }
+                                  
   type FormedWord = Seq (Pos, Square)
   data Direction = Horizontal | Vertical deriving Eq
 
@@ -22,33 +25,69 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, mainWord, otherWords
      Returns the word formed by the first move on the board. The word must cover
      the star tile, and be linear.
    -}
-  wordFormedFirstMove :: Board -> Map Pos Square -> Either ScrabbleError FormedWord
+  wordFormedFirstMove :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
   wordFormedFirstMove board tiles = 
     if (starPos `Map.notMember` tiles) 
       then Left DoesNotIntersectCoverTheStarTile
-      else mainWord <$> wordsFormed board tiles
+      else placedSquares board tiles >>= 
+        \squares -> (\formed -> FirstWord $ mainWord formed) <$> wordsFormed board squares
 
   {- 
-    Checks that a move made after the first move is legally placed on the board. A played word
+    Returns the words formed by the tiles played on the board. A played word
     must be connected to a tile already on the board (or intersect tiles on the board), 
     and be formed linearly.
   -}
-  wordsFormedMidGame :: Board -> Map Pos Square -> Either ScrabbleError FormedWords
-  wordsFormedMidGame board tiles = wordsFormed board tiles >>= (\formed ->
-    let FormedWords x xs _ _ = formed
+  wordsFormedMidGame :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
+  wordsFormedMidGame board tiles = placedSquares board tiles >>=
+   \squares -> wordsFormed board squares >>= \formed ->
+    let FormedWords x xs _  = formed
     -- Check it connects to at least one other word on the board
-    in if Seq.length x > Map.size tiles || not (Prelude.null xs)
-           then Right $ FormedWords x xs board tiles
-            else Left $ DoesNotConnectWithWord)
+    in if Seq.length x > Map.size squares || not (Prelude.null xs)
+           then Right $ FormedWords x xs squares
+            else Left $ DoesNotConnectWithWord
+
+  wordsWithScores :: FormedWords -> (Int, [(String, Int)])
+  wordsWithScores (FormedWords mainWord otherWords placed) = (Prelude.sum scores, (Prelude.zip strings scores))
+    where
+      allWords = mainWord : otherWords
+      strings = Prelude.map makeString allWords
+      scores = Prelude.map (\formedWord -> let (placed, alreadyPlaced) = partitionPlaced formedWord 
+                                          in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
+
+      partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos placed) formedWord
+
+  {-
+    Returns the words formed by the play as strings.
+  -}
+  wordStrings :: FormedWords -> [String]
+  wordStrings (FirstWord word) = [makeString word]
+  wordStrings (FormedWords mainWord otherWords _) = Prelude.map makeString (mainWord : otherWords)
+
+  makeString :: FormedWord -> String
+  makeString word = catMaybes $ Prelude.map (\((_, sq)) -> tileIfOccupied sq >>= tileLetter) $ Foldable.toList word
+
+  {-
+    Checks that the tiles can be placed, and if so turns a map of the squares at the placed positions.
+    A tile may be placed if the square is not already occupied, and if it is not an unlabeled blank tile.
+  -}
+  placedSquares :: Board -> Map Pos Tile -> Either ScrabbleError (Map Pos Square)
+  placedSquares board tiles = 
+    if isJust $ find (\(_, tile) -> tile == Blank Nothing) mapAsList
+     then Left CannotPlaceBlankWithoutLetter
+     else 
+      maybe (Left PlacedTileOnOccupiedSquare) (\list -> Right $ Map.fromList list) squares
+      where
+        squares = sequence $ Prelude.map (\(pos,tile) -> (\sq -> (pos, putTileOn sq tile)) <$> unoccupiedSquareAt board pos) mapAsList
+        mapAsList = Map.toList tiles
+
 
   wordsFormed :: Board -> Map Pos Square -> Either ScrabbleError FormedWords
   wordsFormed board tiles
     | Map.null tiles = Left NoTilesPlaced
-    | not $ Map.null tiles = formedWords >>= (\formedWords -> 
+    | not $ Map.null tiles = formedWords >>= \formedWords -> 
     case formedWords of
-      x : xs -> Right $ FormedWords x xs board tiles
+      x : xs -> Right $ FormedWords x xs tiles
       [] -> Left NoTilesPlaced
-    )
     where
       formedWords = maybe (Left $ MisplacedLetter maxPos lastTile) (\direction -> 
           middleFirstWord direction >>= (\middleFirstWord -> 
@@ -82,22 +121,22 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, mainWord, otherWords
                       if expectedLettersInbetween direction lastPos pos between
                        then Right $ ( word >< ( between |> (pos,square) ), pos)
                         else Left $ MisplacedLetter pos square
-
-
               ) (Seq.singleton x, minPos ) $ xs
 
       placedList = Map.toList tiles
 
       stillOnPath lastPos thisPos direction = (directionGetter direction thisPos) == directionGetter direction lastPos
       expectedLettersInbetween direction lastPos currentPos between =
-       Seq.length between == directionGetter direction currentPos - directionGetter direction lastPos
+       Seq.length between == (directionGetter direction currentPos - directionGetter direction lastPos)
 
       swapDirection direction = if direction == Horizontal then Vertical else Horizontal
 
       getDirection
         -- If only one tile is placed, we look for the first tile it connects with if any. If it connects with none, we return 'Nothing'
-        | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))  || not (Seq.null (lettersRight board minPos)) = Just Horizontal
-        | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos)) || not (Seq.null (lettersAbove board minPos)) = Just Vertical
+        | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))
+          || not (Seq.null (lettersRight board minPos)) = Just Horizontal
+        | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos))
+         || not (Seq.null (lettersAbove board minPos)) = Just Vertical
         | (xPos minPos) == (xPos maxPos) = Just Vertical
         | (yPos minPos) == (yPos maxPos) = Just Horizontal
         | otherwise = Nothing

@@ -1,5 +1,5 @@
 module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord),
-     isOccupied, scoreWord, squareIfOccupied, putTileOn) where
+     isOccupied, scoreWord, squareIfOccupied, putTileOn, tileIfOccupied) where
 
   import Tile
   import Data.Sequence as Seq
@@ -72,6 +72,14 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
   squareIfOccupied (DoubleWord (Just tile)) = Just (DoubleWord (Just tile))
   squareIfOccupied (TripleWord (Just tile)) = Just (TripleWord (Just tile))
   squareIfOccupied _ = Nothing
+
+  tileIfOccupied :: Square -> Maybe Tile
+  tileIfOccupied (Normal (Just tile)) = Just tile
+  tileIfOccupied (DoubleLetter (Just tile)) = Just tile
+  tileIfOccupied (TripleLetter (Just tile)) = Just tile
+  tileIfOccupied (DoubleWord (Just tile)) = Just tile
+  tileIfOccupied (TripleWord (Just tile)) = Just tile
+  tileIfOccupied _ = Nothing
 
   isOccupied :: Square -> Bool
   isOccupied = isJust . squareIfOccupied

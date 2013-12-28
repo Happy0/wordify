@@ -1,5 +1,5 @@
 module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
- lettersAbove, lettersBelow, lettersLeft, lettersRight) where
+ lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt) where
 
   import Square
   import Pos
@@ -25,6 +25,10 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
 
   squareAt :: Board -> Pos -> Maybe Square
   squareAt (Board squares)  = flip Map.lookup squares
+
+  unoccupiedSquareAt :: Board -> Pos -> Maybe Square
+  unoccupiedSquareAt board pos = 
+    squareAt board pos >>= (\sq -> if isOccupied sq then Nothing else Just sq)
 
   occupiedSquareAt :: Board -> Pos -> Maybe Square
   occupiedSquareAt board pos = squareAt board pos >>= squareIfOccupied

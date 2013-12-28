@@ -1,6 +1,7 @@
 module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFile,
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
-  MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile)) where
+  MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile,
+   PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter)) where
 
   import Control.Exception
   import Control.Monad.Error
@@ -16,6 +17,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     | DoesNotConnectWithWord
     | NoTilesPlaced
     | DoesNotIntersectCoverTheStarTile
+    | PlacedTileOnOccupiedSquare
+    | CannotPlaceBlankWithoutLetter
     | MiscError String
 
   instance Show ScrabbleError
@@ -29,6 +32,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
+    show (PlacedTileOnOccupiedSquare) = "Move replaces a tile already on the board. This is not a legal move."
+    show (CannotPlaceBlankWithoutLetter) = "A played blank letter must be given a letter."
 
   instance Error ScrabbleError where
     noMsg = MiscError "Unexpected internal error"

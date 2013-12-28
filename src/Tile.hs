@@ -1,4 +1,4 @@
-module Tile (Tile(Letter, Blank), tileValue, isPlayable) where
+module Tile (Tile(Letter, Blank), tileValue, isPlayable, tileLetter) where
 
 {-
 A tile is a letter with a value, or a Blank tile
@@ -10,6 +10,11 @@ data Tile = Letter Char Int | Blank (Maybe Char) deriving (Show, Eq, Ord)
 tileValue :: Tile -> Int
 tileValue (Letter _ val) = val
 tileValue (Blank _) = 0
+
+tileLetter :: Tile -> Maybe Char
+tileLetter (Letter char _) = Just char
+tileLetter (Blank (Just char)) = Just char
+tileLetter (Blank Nothing) = Nothing
 
 {-
   isPlayble, applied to a played tile and compared against a tile
