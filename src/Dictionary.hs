@@ -1,4 +1,4 @@
-module Dictionary (Dictionary, isValidWord, makeDictionary) where
+module Dictionary (Dictionary, isValidWord, makeDictionary, invalidWords) where
 
   import qualified Data.Set as Set
   import ScrabbleError
@@ -10,6 +10,9 @@ module Dictionary (Dictionary, isValidWord, makeDictionary) where
   import Data.Char
 
   data Dictionary = Dictionary (Set.Set String) deriving Show
+
+  invalidWords :: Dictionary -> [String] -> [String]
+  invalidWords (Dictionary dictWords) check = filter (\checkWord -> not (checkWord `Set.member` dictWords)) check
 
   isValidWord :: Dictionary -> String -> Bool
   isValidWord (Dictionary dictionaryWords) = flip Set.member dictionaryWords

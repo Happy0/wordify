@@ -1,4 +1,4 @@
-module Player (Player, makePlayer, updateScore, giveTiles, removePlayedTiles) where
+module Player (Player, LetterRack, makePlayer, updateScore, giveTiles, removePlayedTiles) where
 
   import Tile
   import Data.List

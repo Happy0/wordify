@@ -18,7 +18,8 @@ module Game(Game, player1, player2, optionalPlayers,
                      , bag :: LetterBag
                      , dictionary :: Dictionary 
                      , currentPlayer :: Int
-                     , moveNumber :: Int } deriving Show
+                     , moveNumber :: Int
+                     , hasFinished :: Bool } deriving Show
   
   {-
     Starts a new game. 
@@ -34,7 +35,7 @@ module Game(Game, player1, player2, optionalPlayers,
   makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
   makeGame (play1, play2, optionalPlayers) bag dictionary =
    if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1)
+    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1 False)
     where
           lettersInBag = bagSize bag
           numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
@@ -59,7 +60,8 @@ module Game(Game, player1, player2, optionalPlayers,
     Yields a tuple with the next player to play, and the current game state.
   -}
   updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
-  updateGame game player newBoard newBag = (newPlayer, updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo})
+  updateGame game player newBoard newBag = (newPlayer,
+   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo})
     where
       updatedPlayerGame = updateCurrentPlayer game player
       (newPlayerNum, newPlayer) = nextPlayer game

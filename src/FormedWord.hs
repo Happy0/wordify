@@ -1,4 +1,4 @@
-module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores) where
+module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores) where
 
   import Pos
   import Square
@@ -47,13 +47,14 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWi
             else Left $ DoesNotConnectWithWord
 
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
+  wordsWithScores (FirstWord firstWord) =
+   let score = scoreWord Seq.empty (fmap snd firstWord) in (score, [(makeString firstWord, score)])
   wordsWithScores (FormedWords mainWord otherWords placed) = (Prelude.sum scores, (Prelude.zip strings scores))
     where
       allWords = mainWord : otherWords
       strings = Prelude.map makeString allWords
       scores = Prelude.map (\formedWord -> let (placed, alreadyPlaced) = partitionPlaced formedWord 
                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
-
       partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos placed) formedWord
 
   {-
@@ -125,7 +126,7 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWi
 
       placedList = Map.toList tiles
 
-      stillOnPath lastPos thisPos direction = (directionGetter direction thisPos) == directionGetter direction lastPos
+      stillOnPath lastPos thisPos direction = (staticDirectionGetter direction thisPos) == staticDirectionGetter direction lastPos
       expectedLettersInbetween direction lastPos currentPos between =
        Seq.length between + 1 == movingDirectionGetter direction currentPos - movingDirectionGetter direction lastPos
 
@@ -141,7 +142,7 @@ module FormedWord (wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWi
         | (yPos minPos) == (yPos maxPos) = Just Horizontal
         | otherwise = Nothing
 
-      directionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
+      staticDirectionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
       movingDirectionGetter direction pos = if direction == Horizontal then xPos pos else yPos pos
 
       isDirectlyAfter pos nextPos direction = 

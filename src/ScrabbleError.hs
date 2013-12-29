@@ -1,12 +1,14 @@
 module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFile,
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
   MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile,
-   PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter)) where
+   PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary)) where
 
   import Control.Exception
   import Control.Monad.Error
   import Pos
   import Square
+  import Tile
+  import Player
 
   data ScrabbleError = LetterBagFileNotFound String
     | MalformedLetterBagFile FilePath
@@ -19,6 +21,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     | DoesNotIntersectCoverTheStarTile
     | PlacedTileOnOccupiedSquare
     | CannotPlaceBlankWithoutLetter
+    | WordsNotInDictionary [String]
+    | PlayerCannotPlace LetterRack [Tile]
     | MiscError String
 
   instance Show ScrabbleError
@@ -33,7 +37,9 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
     show (PlacedTileOnOccupiedSquare) = "Move replaces a tile already on the board. This is not a legal move."
-    show (CannotPlaceBlankWithoutLetter) = "A played blank letter must be given a letter."
+    show (CannotPlaceBlankWithoutLetter) = "A played blank letter at must be given a letter."
+    show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
+    show (PlayerCannotPlace rack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
 
   instance Error ScrabbleError where
     noMsg = MiscError "Unexpected internal error"
