@@ -1,5 +1,5 @@
 module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTiles,
- removePlayedTiles, hasEmptyRack, tileValues, reduceScore) where
+ removePlayedTiles, hasEmptyRack, tileValues, reduceScore, playerCanExchange) where
 
   import Tile
   import Data.List
@@ -62,11 +62,7 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
   playerCanPlace :: Player -> [Tile] -> Bool
   playerCanPlace (Player _ (LetterRack rack) _ ) played = isNothing $ find isInvalid playedList
     where
-      buildFrequencies tiles = foldl addFrequency (Map.empty) tiles
-      addFrequency dict tile = Map.alter newFrequency tile dict
-      newFrequency m = Just $ maybe 1 succ m -- Default freq of one, or inc existing frequency
-      playedFrequencies = buildFrequencies played
-      rackFrequencies = buildFrequencies rack
+      (playedFrequencies, rackFrequencies) = tileFrequencies played rack
       playedList = Map.toList playedFrequencies
 
       isInvalid (tile, freq) =
@@ -76,3 +72,29 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
         -- Player doesn't have tiles
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
+
+  playerCanExchange :: Player -> [Tile] -> Bool
+  playerCanExchange (Player _ ( LetterRack rack) _ ) exchanged = isNothing $ find cannotExchange exchangedList
+
+    where
+      (exchangedFrequencies, rackFrequencies) = tileFrequencies exchanged rack
+      exchangedList = Map.toList exchangedFrequencies
+
+      cannotExchange (tile, freq) =
+       case tile of
+        -- Tried to exchange a blank letter which has been labeled. Client error.
+        Blank (Just _) -> False 
+        -- Player doesn't have tiles
+        Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
+        Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
+
+
+
+  tileFrequencies :: [Tile] -> [Tile] -> ((Map.Map Tile Int), (Map.Map Tile Int))
+  tileFrequencies given rack = (givenFrequencies, rackFrequencies)
+    where
+      buildFrequencies tiles = foldl addFrequency (Map.empty) tiles
+      addFrequency dict tile = Map.alter newFrequency tile dict
+      newFrequency m = Just $ maybe 1 succ m -- Default freq of one, or inc existing frequency
+      givenFrequencies = buildFrequencies given
+      rackFrequencies = buildFrequencies rack
