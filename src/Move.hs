@@ -61,7 +61,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
                   return $ Right (newPlayer, nextPlayer, newGame)
 
   passMove :: Game -> (Player, Game, GameStatus)
-  passMove game = let (player, game) = pass game in (player, game, newStatus)
+  passMove game = let (player, newGame) = pass game in (player, newGame {gameStatus = ToFinalise}, newStatus)
     where
       numPasses = passes game
       newStatus = if numPasses == ((numberOfPlayers game) * 2) then ToFinalise else InProgress
