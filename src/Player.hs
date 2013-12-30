@@ -1,4 +1,5 @@
-module Player (Player, LetterRack, makePlayer, updateScore, giveTiles, removePlayedTiles) where
+module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTiles,
+ removePlayedTiles, hasEmptyRack, tileValues, reduceScore) where
 
   import Tile
   import Data.List
@@ -17,8 +18,21 @@ module Player (Player, LetterRack, makePlayer, updateScore, giveTiles, removePla
   makePlayer :: String -> Player
   makePlayer name = Player name (LetterRack []) 0
 
-  updateScore :: Player -> Score -> Player
-  updateScore player newScore = player {score = newScore}
+  updateScore :: Player -> Int -> Player
+  updateScore player justScored = player {score = currentScore + justScored}
+    where
+      currentScore = score player
+
+  reduceScore :: Player -> Int -> Player
+  reduceScore player removeScore = player {score = currentScore - removeScore}
+    where
+      currentScore = score player
+
+  hasEmptyRack :: Player -> Bool
+  hasEmptyRack (Player name (LetterRack rack) score) = null rack
+
+  tileValues :: Player -> Int
+  tileValues (Player name (LetterRack (rack)) score) = sum $ map tileValue rack
 
   {-
     Adds tiles to the player's tile rack.

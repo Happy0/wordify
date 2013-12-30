@@ -1,5 +1,6 @@
 module Game(Game, player1, player2, optionalPlayers,
- board, bag, dictionary, currentPlayer, moveNumber, makeGame, updateGame) where
+ board, bag, dictionary, currentPlayer, moveNumber, makeGame, updateGame, getGameStatus,
+  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, pass, passes, numberOfPlayers) where
 
   import Player
   import Board
@@ -11,6 +12,8 @@ module Game(Game, player1, player2, optionalPlayers,
   import Data.Maybe
   import Control.Applicative
 
+  data GameStatus = InProgress | ToFinalise | Finished deriving (Eq, Show)
+
   data Game = Game { player1 :: Player
                      , player2 :: Player
                      , optionalPlayers :: Maybe (Player, Maybe Player)
@@ -19,7 +22,8 @@ module Game(Game, player1, player2, optionalPlayers,
                      , dictionary :: Dictionary 
                      , currentPlayer :: Int
                      , moveNumber :: Int
-                     , hasFinished :: Bool } deriving Show
+                     , passes :: Int
+                     , gameStatus :: GameStatus } deriving Show
   
   {-
     Starts a new game. 
@@ -35,7 +39,7 @@ module Game(Game, player1, player2, optionalPlayers,
   makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
   makeGame (play1, play2, optionalPlayers) bag dictionary =
    if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1 False)
+    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1 0 InProgress)
     where
           lettersInBag = bagSize bag
           numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
@@ -53,6 +57,24 @@ module Game(Game, player1, player2, optionalPlayers,
                 (player3, thirdBag) = givePlayerTiles thirdPlayer bag
                 makePlayer4 player = givePlayerTiles player thirdBag
 
+  pass :: Game -> (Player, Game)
+  pass game = (player, game {moveNumber = succ moveNo, currentPlayer = playerNo, passes = succ numPasses} )
+    where
+      (playerNo, player) = nextPlayer game
+      numPasses = passes game
+      moveNo = moveNumber game
+
+  getPlayers :: Game -> [Player]
+  getPlayers game = [player1 game, player2 game] ++ optionals
+   where
+      optionals = case (optionalPlayers game) of 
+                    Nothing -> []
+                    Just (player3, Nothing) -> [player3]
+                    Just (player3, Just player4) -> [player3, player4]
+
+  getGameStatus :: Game -> GameStatus
+  getGameStatus game = gameStatus game
+
   {-
     Updates the game with the new board and letter bag state, and the last player to play's state after replacing their played
     tiles with new tiles from the letter bag. 
@@ -61,7 +83,7 @@ module Game(Game, player1, player2, optionalPlayers,
   -}
   updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
   updateGame game player newBoard newBag = (newPlayer,
-   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo})
+   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo, passes = 0})
     where
       updatedPlayerGame = updateCurrentPlayer game player
       (newPlayerNum, newPlayer) = nextPlayer game
@@ -88,7 +110,7 @@ module Game(Game, player1, player2, optionalPlayers,
       if (playing == 2) then (3, player3 )
       else 
         case player4 of
-          Just (player4) -> (4, player4)
+          Just player4 -> (4, player4)
           Nothing -> (1, playr1)
         ) $ optional
     | (playing == 4) = (1, playr1)
@@ -99,3 +121,5 @@ module Game(Game, player1, player2, optionalPlayers,
       playr1 = player1 game
       optional = optionalPlayers game
 
+  numberOfPlayers :: Game -> Int
+  numberOfPlayers game = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)

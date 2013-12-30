@@ -1,7 +1,8 @@
 module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFile,
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
   MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile,
-   PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary)) where
+   PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
+   GameNotInProgress, CannotExchangeWhenNoLettersInBag)) where
 
   import Control.Exception
   import Control.Monad.Error
@@ -23,6 +24,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     | CannotPlaceBlankWithoutLetter
     | WordsNotInDictionary [String]
     | PlayerCannotPlace LetterRack [Tile]
+    | GameNotInProgress
+    | CannotExchangeWhenNoLettersInBag
     | MiscError String
 
   instance Show ScrabbleError
@@ -40,6 +43,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (CannotPlaceBlankWithoutLetter) = "A played blank letter at must be given a letter."
     show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
     show (PlayerCannotPlace rack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
+    show (CannotExchangeWhenNoLettersInBag) = "Cannot exchange letters when there are no letters in the bag."
+    show (GameNotInProgress) = "A move was attempted on a game that is not in progress."
 
   instance Error ScrabbleError where
     noMsg = MiscError "Unexpected internal error"

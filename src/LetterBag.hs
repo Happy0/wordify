@@ -56,15 +56,20 @@ takeLetters (LetterBag tiles lettersLeft) numTake =
   given, and the new letterbag.
 -}
 exchangeLetters :: LetterBag -> [Tile] -> IO (Maybe ([Tile], LetterBag))
-exchangeLetters (LetterBag tiles lettersLeft) exchanged = do
-  let intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven)
-  shuffledBag <- shuffleBag intermediateBag
-  return $ takeLetters shuffledBag numLettersGiven
+exchangeLetters (LetterBag tiles lettersLeft) exchanged =
+  if (lettersLeft == 0) 
+    then return Nothing
+     else
+      do
+        shuffledBag <- shuffleBag intermediateBag
+        return $ takeLetters shuffledBag numLettersGiven
   where
     numLettersGiven = length exchanged
+    intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven)
 
 
--- Shuffles the contents of a letter bag
+
+  -- Shuffles the contents of a letter bag
 shuffleBag :: LetterBag -> IO LetterBag
 shuffleBag (LetterBag _ 0) =  return (LetterBag [] 0)
 shuffleBag (LetterBag tiles size) = do
