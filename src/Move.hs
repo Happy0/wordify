@@ -17,23 +17,23 @@ module Move (makeBoardMove, passMove, finaliseGame) where
   makeBoardMove game player placed 
     | (not $ gameStatus game == InProgress) = Left GameNotInProgress
     | otherwise = 
-        formedWords >>=
-          \formed ->
-            scoresIfWordsLegal dict formed >>=
-              \(overallScore, _) ->
-                 newBoard currentBoard placed >>=
-                  \board ->
-                    removeLettersandGiveScore player playedTiles overallScore >>=
-                      \player ->
-                        if (hasEmptyRack player && bagSize letterBag == 0)
-                        then
-                          let (newPlayer, updatedGame) = updateGame game player board letterBag
-                          in Right $ (player, newPlayer, updatedGame {gameStatus = ToFinalise}, formed, ToFinalise)
-                        else
-                          let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag
-                          in          
-                              let (nextPlayer, updatedGame) = updateGame game newPlayer board newBag
-                              in Right (newPlayer, nextPlayer, updatedGame, formed, InProgress)
+        do
+          formed <- formedWords
+          (overallScore, _) <- scoresIfWordsLegal dict formed
+          board <- newBoard currentBoard placed 
+          player <- removeLettersandGiveScore player playedTiles overallScore
+
+          if hasEmptyRack player && (bagSize letterBag == 0)
+           then
+            do
+              let (newPlayer, updatedGame) = updateGame game player board letterBag
+              return (player, newPlayer, updatedGame {gameStatus = ToFinalise}, formed, ToFinalise)
+            else
+              do
+                let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag
+                let (nextPlayer, updatedGame) = updateGame game newPlayer board newBag
+                return (newPlayer, nextPlayer, updatedGame, formed, InProgress)
+
       where
         playedTiles = Prelude.map snd $ Map.toList placed
         currentBoard = board game
@@ -44,7 +44,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
         formedWords = if (moveNo == 1)
          then wordFormedFirstMove currentBoard placed 
          else wordsFormedMidGame currentBoard placed
-         
+
   passMove :: Game -> (Player, Game, GameStatus)
   passMove game = let (player, game) = pass game in (player, game, newStatus)
     where
