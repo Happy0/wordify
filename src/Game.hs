@@ -1,5 +1,5 @@
-module Game(Game, player1, player2, optionalPlayers,
- board, bag, dictionary, currentPlayer, moveNumber, makeGame, updateGame, getGameStatus,
+module Game(Game, player1, player2, optionalPlayers, currentPlayer,
+ board, bag, dictionary, playerNumber, moveNumber, makeGame, updateGame, getGameStatus,
   GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, pass, passes, numberOfPlayers) where
 
   import Player
@@ -20,7 +20,8 @@ module Game(Game, player1, player2, optionalPlayers,
                      , board :: Board
                      , bag :: LetterBag
                      , dictionary :: Dictionary 
-                     , currentPlayer :: Int
+                     , currentPlayer :: Player
+                     , playerNumber :: Int
                      , moveNumber :: Int
                      , passes :: Int
                      , gameStatus :: GameStatus } deriving Show
@@ -39,7 +40,7 @@ module Game(Game, player1, player2, optionalPlayers,
   makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
   makeGame (play1, play2, optionalPlayers) bag dictionary =
    if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary 1 1 0 InProgress)
+    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress)
     where
           lettersInBag = bagSize bag
           numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
@@ -58,7 +59,7 @@ module Game(Game, player1, player2, optionalPlayers,
                 makePlayer4 player = givePlayerTiles player thirdBag
 
   pass :: Game -> (Player, Game)
-  pass game = (player, game {moveNumber = succ moveNo, currentPlayer = playerNo, passes = succ numPasses} )
+  pass game = (player, game {moveNumber = succ moveNo, playerNumber = playerNo, currentPlayer = player, passes = succ numPasses} )
     where
       (playerNo, player) = nextPlayer game
       numPasses = passes game
@@ -83,7 +84,7 @@ module Game(Game, player1, player2, optionalPlayers,
   -}
   updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
   updateGame game player newBoard newBag = (newPlayer,
-   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayerNum, moveNumber = succ moveNo, passes = 0})
+   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = player, playerNumber = newPlayerNum, moveNumber = succ moveNo, passes = 0})
     where
       updatedPlayerGame = updateCurrentPlayer game player
       (newPlayerNum, newPlayer) = nextPlayer game
@@ -98,7 +99,7 @@ module Game(Game, player1, player2, optionalPlayers,
       4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (player4 >> Just player))) <$> optional  }
 
     where
-      playing = currentPlayer game
+      playing = playerNumber game
       optional = optionalPlayers game
 
   {- Returns the next player to play. If there are optional players, loops back round to 'player 1' where appropriate. -}
@@ -116,7 +117,7 @@ module Game(Game, player1, player2, optionalPlayers,
     | (playing == 4) = (1, playr1)
 
     where
-      playing = currentPlayer game
+      playing = playerNumber game
       playr2 = player2 game
       playr1 = player1 game
       optional = optionalPlayers game

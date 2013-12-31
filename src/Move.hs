@@ -13,8 +13,8 @@ module Move (makeBoardMove, passMove, finaliseGame) where
   import Board
   import Dictionary
 
-  makeBoardMove :: Game -> Player -> Map Pos Tile -> Either ScrabbleError (Player, Player, Game, FormedWords, GameStatus)
-  makeBoardMove game player placed 
+  makeBoardMove :: Game -> Map Pos Tile -> Either ScrabbleError (Player, Player, Game, FormedWords, GameStatus)
+  makeBoardMove game placed 
     | (not $ gameStatus game == InProgress) = Left GameNotInProgress
     | otherwise = 
         do
@@ -35,6 +35,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
                 return (newPlayer, nextPlayer, updatedGame, formed, InProgress)
 
       where
+        player = currentPlayer game
         playedTiles = Prelude.map snd $ Map.toList placed
         currentBoard = board game
         moveNo = moveNumber game
@@ -45,8 +46,8 @@ module Move (makeBoardMove, passMove, finaliseGame) where
          then wordFormedFirstMove currentBoard placed 
          else wordsFormedMidGame currentBoard placed
 
-  exchangeMove :: Game -> Player -> [Tile] -> IO (Either ScrabbleError (Player, Player, Game))
-  exchangeMove game player tiles =
+  exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError (Player, Player, Game))
+  exchangeMove game tiles =
     do
       if not (playerCanExchange player tiles) then return $ Left (PlayerCannotExchange (rack player) tiles)
         else
@@ -59,6 +60,8 @@ module Move (makeBoardMove, passMove, finaliseGame) where
                   let newPlayer = giveTiles player givenTiles
                   let (nextPlayer, newGame) = updateGame game newPlayer (board game) newBag
                   return $ Right (newPlayer, nextPlayer, newGame)
+    where
+      player = currentPlayer game
 
   passMove :: Game -> (Player, Game, GameStatus)
   passMove game = let (player, newGame) = pass game in (player, newGame {gameStatus = ToFinalise}, newStatus)
