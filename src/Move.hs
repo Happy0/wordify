@@ -36,7 +36,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
 
       where
         player = currentPlayer game
-        playedTiles = Prelude.map snd $ Map.toList placed
+        playedTiles = Map.elems placed
         currentBoard = board game
         moveNo = moveNumber game
         dict = dictionary game
@@ -47,27 +47,32 @@ module Move (makeBoardMove, passMove, finaliseGame) where
          else wordsFormedMidGame currentBoard placed
 
   exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError (Player, Player, Game))
-  exchangeMove game tiles =
-    do
-      if not (playerCanExchange player tiles) then return $ Left (PlayerCannotExchange (rack player) tiles)
-        else
-          do
-            exchange <- exchangeLetters (bag game) tiles
-            case exchange of
-              Nothing -> return $ Left CannotExchangeWhenNoLettersInBag
-              Just (givenTiles, newBag) -> 
-                do
-                  let newPlayer = giveTiles player givenTiles
-                  let (nextPlayer, newGame) = updateGame game newPlayer (board game) newBag
-                  return $ Right (newPlayer, nextPlayer, newGame)
+  exchangeMove game tiles 
+    | not (playerCanExchange player tiles) = return $ Left (PlayerCannotExchange (rack player) tiles)
+    | not (gameStatus game == InProgress) = return $ Left GameNotInProgress
+    | otherwise = 
+      do
+        if not (playerCanExchange player tiles) then return $ Left (PlayerCannotExchange (rack player) tiles)
+          else
+            do
+              exchange <- exchangeLetters (bag game) tiles
+              case exchange of
+                Nothing -> return $ Left CannotExchangeWhenNoLettersInBag
+                Just (givenTiles, newBag) -> 
+                  do
+                    let newPlayer = giveTiles player givenTiles
+                    let (nextPlayer, newGame) = updateGame game newPlayer (board game) newBag
+                    return $ Right (newPlayer, nextPlayer, newGame)
     where
       player = currentPlayer game
 
-  passMove :: Game -> (Player, Game, GameStatus)
-  passMove game = let (player, newGame) = pass game in (player, newGame {gameStatus = ToFinalise}, newStatus)
-    where
-      numPasses = passes game
-      newStatus = if numPasses == ((numberOfPlayers game) * 2) then ToFinalise else InProgress
+  passMove :: Game -> Either ScrabbleError(Player, Game, GameStatus)
+  passMove game
+    | not (gameStatus game == InProgress) = Left GameNotInProgress
+    | otherwise = Right $ let (player, newGame) = pass game in (player, newGame {gameStatus = newStatus}, newStatus)
+      where
+        numPasses = passes game
+        newStatus = if numPasses == ((numberOfPlayers game) * 2) then ToFinalise else InProgress
 
   finaliseGame :: Game -> Game
   finaliseGame game

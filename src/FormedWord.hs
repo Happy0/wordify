@@ -49,12 +49,12 @@ module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStr
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
   wordsWithScores (FirstWord firstWord) =
    let score = scoreWord Seq.empty (fmap snd firstWord) in (score, [(makeString firstWord, score)])
-  wordsWithScores (FormedWords mainWord otherWords placed) = (Prelude.sum scores, (Prelude.zip strings scores))
+  wordsWithScores (FormedWords mainWord otherWords placed) = (Prelude.sum scores, Prelude.zip strings scores)
     where
       allWords = mainWord : otherWords
       strings = Prelude.map makeString allWords
       scores = Prelude.map (\formedWord -> let (placed, alreadyPlaced) = partitionPlaced formedWord 
-                                          in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
+                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
       partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos placed) formedWord
 
   {-
