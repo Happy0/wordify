@@ -18,6 +18,6 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Pos, Board, LetterBag, Tile, Dictionary, Square, Player, Game, Move, FormedWord
   -- other-modules:       
-  build-depends:       base, containers, array, random, mtl, transformers,
+  build-depends:       base, containers, array, random, mtl, transformers, QuickCheck,
                        parsec
   hs-source-dirs:      src

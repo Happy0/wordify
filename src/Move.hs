@@ -102,9 +102,9 @@ module Move (makeBoardMove, passMove, finaliseGame) where
       tilesInBag = bagSize letterBag
 
   newBoard :: Board -> Map Pos Tile -> Either ScrabbleError Board
-  newBoard board placed = 
-    let tryNewBoard = foldM (\board (pos, tile) -> placeTile board tile pos) board $ Map.toList placed
-    in maybe (Left PlacedTileOnOccupiedSquare) (\board -> Right board) tryNewBoard
+  newBoard board placed = foldM (\board (pos, tile) -> newBoardIfUnoccupied board pos tile) board $ Map.toList placed
+    where
+      newBoardIfUnoccupied board pos tile = maybe (Left $ PlacedTileOnOccupiedSquare pos tile) Right $ placeTile board tile pos
 
   
   removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either ScrabbleError Player

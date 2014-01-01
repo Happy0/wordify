@@ -88,8 +88,6 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
 
-
-
   tileFrequencies :: [Tile] -> [Tile] -> ((Map.Map Tile Int), (Map.Map Tile Int))
   tileFrequencies given rack = (givenFrequencies, rackFrequencies)
     where

@@ -20,13 +20,13 @@ makeBag path =
     fileContents <- Exc.try (readFile path) :: IO (Either Exc.IOException String)
     case fileContents of 
       Left e ->
-        return ( Left (LetterBagFileNotFound path))
+        return $ Left (LetterBagFileNotFound path)
       Right str -> do
           let tiles = parseBag str
 
           case tiles of 
             Left _ -> 
-               return (Left (MalformedLetterBagFile path))
+               return $ Left (MalformedLetterBagFile path)
             Right list -> do
                let letterBag = LetterBag list (length list)
                shuffledBag <- shuffleBag letterBag

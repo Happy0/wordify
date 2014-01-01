@@ -72,78 +72,79 @@ module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStr
     A tile may be placed if the square is not already occupied, and if it is not an unlabeled blank tile.
   -}
   placedSquares :: Board -> Map Pos Tile -> Either ScrabbleError (Map Pos Square)
-  placedSquares board tiles = 
-    if isJust $ find (\(_, tile) -> tile == Blank Nothing) mapAsList
-     then Left CannotPlaceBlankWithoutLetter
-     else 
-      maybe (Left PlacedTileOnOccupiedSquare) (\list -> Right $ Map.fromList list) squares
+  placedSquares board tiles = squares
       where
-        squares = sequence $ Prelude.map (\(pos,tile) -> (\sq -> (pos, putTileOn sq tile)) <$> unoccupiedSquareAt board pos) mapAsList
-        mapAsList = Map.toList tiles
+        squares = Map.fromList <$> (sequence $ (\(pos, tile) -> 
+          posTileIfNotBlank (pos,tile) >>= squareIfUnoccupied) <$> mapAsList)
 
+        posTileIfNotBlank (pos,tile) = 
+          if (tile == Blank Nothing) then Left (CannotPlaceBlankWithoutLetter pos) else Right (pos, tile)
+        squareIfUnoccupied (pos,tile) = maybe (Left  (PlacedTileOnOccupiedSquare pos tile)) (\sq ->
+         (Right (pos, putTileOn sq tile))) $ unoccupiedSquareAt board pos
+        mapAsList = Map.toList tiles
 
   wordsFormed :: Board -> Map Pos Square -> Either ScrabbleError FormedWords
   wordsFormed board tiles
     | Map.null tiles = Left NoTilesPlaced
-    | not $ Map.null tiles = formedWords >>= \formedWords -> 
-    case formedWords of
-      x : xs -> Right $ FormedWords x xs tiles
-      [] -> Left NoTilesPlaced
-    where
-      formedWords = maybe (Left $ MisplacedLetter maxPos lastTile) (\direction -> 
-          middleFirstWord direction >>= (\middleFirstWord -> 
-                          let (midWord, square) = middleFirstWord
-                          in let mainWord = preceding direction minPos >< midWord >< after direction maxPos
-                          in Right $ mainWord : adjacentWords (swapDirection direction) ) ) getDirection
+    | otherwise = formedWords >>= \formedWords -> 
+        case formedWords of
+          x : xs -> Right $ FormedWords x xs tiles
+          [] -> Left NoTilesPlaced
+      where
+        formedWords = maybe (Left $ MisplacedLetter maxPos lastTile) (\direction -> 
+            middleFirstWord direction >>= (\middleFirstWord -> 
+                            let (midWord, square) = middleFirstWord
+                            in let mainWord = preceding direction minPos >< midWord >< after direction maxPos
+                            in Right $ mainWord : adjacentWords (swapDirection direction) ) ) getDirection
 
-      preceding direction pos = case direction of
-                                  Horizontal -> lettersLeft board pos
-                                  Vertical -> lettersBelow board pos
-      after direction pos =  case direction of
-                                  Horizontal -> lettersRight board pos
-                                  Vertical -> lettersAbove board pos
+        preceding direction pos = case direction of
+                                    Horizontal -> lettersLeft board pos
+                                    Vertical -> lettersBelow board pos
+        after direction pos =  case direction of
+                                    Horizontal -> lettersRight board pos
+                                    Vertical -> lettersAbove board pos
 
-      (minPos, firstTile) = Map.findMin tiles
-      (maxPos, lastTile) = Map.findMax tiles
+        (minPos, firstTile) = Map.findMin tiles
+        (maxPos, lastTile) = Map.findMax tiles
 
-      adjacentWords direction = Prelude.filter (\word -> Seq.length word > 1) $ Prelude.map (\(pos, square) ->
-       (preceding direction pos |> (pos, square)) >< after direction pos) placedList
+        adjacentWords direction = Prelude.filter (\word -> Seq.length word > 1) $ Prelude.map (\(pos, square) ->
+         (preceding direction pos |> (pos, square)) >< after direction pos) placedList
 
-      middleFirstWord direction =
-       case placedList of 
-            x:[] -> Right (Seq.singleton x, minPos)
-            (x:xs) -> 
-              foldM (\(word, lastPos) (pos, square) -> 
-                if (not $ stillOnPath lastPos pos direction)
-                 then Left $ MisplacedLetter pos square
-                  else 
-                    if (isDirectlyAfter pos lastPos direction) then Right $ (word |> (pos, square), pos) else
-                      let between = after direction lastPos in
-                      if expectedLettersInbetween direction lastPos pos between
-                       then Right $ ( word >< ( between |> (pos,square) ), pos)
-                        else Left $ MisplacedLetter pos square
-              ) (Seq.singleton x, minPos ) $ xs
+        middleFirstWord direction =
+         case placedList of 
+              x:[] -> Right (Seq.singleton x, minPos)
+              (x:xs) -> 
+                foldM (\(word, lastPos) (pos, square) -> 
+                  if (not $ stillOnPath lastPos pos direction)
+                   then Left $ MisplacedLetter pos square
+                    else 
+                      if (isDirectlyAfter pos lastPos direction) then Right $ (word |> (pos, square), pos) else
+                        let between = after direction lastPos in
+                        if expectedLettersInbetween direction lastPos pos between
+                         then Right $ ( word >< ( between |> (pos,square) ), pos)
+                          else Left $ MisplacedLetter pos square
+                ) (Seq.singleton x, minPos ) $ xs
 
-      placedList = Map.toList tiles
+        placedList = Map.toList tiles
 
-      stillOnPath lastPos thisPos direction = (staticDirectionGetter direction thisPos) == staticDirectionGetter direction lastPos
-      expectedLettersInbetween direction lastPos currentPos between =
-       Seq.length between + 1 == movingDirectionGetter direction currentPos - movingDirectionGetter direction lastPos
+        stillOnPath lastPos thisPos direction = (staticDirectionGetter direction thisPos) == staticDirectionGetter direction lastPos
+        expectedLettersInbetween direction lastPos currentPos between =
+         Seq.length between + 1 == movingDirectionGetter direction currentPos - movingDirectionGetter direction lastPos
 
-      swapDirection direction = if direction == Horizontal then Vertical else Horizontal
+        swapDirection direction = if direction == Horizontal then Vertical else Horizontal
 
-      getDirection
-        -- If only one tile is placed, we look for the first tile it connects with if any. If it connects with none, we return 'Nothing'
-        | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))
-          || not (Seq.null (lettersRight board minPos)) = Just Horizontal
-        | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos))
-         || not (Seq.null (lettersAbove board minPos)) = Just Vertical
-        | (xPos minPos) == (xPos maxPos) = Just Vertical
-        | (yPos minPos) == (yPos maxPos) = Just Horizontal
-        | otherwise = Nothing
+        getDirection
+          -- If only one tile is placed, we look for the first tile it connects with if any. If it connects with none, we return 'Nothing'
+          | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))
+            || not (Seq.null (lettersRight board minPos)) = Just Horizontal
+          | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos))
+           || not (Seq.null (lettersAbove board minPos)) = Just Vertical
+          | (xPos minPos) == (xPos maxPos) = Just Vertical
+          | (yPos minPos) == (yPos maxPos) = Just Horizontal
+          | otherwise = Nothing
 
-      staticDirectionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
-      movingDirectionGetter direction pos = if direction == Horizontal then xPos pos else yPos pos
+        staticDirectionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
+        movingDirectionGetter direction pos = if direction == Horizontal then xPos pos else yPos pos
 
-      isDirectlyAfter pos nextPos direction = 
-        (movingDirectionGetter direction nextPos) == (movingDirectionGetter direction pos) + 1
+        isDirectlyAfter pos nextPos direction = 
+          (movingDirectionGetter direction nextPos) == (movingDirectionGetter direction pos) + 1

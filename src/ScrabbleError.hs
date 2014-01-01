@@ -20,8 +20,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     | DoesNotConnectWithWord
     | NoTilesPlaced
     | DoesNotIntersectCoverTheStarTile
-    | PlacedTileOnOccupiedSquare
-    | CannotPlaceBlankWithoutLetter
+    | PlacedTileOnOccupiedSquare Pos Tile
+    | CannotPlaceBlankWithoutLetter Pos
     | WordsNotInDictionary [String]
     | PlayerCannotPlace LetterRack [Tile]
     | GameNotInProgress
@@ -40,8 +40,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
-    show (PlacedTileOnOccupiedSquare) = "Move replaces a tile already on the board. This is not a legal move."
-    show (CannotPlaceBlankWithoutLetter) = "A played blank letter at must be given a letter."
+    show (PlacedTileOnOccupiedSquare pos tile) = "Move replaces a tile already on the board at" ++ show pos ++ ". This is not a legal move."
+    show (CannotPlaceBlankWithoutLetter pos) = "A played blank letter at must be given a letter."
     show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
     show (PlayerCannotPlace rack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
     show (CannotExchangeWhenNoLettersInBag) = "Cannot exchange letters when there are no letters in the bag."
