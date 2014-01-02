@@ -57,11 +57,12 @@ module Move (makeBoardMove, passMove, finaliseGame) where
           Nothing -> return $ Left CannotExchangeWhenNoLettersInBag
           Just (givenTiles, newBag) -> 
             do
-              let newPlayer = giveTiles player givenTiles
+              let newPlayer = giveTiles playerExchangedRemoved givenTiles
               let (nextPlayer, newGame) = updateGame game newPlayer (board game) newBag
               return $ Right (newPlayer, nextPlayer, newGame)
     where
       player = currentPlayer game
+      playerExchangedRemoved = removeTiles player tiles
 
   passMove :: Game -> Either ScrabbleError(Player, Game, GameStatus)
   passMove game

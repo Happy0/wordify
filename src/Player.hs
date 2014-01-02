@@ -1,5 +1,5 @@
 module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTiles,
- removePlayedTiles, hasEmptyRack, tileValues, reduceScore, playerCanExchange) where
+ removePlayedTiles, removeTiles, hasEmptyRack, tileValues, reduceScore, playerCanExchange) where
 
   import Tile
   import Data.List
@@ -40,6 +40,9 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
   giveTiles :: Player -> [Tile] -> Player
   giveTiles (Player name (LetterRack tiles) score) newTiles =
    Player name (LetterRack $ newTiles ++ tiles) score
+
+  removeTiles :: Player -> [Tile] -> Player
+  removeTiles (Player name (LetterRack rack) score) removeTiles = Player name (LetterRack $ rack \\ removeTiles) score
 
   {-
     Removes played tiles from the player's tile rack, if it was possible for the player
