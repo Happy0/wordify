@@ -3,6 +3,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
   import ScrabbleError
   import FormedWord
   import Control.Monad
+  import Control.Applicative
   import Data.Maybe
   import Game
   import Player
@@ -48,21 +49,20 @@ module Move (makeBoardMove, passMove, finaliseGame) where
 
   exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError (Player, Player, Game))
   exchangeMove game tiles 
-    | not (playerCanExchange player tiles) = return $ Left (PlayerCannotExchange (rack player) tiles)
     | not (gameStatus game == InProgress) = return $ Left GameNotInProgress
     | otherwise = 
       do
-        exchange <- exchangeLetters (bag game) tiles
-        case exchange of
+        exchangeOutcome <- exchangeLetters (bag game) tiles
+        case exchangeOutcome of
           Nothing -> return $ Left CannotExchangeWhenNoLettersInBag
           Just (givenTiles, newBag) -> 
             do
-              let newPlayer = giveTiles playerExchangedRemoved givenTiles
-              let (nextPlayer, newGame) = updateGame game newPlayer (board game) newBag
-              return $ Right (newPlayer, nextPlayer, newGame)
+              let newPlayer = exchange player tiles givenTiles
+              return $ maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
+                        let (nextPlayer, newGame) = updateGame game exchangedPlayer (board game) newBag
+                        in Right (exchangedPlayer, nextPlayer, newGame)) newPlayer
     where
       player = currentPlayer game
-      playerExchangedRemoved = removeTiles player tiles
 
   passMove :: Game -> Either ScrabbleError(Player, Game, GameStatus)
   passMove game
@@ -83,9 +83,9 @@ module Move (makeBoardMove, passMove, finaliseGame) where
         play1 = finalisePlayer (player1 game)
         play2 = finalisePlayer (player2 game)
         optional = optionalPlayers game >>= (\(player3, maybePlayer4) ->
-            Just (finalisePlayer player3, maybePlayer4 >>= (\play4 -> Just $ finalisePlayer play4) ) )
+            Just (finalisePlayer player3, (\play4 -> finalisePlayer play4) <$> maybePlayer4 ) )
 
-        finalisePlayer player = if hasEmptyRack player then updateScore player unplayedValues
+        finalisePlayer player = if hasEmptyRack player then increaseScore player unplayedValues
           else reduceScore player (tileValues player) 
 
   updatePlayerRackAndBag :: Player -> LetterBag -> Int -> (Player, LetterBag)
@@ -113,7 +113,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
     let newPlayer = removePlayedTiles player tiles 
     in case newPlayer of
       Nothing -> Left $ PlayerCannotPlace (rack player) tiles
-      Just (playerUpdatedRack) -> Right $ updateScore playerUpdatedRack justScored
+      Just (playerUpdatedRack) -> Right $ increaseScore playerUpdatedRack justScored
     
 
   scoresIfWordsLegal :: Dictionary -> FormedWords -> Either ScrabbleError (Int, [(String, Int)])

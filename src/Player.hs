@@ -1,5 +1,5 @@
-module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTiles,
- removePlayedTiles, removeTiles, hasEmptyRack, tileValues, reduceScore, playerCanExchange) where
+module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveTiles, tilesOnRack,
+ removePlayedTiles, removeTiles, hasEmptyRack, tileValues, reduceScore, exchange) where
 
   import Tile
   import Data.List
@@ -12,14 +12,17 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
   data LetterRack = LetterRack [Tile] deriving Show
 
   data Player = Player {name :: Name
-                       ,rack :: LetterRack
+                       , rack :: LetterRack
                        , score :: Score } deriving Show
 
   makePlayer :: String -> Player
   makePlayer name = Player name (LetterRack []) 0
 
-  updateScore :: Player -> Int -> Player
-  updateScore player justScored = player {score = currentScore + justScored}
+  tilesOnRack :: Player -> [Tile]
+  tilesOnRack (Player _ (LetterRack rack) _) = rack
+
+  increaseScore :: Player -> Int -> Player
+  increaseScore player justScored = player {score = currentScore + justScored}
     where
       currentScore = score player
 
@@ -75,6 +78,12 @@ module Player (Player, LetterRack, rack, score, makePlayer, updateScore, giveTil
         -- Player doesn't have tiles
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
+
+  exchange :: Player -> [Tile] -> [Tile] -> Maybe Player
+  exchange player exchanged received = 
+    if not (playerCanExchange player exchanged) then Nothing
+      else 
+        Just $ giveTiles (removeTiles player exchanged) received
 
   playerCanExchange :: Player -> [Tile] -> Bool
   playerCanExchange (Player _ ( LetterRack rack) _ ) exchanged = isNothing $ find cannotExchange exchangedList
