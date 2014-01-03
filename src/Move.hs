@@ -30,7 +30,7 @@ module Move (makeBoardMove, passMove, finaliseGame) where
               return (player, newPlayer, updatedGame {gameStatus = ToFinalise}, formed, ToFinalise)
             else
               do
-                let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag
+                let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag (Map.size placed)
                 let (nextPlayer, updatedGame) = updateGame game newPlayer board newBag
                 return (newPlayer, nextPlayer, updatedGame, formed, InProgress)
 
@@ -88,14 +88,14 @@ module Move (makeBoardMove, passMove, finaliseGame) where
         finalisePlayer player = if hasEmptyRack player then updateScore player unplayedValues
           else reduceScore player (tileValues player) 
 
-  updatePlayerRackAndBag :: Player -> LetterBag -> (Player, LetterBag)
-  updatePlayerRackAndBag player letterBag =
+  updatePlayerRackAndBag :: Player -> LetterBag -> Int -> (Player, LetterBag)
+  updatePlayerRackAndBag player letterBag numPlayed =
     if tilesInBag == 0 
       then (player, letterBag)
       else
-        if (tilesInBag >= 7)
+        if (tilesInBag >= numPlayed)
           then maybe (player, letterBag) (\(taken, newBag) -> 
-            (giveTiles player taken, newBag)) $ takeLetters letterBag 7
+            (giveTiles player taken, newBag)) $ takeLetters letterBag numPlayed
             else maybe (player, letterBag) (\(taken, newBag) -> 
               (giveTiles player taken, newBag)) $ takeLetters letterBag tilesInBag
     
