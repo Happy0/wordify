@@ -24,7 +24,7 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
                      , playerNumber :: Int
                      , moveNumber :: Int
                      , passes :: Int
-                     , gameStatus :: GameStatus } deriving Show
+                     , gameStatus :: GameStatus }
   
   {-
     Starts a new game. 

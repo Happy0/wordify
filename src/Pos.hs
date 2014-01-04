@@ -1,7 +1,10 @@
 
-module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPos) where
+module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPos, posMin, posMax) where
 
   import qualified Data.Map as Map
+  import Test.QuickCheck.Arbitrary
+  import Test.QuickCheck.Gen
+  import Data.Char
 
   data Pos = Pos {xPos :: Int, yPos :: Int, gridValue :: String} deriving (Eq,Show, Ord)
 
@@ -40,4 +43,12 @@ module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPo
       where
           coordTuples = zipWith makeTuple (sequence [[posMin..posMax], [posMin..posMax]]) $ cycle ['A'..'O']
           makeTuple (x:y:_) gridLetter =  ((y,x) , Pos y x (gridLetter : show x) )
+
+  -- For use in property test cases
+  instance Arbitrary Pos where
+    arbitrary = do
+           x <- choose (1,15)
+           y <- choose (1,15)
+           let gridCo = [chr (x + 64)] ++ (show y)
+           return $ Pos x y gridCo
 

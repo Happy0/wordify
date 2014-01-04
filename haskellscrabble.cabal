@@ -21,3 +21,17 @@ library
   build-depends:       base, containers, array, random, mtl, transformers, QuickCheck,
                        parsec
   hs-source-dirs:      src
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test .
+  main-is: Tests.hs
+
+  build-depends:
+    haskellscrabble,
+    base,
+    QuickCheck,
+    HUnit,
+    test-framework,
+    test-framework-hunit,
+    test-framework-quickcheck2

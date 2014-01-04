@@ -1,4 +1,4 @@
-module Move (makeBoardMove, passMove, finaliseGame) where
+module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
 
   import ScrabbleError
   import FormedWord

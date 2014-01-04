@@ -1,4 +1,4 @@
-module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores) where
+module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores, mainWord, adjacentWords, playerPlaced) where
 
   import Pos
   import Square
@@ -13,7 +13,7 @@ module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStr
   import Data.Maybe
 
   data FormedWords =  FirstWord FormedWord  | FormedWords {
-                                               mainWord :: FormedWord
+                                              main :: FormedWord
                                               , otherWords :: [FormedWord]
                                               , placed :: Map Pos Square
                                             }
@@ -30,7 +30,7 @@ module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStr
     if (starPos `Map.notMember` tiles) 
       then Left DoesNotIntersectCoverTheStarTile
       else placedSquares board tiles >>= 
-        \squares -> (\formed -> FirstWord $ mainWord formed) <$> wordsFormed board squares
+        \squares -> (\formed -> FirstWord $ main formed) <$> wordsFormed board squares
 
   {- 
     Returns the words formed by the tiles played on the board. A played word
@@ -45,6 +45,18 @@ module FormedWord (FormedWords, wordsFormedMidGame, wordFormedFirstMove, wordStr
     in if Seq.length x > Map.size squares || not (Prelude.null xs)
            then Right $ FormedWords x xs squares
             else Left $ DoesNotConnectWithWord
+
+  mainWord :: FormedWords -> FormedWord
+  mainWord (FirstWord word) = word
+  mainWord (FormedWords main otherWords placed) = main
+
+  adjacentWords :: FormedWords -> [FormedWord]
+  adjacentWords (FormedWords main otherWords _) = otherWords
+  adjacentWords _ = []
+
+  playerPlaced :: FormedWords -> [(Pos, Square)]
+  playerPlaced (FirstWord word) = Foldable.toList word
+  playerPlaced (FormedWords _ _ placed) = Map.toList placed
 
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
   wordsWithScores (FirstWord firstWord) =

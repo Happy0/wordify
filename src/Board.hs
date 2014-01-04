@@ -1,4 +1,4 @@
-module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
+module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
  lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt) where
 
   import Square
@@ -10,6 +10,9 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
   import Data.Sequence as Seq
 
   data Board = Board (Map.Map Pos Square) deriving Show
+
+  allSquares :: Board -> [(Pos, Square)]
+  allSquares (Board (squares)) = Map.toList squares
 
   {-
     Places a tile on a square and yields the new board, if the 
@@ -57,8 +60,8 @@ module Board(Board, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsO
   walkFrom board pos direction = maybe (mzero) (\(next,sq) ->
    (next, sq) <| (walkFrom board next direction) ) nextPos
     where
-      nextPos = direction(pos) >>= (\nextPos -> occupiedSquareAt board nextPos >>=
-        (\sq -> return (nextPos, sq) ))
+      nextPos = direction(pos) >>= \nextPos -> occupiedSquareAt board nextPos >>=
+        \sq -> return (nextPos, sq)
 
   {-
     Creates an empty board. 
