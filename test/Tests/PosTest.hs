@@ -2,7 +2,6 @@ module Tests.PosTest (inBoundsProperty, lettersRightProperty, lettersLeftPropert
 
   import Pos
   import Data.Maybe
-  import Test.QuickCheck.Arbitrary
   import Data.Char
 
   inBoundsProperty :: (Int, Int) -> Bool
@@ -16,8 +15,7 @@ module Tests.PosTest (inBoundsProperty, lettersRightProperty, lettersLeftPropert
   correctGridPos :: (Int, Int) -> Bool
   correctGridPos (x,y) 
     | (x >= 1 && x <= 15 && y >= 1 && y <= 15) = 
-        let pos = posAt (x,y) in 
-          if isNothing pos then False else maybe (False) (\thePos -> gridValue thePos == expectedGrid) pos
+        let pos = posAt (x,y) in maybe (False) (\thePos -> gridValue thePos == expectedGrid) pos
 
     | otherwise = isNothing $ posAt (x,y)
 

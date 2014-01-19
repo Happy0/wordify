@@ -77,7 +77,7 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
   wordStrings (FormedWords mainWord otherWords _) = Prelude.map makeString (mainWord : otherWords)
 
   makeString :: FormedWord -> String
-  makeString word = catMaybes $ Prelude.map (\((_, sq)) -> tileIfOccupied sq >>= tileLetter) $ Foldable.toList word
+  makeString word = catMaybes $ Prelude.map (\(_, sq) -> tileIfOccupied sq >>= tileLetter) $ Foldable.toList word
 
   {-
     Checks that the tiles can be placed, and if so turns a map of the squares at the placed positions.

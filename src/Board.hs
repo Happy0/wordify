@@ -69,7 +69,8 @@ module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareA
   emptyBoard :: Board
   emptyBoard = Board (Map.fromList posSquares)
     where
-      layout = [["TW","N","N","DL","N","N","N","TW","N","N","N","DL","N","N","TW"]
+      layout = 
+        [["TW","N","N","DL","N","N","N","TW","N","N","N","DL","N","N","TW"]
        ,["N","DW","N","N","N","TL","N","N","N","TL","N","N","N","DW","N"]
        ,["N","N","DW","N","N","N","DL","N","DL","N","N","N","DW","N","N"]
        ,["DL","N","N","DW","N","N","N","DL","N","N","N","DW","N","N","DL"]
