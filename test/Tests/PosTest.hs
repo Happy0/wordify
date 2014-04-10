@@ -3,6 +3,17 @@ module Tests.PosTest (inBoundsProperty, lettersRightProperty, lettersLeftPropert
   import Pos
   import Data.Maybe
   import Data.Char
+  import Pos.Internal
+  import Test.QuickCheck.Arbitrary
+  import Test.QuickCheck.Gen
+
+    -- For use in property test cases
+  instance Arbitrary Pos where
+    arbitrary = do
+           x <- choose (1,15)
+           y <- choose (1,15)
+           let gridCo = [chr (x + 64)] ++ (show y)
+           return $ Pos x y gridCo
 
   inBoundsProperty :: (Int, Int) -> Bool
   inBoundsProperty (x,y)

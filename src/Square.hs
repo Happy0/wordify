@@ -32,8 +32,8 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
   -- then multiply by word bonuses (DoubleWord, TripleWord)
   scoreWord xs ys = addBonuses (addBonuses baseScore letterBonuses) wordBonuses
     where
-      calcBaseScore squares = Foldable.foldl (\acc square -> acc + baseValue square) (0) squares
-      addBonuses score squares = Foldable.foldl (\acc square -> applyWordBonus square acc) score squares     
+      calcBaseScore squares = Foldable.foldl' (\acc square -> acc + baseValue square) (0) squares
+      addBonuses score squares = Foldable.foldl' (\acc square -> applyWordBonus square acc) score squares     
       baseScore = (calcBaseScore xs) + (calcBaseScore ys)
       (wordBonuses, letterBonuses) = Seq.partition isWordBonus ys
 

@@ -1,6 +1,6 @@
 module Game(Game, player1, player2, optionalPlayers, currentPlayer,
- board, bag, dictionary, playerNumber, moveNumber, makeGame, updateGame, getGameStatus,
-  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, pass, passes, numberOfPlayers) where
+ board, bag, dictionary, playerNumber, moveNumber, makeGame, getGameStatus,
+  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, passes, numberOfPlayers) where
 
   import Player
   import Board
@@ -11,20 +11,7 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
   import ScrabbleError
   import Data.Maybe
   import Control.Applicative
-
-  data GameStatus = InProgress | ToFinalise | Finished deriving (Eq, Show)
-
-  data Game = Game { player1 :: Player
-                     , player2 :: Player
-                     , optionalPlayers :: Maybe (Player, Maybe Player)
-                     , board :: Board
-                     , bag :: LetterBag
-                     , dictionary :: Dictionary 
-                     , currentPlayer :: Player
-                     , playerNumber :: Int
-                     , moveNumber :: Int
-                     , passes :: Int
-                     , gameStatus :: GameStatus }
+  import Game.Internal
   
   {-
     Starts a new game. 
@@ -58,13 +45,6 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
                 (player3, thirdBag) = givePlayerTiles thirdPlayer bag
                 makePlayer4 player = givePlayerTiles player thirdBag
 
-  pass :: Game -> (Player, Game)
-  pass game = (player, game {moveNumber = succ moveNo, playerNumber = playerNo, currentPlayer = player, passes = succ numPasses} )
-    where
-      (playerNo, player) = nextPlayer game
-      numPasses = passes game
-      moveNo = moveNumber game
-
   getPlayers :: Game -> [Player]
   getPlayers game = [player1 game, player2 game] ++ optionals
    where
@@ -75,52 +55,6 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
 
   getGameStatus :: Game -> GameStatus
   getGameStatus game = gameStatus game
-
-  {-
-    Updates the game with the new board and letter bag state, and the last player to play's state after replacing their played
-    tiles with new tiles from the letter bag. 
-
-    Yields a tuple with the next player to play, and the current game state.
-  -}
-  updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
-  updateGame game player newBoard newBag = (newPlayer,
-   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = player, playerNumber = newPlayerNum, moveNumber = succ moveNo, passes = 0})
-    where
-      updatedPlayerGame = updateCurrentPlayer game player
-      (newPlayerNum, newPlayer) = nextPlayer game
-      moveNo = moveNumber game
-
-  updateCurrentPlayer :: Game -> Player -> Game
-  updateCurrentPlayer game player =
-    case playing of
-      1 -> game {player1 = player}
-      2 -> game {player2 = player}
-      3 -> game {optionalPlayers = (\(player3, player4) -> (player, player4)) <$> optional }
-      4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (player4 >> Just player))) <$> optional  }
-
-    where
-      playing = playerNumber game
-      optional = optionalPlayers game
-
-  {- Returns the next player to play. If there are optional players, loops back round to 'player 1' where appropriate. -}
-  nextPlayer :: Game -> (Int, Player)
-  nextPlayer game 
-    | (playing == 1) = (2, playr2)
-    | (playing == 2 || playing == 3) =
-     maybe ( (1, playr1) ) (\(player3, player4) -> 
-      if (playing == 2) then (3, player3 )
-      else 
-        case player4 of
-          Just player4 -> (4, player4)
-          Nothing -> (1, playr1)
-        ) $ optional
-    | (playing == 4) = (1, playr1)
-
-    where
-      playing = playerNumber game
-      playr2 = player2 game
-      playr1 = player1 game
-      optional = optionalPlayers game
 
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)

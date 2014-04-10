@@ -1,4 +1,4 @@
-module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
+module Move (makeBoardMove, passMove, finaliseGame, exchangeMove, GameTransition(MoveTransition, ExchangeTransition, PassTransition)) where
 
   import ScrabbleError
   import FormedWord
@@ -13,8 +13,12 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
   import LetterBag
   import Board
   import Dictionary
+  import Data.Foldable
+  import Game.Internal
 
-  makeBoardMove :: Game -> Map Pos Tile -> Either ScrabbleError (Player, Player, Game, FormedWords, GameStatus)
+  data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game
+
+  makeBoardMove :: Game -> Map Pos Tile -> Either ScrabbleError GameTransition
   makeBoardMove game placed 
     | (not $ gameStatus game == InProgress) = Left GameNotInProgress
     | otherwise = 
@@ -28,12 +32,12 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
            then
             do
               let (newPlayer, updatedGame) = updateGame game player board letterBag
-              return (player, newPlayer, updatedGame {gameStatus = ToFinalise}, formed, ToFinalise)
+              return $ MoveTransition (updatedGame {gameStatus = ToFinalise}) formed
             else
               do
                 let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag (Map.size placed)
                 let (nextPlayer, updatedGame) = updateGame game newPlayer board newBag
-                return (newPlayer, nextPlayer, updatedGame, formed, InProgress)
+                return $ MoveTransition updatedGame formed
 
       where
         player = currentPlayer game
@@ -47,7 +51,7 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
          then wordFormedFirstMove currentBoard placed 
          else wordsFormedMidGame currentBoard placed
 
-  exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError (Player, Player, Game))
+  exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError GameTransition)
   exchangeMove game tiles 
     | not (gameStatus game == InProgress) = return $ Left GameNotInProgress
     | otherwise = 
@@ -60,14 +64,14 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove) where
               let newPlayer = exchange player tiles givenTiles
               return $ maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
                         let (nextPlayer, newGame) = updateGame game exchangedPlayer (board game) newBag
-                        in Right (exchangedPlayer, nextPlayer, newGame)) newPlayer
+                        in Right $ ExchangeTransition newGame player exchangedPlayer) newPlayer
     where
       player = currentPlayer game
 
-  passMove :: Game -> Either ScrabbleError(Player, Game, GameStatus)
+  passMove :: Game -> Either ScrabbleError GameTransition
   passMove game
     | not (gameStatus game == InProgress) = Left GameNotInProgress
-    | otherwise = Right $ let (player, newGame) = pass game in (player, newGame {gameStatus = newStatus}, newStatus)
+    | otherwise = Right $ let (_, newGame) = pass game in PassTransition $ newGame {gameStatus = newStatus}
       where
         numPasses = passes game
         newStatus = if numPasses == ((numberOfPlayers game) * 2) then ToFinalise else InProgress

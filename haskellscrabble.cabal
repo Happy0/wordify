@@ -16,8 +16,10 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Pos, Board, LetterBag, Tile, Dictionary, Square, Player, Game, Move, FormedWord
-  -- other-modules:       
+  exposed-modules:     Pos, Pos.Internal, Board, LetterBag, Tile, Dictionary, Square, Player, Game, Move, FormedWord
+
+  other-modules:       Game.Internal
+
   build-depends:       base, containers, array, random, mtl, transformers, QuickCheck,
                        parsec
   hs-source-dirs:      src

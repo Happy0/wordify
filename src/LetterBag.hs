@@ -67,8 +67,6 @@ exchangeLetters (LetterBag tiles lettersLeft) exchanged =
     numLettersGiven = length exchanged
     intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven)
 
-
-
   -- Shuffles the contents of a letter bag
 shuffleBag :: LetterBag -> IO LetterBag
 shuffleBag (LetterBag _ 0) =  return (LetterBag [] 0)
