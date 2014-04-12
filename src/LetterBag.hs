@@ -12,26 +12,63 @@ import Text.Parsec.Token
 import Text.ParserCombinators.Parsec.Char
 import Data.Char
 import LetterBag.Internal
+import System.IO
+import Control.DeepSeq
 
-makeBag :: FilePath -> IO (Either ScrabbleError (LetterBag))
-makeBag path =
-  do
-    fileContents <- Exc.try (readFile path) :: IO (Either Exc.IOException String)
-    case fileContents of 
-      Left e ->
-        return $ Left (LetterBagFileNotFound path)
-      Right str -> do
-          let tiles = parseBag str
+{-
+  Creates a letter bag from a file where each line contains a space delimited letter character, letter value, and letter distribution.
+  A blank letter is represented by a '_' character and has no value.
 
-          case tiles of 
-            Left _ -> 
-               return $ Left (MalformedLetterBagFile path)
-            Right list -> do
-               let letterBag = LetterBag list (length list)
-               shuffledBag <- shuffleBag letterBag
-               return (Right shuffledBag)
+  Example file:
 
+  _ 2
+  E 1 12
+  A 1 9
+  I 1 9
+  O 1 8
+  N 1 6
+  R 1 6
+  T 1 6
+  L 1 4
+  S 1 4
+  U 1 4
+  D 2 4
+  G 2 3
+  B 3 2
+  C 3 2
+  M 3 2
+  P 3 2
+  F 4 2
+  H 4 2
+  V 4 2
+  W 4 2
+  Y 4 2
+  K 5 1
+  J 8 1
+  X 8 1
+  Q 10 1
+  Z 10 1
 
+ The letter bag is shuffled before it is returned.
+
+-}
+makeBag :: FilePath -> IO (Either ScrabbleError LetterBag)
+makeBag path = do
+ ioOutcome <- Exc.try $ withFile path ReadMode (hGetContents >=> parseBagString path) :: IO (Either Exc.IOException (Either ScrabbleError LetterBag))
+ case ioOutcome of
+  Left _ -> return $ Left (LetterBagFileNotOpenable path)
+  Right x -> return x
+
+parseBagString :: String -> String -> IO (Either ScrabbleError LetterBag)
+parseBagString path bagString  = 
+  let parseResult = parseBag bagString in 
+    case parseResult of
+      Left _ -> return $ Left (MalformedLetterBagFile path)
+      Right letterBag -> shuffleBag letterBag >>= return . Right
+
+{-
+  Creates a letter bag from a list of tiles. The order of the tiles is retained in the resulting letter bag.
+-}
 bagFromTiles :: [Tile] -> LetterBag
 bagFromTiles tiles = LetterBag tiles (length tiles)
 
@@ -70,7 +107,7 @@ exchangeLetters (LetterBag tiles lettersLeft) exchanged =
     numLettersGiven = length exchanged
     intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven)
 
-  -- Shuffles the contents of a letter bag
+-- Shuffles the contents of a letter bag
 shuffleBag :: LetterBag -> IO LetterBag
 shuffleBag (LetterBag _ 0) =  return (LetterBag [] 0)
 shuffleBag (LetterBag tiles size) = do
@@ -92,13 +129,14 @@ shuffleBag (LetterBag tiles size) = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray size xs =  newListArray (1,size) xs
 
-parseBag :: String -> Either ParseError [Tile]
+parseBag :: String -> Either ParseError LetterBag
 parseBag contents = parse bagFile "Malformed letter bag file" contents
   where
     bagFile =
       do tiles <- many bagLine
-         eof 
-         return (concat tiles)
+         eof
+         let flattenedTiles = concat tiles
+         return $ LetterBag flattenedTiles (length flattenedTiles)
 
     bagLine =
       do tiles <- try (letterTiles) <|> blankTiles

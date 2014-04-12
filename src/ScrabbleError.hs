@@ -1,4 +1,4 @@
-module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFile,
+module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBagFile,
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
   MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile,
    PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
@@ -11,7 +11,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
   import Tile
   import Player
 
-  data ScrabbleError = LetterBagFileNotFound String
+  data ScrabbleError = LetterBagFileNotOpenable String
     | MalformedLetterBagFile FilePath
     | DictionaryFileNotFound FilePath
     | MalformedDictionaryFile FilePath
@@ -34,7 +34,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotFound, MalformedLetterBagFil
     show (MalformedDictionaryFile path) = "Dictionary file " ++ path ++ " was malformed."
     show (MalformedLetterBagFile path) = "Letter bag file " ++ path ++ " was malformed."
     show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
-    show (LetterBagFileNotFound path) = "Letter bag file " ++ path ++ " was not found"
+    show (LetterBagFileNotOpenable path) = "Letter bag file " ++ path ++ " was not openable"
     show (NotEnoughLettersInStartingBag num) = "A starting bag must have enough tiles to distribute to the players to start a game. Bag has " ++ show num ++ " tiles."
     show (MisplacedLetter pos square) = "Placed tiles were not legally placed. Starting at tile placed at pos: " ++ show pos
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."

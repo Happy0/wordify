@@ -20,6 +20,7 @@ module Tests.Properties
     testProperty "Gives correct grid co-ordinates for positions" correctGridPos],
 
     testGroup "LetterBag" [
+      testProperty "Bag is constructed from list of tiles correctly" bagFromTilesProperty,
       testProperty "Bag contents are shuffled correctly" shuffleProperty,
       testProperty "Taking tiles from the bag behaves correctly" takeLettersProperty,
       testProperty "Letter exchange behaves correctly" exchangeLettersProperty

@@ -9,4 +9,4 @@ import qualified Tests.Properties as Properties
 import qualified Tests.Regressions as Regressions
 
 main :: IO ()
-main = defaultMain [Properties.tests]
+main = defaultMain [Properties.tests, Regressions.tests]

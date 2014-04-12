@@ -20,8 +20,8 @@ library
 
   other-modules:       Game.Internal
 
-  build-depends:       base, containers, array, random, mtl, transformers, QuickCheck,
-                       parsec
+  build-depends:       base, containers, array, random, mtl, transformers, QuickCheck, 
+                       parsec, deepseq
   hs-source-dirs:      src
 
 test-suite tests
@@ -36,4 +36,5 @@ test-suite tests
     HUnit,
     test-framework,
     test-framework-hunit,
-    test-framework-quickcheck2
+    test-framework-quickcheck2,
+    directory
