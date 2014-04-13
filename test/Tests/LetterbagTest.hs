@@ -10,6 +10,9 @@ module Tests.LetterBagTest where
     import System.IO (hPutStr, hFlush, hPutStrLn, hClose)
     import Test.HUnit.Base as H
     import ScrabbleError
+    import Data.Map
+    import Data.Maybe
+    import qualified Data.List as L
 
     instance Arbitrary Tile where
         arbitrary = do
@@ -57,7 +60,21 @@ module Tests.LetterBagTest where
             case exchangeResult of
                 Nothing -> originalNumTiles == 0
                 Just (given, LetterBag newTiles newNumTiles) ->
-                 (originalNumTiles == newNumTiles) && length given == length toExchange -- Todo: Finish this test function
+                 (originalNumTiles == newNumTiles)
+                  && length given == length toExchange
+                   && forAll (\tile -> (getCount tile newTileCounts) == (getCount tile originalTileCounts) + (getCount tile exchangedCounts) - (getCount tile givenCounts) ) allTiles
+
+                    where
+                      allTiles = given ++ newTiles ++ originalTiles
+                      givenCounts = countMap given
+                      newTileCounts = countMap newTiles
+                      originalTileCounts = countMap originalTiles
+                      exchangedCounts = countMap toExchange
+                      countMap xs = fromListWith (+) [(x, 1) | x <- xs]
+                      getCount key m = findWithDefault 0 key m
+
+                      forAll condition list = L.null $ L.filter (not . condition) list
+
 
             where
                 LetterBag originalTiles originalNumTiles = letterBag

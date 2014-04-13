@@ -37,4 +37,5 @@ test-suite tests
     test-framework,
     test-framework-hunit,
     test-framework-quickcheck2,
-    directory
+    directory,
+    containers
