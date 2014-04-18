@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Pos, Pos.Internal, LetterBag, LetterBag.Internal, Board, Tile, Dictionary, Square, Player, Game, Move, FormedWord, ScrabbleError
+  exposed-modules:     Pos, Pos.Internal, LetterBag, LetterBag.Internal, Board, Board.Internal, Tile, Dictionary, Square, Player, Game, Move, FormedWord, ScrabbleError
 
   other-modules:       Game.Internal
 

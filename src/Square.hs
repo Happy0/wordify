@@ -10,7 +10,7 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
         | DoubleLetter (Maybe Tile)
         | TripleLetter (Maybe Tile)
         | DoubleWord (Maybe Tile)
-        | TripleWord (Maybe Tile) deriving Show
+        | TripleWord (Maybe Tile) deriving (Show,Eq)
 
   putTileOn :: Square -> Tile -> Square
   putTileOn (Normal _) tile = Normal $ Just tile

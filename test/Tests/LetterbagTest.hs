@@ -74,12 +74,10 @@ module Tests.LetterBagTest where
                       getCount key m = findWithDefault 0 key m
 
                       forAll condition list = L.null $ L.filter (not . condition) list
-
-
-            where
+            where 
                 LetterBag originalTiles originalNumTiles = letterBag
 
-    makeBagInvalidlyFormattedBag :: IO ()
+    makeBagInvalidlyFormattedBag :: Assertion
     makeBagInvalidlyFormattedBag = 
       withTempFile $ \ filePath handle -> do
         let invalidStr = "A 2 2 3 4" -- Erroneous extra number
@@ -92,7 +90,7 @@ module Tests.LetterBagTest where
           Left (MalformedLetterBagFile _) -> return ()
           x -> H.assertFailure $ "Input with invalidly formatted bag unexpectedly succeeded: " ++ show x
 
-    makeBagTestSuccess :: IO ()
+    makeBagTestSuccess :: Assertion
     makeBagTestSuccess = 
         withTempFile $ \ filePath handle -> do
           let letters = ['A' .. ]
@@ -115,7 +113,7 @@ module Tests.LetterBagTest where
               H.assertBool "Letter bag contains expected letters" $ expectedTiles `intersect` tiles == expectedTiles
               H.assertBool "Letter bag contains expected number of letters" $ (length expectedTiles) == (length tiles)
 
-    makeBagInvalidPath :: IO ()
+    makeBagInvalidPath :: Assertion
     makeBagInvalidPath =
      do
       letterBag <- makeBag "this is an invalid file path" 

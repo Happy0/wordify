@@ -8,8 +8,7 @@ module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareA
   import qualified Data.Map as Map
   import Control.Monad
   import Data.Sequence as Seq
-
-  data Board = Board (Map.Map Pos Square) deriving Show
+  import Board.Internal
 
   allSquares :: Board -> [(Pos, Square)]
   allSquares (Board (squares)) = Map.toList squares
