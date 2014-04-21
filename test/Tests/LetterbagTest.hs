@@ -1,6 +1,6 @@
 module Tests.LetterBagTest where
 
-    import Test.QuickCheck (Arbitrary, arbitrary, elements, Property, quickCheck, listOf, (==>), sized, oneof, choose, Gen)
+    import Test.QuickCheck (Property, quickCheck)
     import Test.QuickCheck.Monadic as Q (assert, monadicIO, pick, pre, run) 
     import LetterBag
     import Data.List
@@ -13,18 +13,7 @@ module Tests.LetterBagTest where
     import Data.Map
     import Data.Maybe
     import qualified Data.List as L
-
-    instance Arbitrary Tile where
-        arbitrary = do
-            chr <- arbitrary :: Gen Char
-            value <- arbitrary :: Gen Int
-            tile <- elements [Letter chr value, Blank Nothing]
-            return tile
-
-    instance Arbitrary LetterBag where
-        arbitrary = do
-           tiles <- listOf (arbitrary :: Gen Tile)
-           return $ bagFromTiles (tiles)
+    import Tests.Instances
 
     bagFromTilesProperty :: [Tile] -> Bool
     bagFromTilesProperty inputTiles = numTiles == (length inputTiles) && resultingTiles == inputTiles

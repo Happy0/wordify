@@ -21,10 +21,17 @@ tests = F.testGroup "Regressions" [
 
 	F.testGroup "Board"
 		[
+			F.testCase "allSquares function behaves as expected" allSquaresTest,
 			F.testCase "Board letters left function behaves as expected" lettersLeftTest,
 			F.testCase "Board letters right function behaves as expected" lettersRightTest,
 			F.testCase "Board letters above function behaves as expected" lettersAboveTest,
-			F.testCase "Board letters below function behaves as expected" lettersBelowTest
+			F.testCase "Board letters below function behaves as expected" lettersBelowTest,
+			F.testCase "Tiles can not be placed on empty squares" tilesPlacedConsecutivelyTest,
+			F.testCase "squareAt function behaves as expected" squareAtTest,
+			F.testCase "occupiedSquareAt function behaves as expected" squareAtTest,
+			F.testCase "occupiedSquareAt function behaves as expected where the square is unoccupied" occupiedSquareAtUnoccupiedTest,
+			F.testCase "unoccupiedSquareAt function behaves as expected where the square is unoccupied" unoccupiedSquareAtTest,
+			F.testCase "unoccupiedSquareAt function behaves as expected where the square is occupied" unoccupiedSquareAtTestOccupied
 		]
 
 	]

@@ -8,6 +8,7 @@ module Tests.Properties
   import Test.Framework.Providers.QuickCheck2 (testProperty)
   import Tests.PosTest
   import Tests.LetterBagTest
+  import Tests.BoardTest
 
   tests :: Test
   tests =  testGroup "Properties" [
@@ -24,6 +25,11 @@ module Tests.Properties
       testProperty "Bag contents are shuffled correctly" shuffleProperty,
       testProperty "Taking tiles from the bag behaves correctly" takeLettersProperty,
       testProperty "Letter exchange behaves correctly" exchangeLettersProperty
+    ],
+
+    testGroup "Board" [
+      testProperty "Place tile is only valid for empty squares on the board" placeTileProperty
+
     ]
 
     ]

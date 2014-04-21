@@ -1,4 +1,4 @@
-module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareAt, squareIsOccupied,
+module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareAt,
  lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt) where
 
   import Square
@@ -34,9 +34,6 @@ module Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareA
 
   occupiedSquareAt :: Board -> Pos -> Maybe Square
   occupiedSquareAt board pos = squareAt board pos >>= squareIfOccupied
-
-  squareIsOccupied :: Board -> Pos -> Bool
-  squareIsOccupied board pos = isJust $ occupiedSquareAt board pos
  
   lettersAbove :: Board -> Pos -> Seq (Pos,Square)
   lettersAbove board pos = walkFrom board pos above

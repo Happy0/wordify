@@ -11,23 +11,81 @@ module Tests.BoardTest where
     import Test.HUnit.Base
     import Board
     import qualified Data.Sequence as Seq
+    import Control.Monad
+    import qualified Data.Set as S
+    import Tests.SharedTestData
 
-    horizontalPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (5,7)
-    horizontalSquares = [Normal $ Just (Letter 'H' 2), Normal $ Just (Letter 'E' 3), DoubleLetter $ Just (Letter 'L' 2), Normal $ Just (Letter 'L' 3), DoubleLetter $ Just (Letter 'O' 4)]
-    rogueLeft = (Pos 3 7 "C7", DoubleLetter $ Just (Letter 'X' 2))
-    rogueRight = (Pos 11 7 "K7", DoubleLetter $ Just (Letter 'Z' 2))
-    horizontals = zip horizontalPositions horizontalSquares
+    allTiles = horizontals ++ verticals ++ [rogueLeft] ++ [rogueRight] ++ [rogueAbove] ++ [rogueBelow]
 
-    verticalPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (7,5)
-    verticalSquares = [Normal $ Just (Letter 'T' 2), Normal $ Just (Letter 'E' 3), DoubleLetter $ Just (Letter 'L' 2), Normal $ Just (Letter 'L' 3), DoubleLetter $ Just (Letter 'Y' 4)]
-    rogueAbove = (Pos 7 3 "G3", DoubleLetter $ Just (Letter 'X' 2))
-    rogueBelow = (Pos 7 11 "G11", DoubleLetter $ Just (Letter 'Z' 2))
-    verticals = zip verticalPositions verticalSquares
+    {- Verifies that tiles can only be placed on squares which are empty -}
+    placeTileProperty :: Board -> Pos -> Tile -> Bool
+    placeTileProperty board pos tile =
+     if (isNothing targetSquare) then placeResult == Just (Board $ M.insert pos newSquare squareMap) else isNothing placeResult
+        where
+            placeResult = placeTile board tile pos
+            Board (squareMap) = board
+            targetSquare = occupiedSquareAt board pos
+            newSquare = putTileOn (fromJust (unoccupiedSquareAt board pos)) tile
 
     testBoard :: Board
     testBoard = Board squareMap
         where
-            squareMap = M.fromList $ horizontals ++ verticals ++ [rogueLeft] ++ [rogueRight] ++ [rogueAbove] ++ [rogueBelow]
+            squareMap = M.fromList $ (M.assocs emptySquares ++ allTiles)
+            Board (emptySquares) = emptyBoard
+
+    squareAtTest :: Assertion
+    squareAtTest = 
+        do
+            let pos = Pos 3 7 "C7"
+            let expected = Just $ DoubleLetter $ Just (Letter 'X' 2)
+            let actual = squareAt testBoard pos
+
+            assertEqual "Unexpected result for squareAt function" expected actual
+
+    occupiedSquareAtTest :: Assertion
+    occupiedSquareAtTest =
+        do
+            let pos = Pos 3 7 "C7"
+            let expected = Just $ DoubleLetter $ Just (Letter 'X' 2)
+            let actual = occupiedSquareAt testBoard pos
+
+            assertEqual "Unexpected result for occupiedSquareAt function where square is occupied" expected actual
+
+    occupiedSquareAtUnoccupiedTest :: Assertion
+    occupiedSquareAtUnoccupiedTest =
+        do
+            let unoccupiedPos = Pos 1 1 "A1"
+            let expected = Nothing
+            let actual = occupiedSquareAt testBoard unoccupiedPos
+
+            assertEqual "Unexpected result for occupiedSquareAt function where square is unoccupied" expected actual
+
+    unoccupiedSquareAtTest :: Assertion
+    unoccupiedSquareAtTest = 
+        do
+            let unoccupiedPos = Pos 1 1 "A1"
+            let expected = Just $ TripleWord Nothing
+            let actual = unoccupiedSquareAt testBoard unoccupiedPos
+
+            assertEqual "Unexpected result for unoccupiedSquareAt function where square is unoccupied" expected actual
+
+    unoccupiedSquareAtTestOccupied :: Assertion
+    unoccupiedSquareAtTestOccupied =
+        do
+            let occupiedPos = Pos 3 7 "C7"
+            let expected = Nothing
+            let actual = unoccupiedSquareAt testBoard occupiedPos
+
+            assertEqual "Unexpected result for unoccupiedSquareAt function where square is unoccupied" expected actual
+
+    allSquaresTest :: Assertion
+    allSquaresTest = 
+        do
+            let Board (squareMap) = testBoard
+            let expected = M.toList squareMap
+            let actual = allSquares testBoard
+
+            assertEqual "Unexpected result for allSquares function" expected actual
 
     lettersLeftTest :: Assertion
     lettersLeftTest = 
@@ -57,7 +115,7 @@ module Tests.BoardTest where
             assertEqual "Unexpected result for letters above" expected actual
 
     lettersBelowTest :: Assertion
-    lettersBelowTest = 
+    lettersBelowTest =
         do
             let pos = Pos 7 9 "G9"
             let actual = lettersBelow testBoard pos
@@ -65,6 +123,14 @@ module Tests.BoardTest where
 
             assertEqual "Unexpected result for letters below" expected actual
 
+    {- Verifies that new tiles can be placed consecutively on a board while the old board is retained -}
+    tilesPlacedConsecutivelyTest :: Assertion
+    tilesPlacedConsecutivelyTest =
+        do
+            let expected = testBoard
+            let tiles = map (\(pos, square) -> (pos, fromJust $ tileIfOccupied square) ) $ (S.toList . S.fromList) allTiles
+            let result = foldM (\board (tile, pos) -> placeTile board pos tile) emptyBoard tiles
+            maybe (assertFailure "Tiles placed test failed") (\actual -> assertEqual "Tiles were not placed on board" expected actual) result
 
-
+            
 

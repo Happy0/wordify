@@ -4,4 +4,4 @@ module Board.Internal (Board(Board)) where
     import Square
     import qualified Data.Map as Map
 
-    data Board = Board (Map.Map Pos Square) deriving Show
+    data Board = Board (Map.Map Pos Square) deriving (Show, Eq)
