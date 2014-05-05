@@ -23,6 +23,7 @@ module Tests.Properties
     testGroup "LetterBag" [
       testProperty "Bag is constructed from list of tiles correctly" bagFromTilesProperty,
       testProperty "Bag contents are shuffled correctly" shuffleProperty,
+      testProperty "Shuffling a bag twice yields two different sets of tiles" shuffleTwiceProperty,
       testProperty "Taking tiles from the bag behaves correctly" takeLettersProperty,
       testProperty "Letter exchange behaves correctly" exchangeLettersProperty
     ],

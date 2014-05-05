@@ -10,6 +10,8 @@ module Tests.Instances where
     import Data.Map
     import Board
     import Board.Internal
+    import System.Random
+    import LetterBag.Internal
 
     instance Arbitrary Tile where
         arbitrary = do
@@ -21,7 +23,9 @@ module Tests.Instances where
     instance Arbitrary LetterBag where
         arbitrary = do
            tiles <- listOf (arbitrary :: Gen Tile)
-           return $ bagFromTiles (tiles)
+           seed <- arbitrary :: Gen Int
+           let generator = mkStdGen seed
+           return $ LetterBag tiles (length tiles) generator
 
     instance Arbitrary Pos where
         arbitrary = do

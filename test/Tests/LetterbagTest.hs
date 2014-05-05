@@ -15,20 +15,27 @@ module Tests.LetterBagTest where
     import qualified Data.List as L
     import Tests.Instances
 
-    bagFromTilesProperty :: [Tile] -> Bool
-    bagFromTilesProperty inputTiles = numTiles == (length inputTiles) && resultingTiles == inputTiles
-      where
-        LetterBag resultingTiles numTiles = bagFromTiles inputTiles
+    bagFromTilesProperty :: [Tile] -> Property
+    bagFromTilesProperty inputTiles = monadicIO $
+      do
+        bag <- run $ bagFromTiles inputTiles
+        let LetterBag resultingTiles numTiles generator = bag
+        Q.assert $ numTiles == (length inputTiles) && resultingTiles == inputTiles
     
-    shuffleProperty :: LetterBag -> Property
-    shuffleProperty bag = monadicIO $
-     do
-      shuffled <- run $ shuffleBag bag
-      Q.assert $ if (bagSize bag < 10) then sameTiles bag shuffled else bagIsShuffled bag shuffled && sameTiles bag shuffled
+    shuffleProperty :: LetterBag -> Bool
+    shuffleProperty bag =
+      let shuffled = shuffleBag bag
+      in if (bagSize bag < 10) then sameTiles bag shuffled else bagIsShuffled bag shuffled && sameTiles bag shuffled
 
       where
         sameTiles originalBag shuffledBag = bagSize originalBag == (length $ (tiles originalBag) `intersect` (tiles shuffledBag))
         bagIsShuffled originalBag shuffledBag = not $ originalBag == shuffledBag
+
+    shuffleTwiceProperty :: LetterBag -> Bool
+    shuffleTwiceProperty bag = if (bagSize bag < 10) then True else not $ bag1 == bag2 && bagSize bag1 == bagSize bag2 
+      where
+        bag1 = shuffleBag bag
+        bag2 = shuffleBag bag1
 
     takeLettersProperty :: LetterBag -> Int -> Bool
     takeLettersProperty letterBag numTake = 
@@ -36,19 +43,16 @@ module Tests.LetterBagTest where
          else
           takeLetters letterBag numTake == Just (expectedTiles, expectedBag)
         where
-            LetterBag originalBagTiles originalBagSize = letterBag
+            LetterBag originalBagTiles originalBagSize gen = letterBag
             expectedTiles = take numTake originalBagTiles
-            expectedBag = LetterBag (drop numTake originalBagTiles) (originalBagSize - numTake)
+            expectedBag = LetterBag (drop numTake originalBagTiles) (originalBagSize - numTake) gen
 
-    exchangeLettersProperty :: LetterBag -> [Tile] -> Property
-    exchangeLettersProperty letterBag toExchange = monadicIO $
-      do 
-        exchangeResult <- run $ exchangeLetters letterBag toExchange
-
-        Q.assert $
-            case exchangeResult of
+    exchangeLettersProperty :: LetterBag -> [Tile] -> Bool
+    exchangeLettersProperty letterBag toExchange =
+        let exchangeResult = exchangeLetters letterBag toExchange
+        in case exchangeResult of
                 Nothing -> originalNumTiles == 0
-                Just (given, LetterBag newTiles newNumTiles) ->
+                Just (given, LetterBag newTiles newNumTiles newGenerator) ->
                  (originalNumTiles == newNumTiles)
                   && length given == length toExchange
                    && forAll (\tile -> (getCount tile newTileCounts) == (getCount tile originalTileCounts) + (getCount tile exchangedCounts) - (getCount tile givenCounts) ) allTiles
@@ -64,7 +68,7 @@ module Tests.LetterBagTest where
 
                       forAll condition list = L.null $ L.filter (not . condition) list
             where 
-                LetterBag originalTiles originalNumTiles = letterBag
+                LetterBag originalTiles originalNumTiles generator = letterBag
 
     makeBagInvalidlyFormattedBag :: Assertion
     makeBagInvalidlyFormattedBag = 
@@ -94,7 +98,7 @@ module Tests.LetterBagTest where
           
           case letterBag of 
             Left _ -> H.assertFailure "makeBag returned an error"
-            Right (LetterBag tiles numTiles) -> do
+            Right (LetterBag tiles numTiles generator) -> do
               let expectedLetters = zipWith3 (\letter value distribution -> replicate distribution $ Letter letter value  ) letters values distributions
               let expectedBlanks = replicate 2 $ Blank Nothing
               let expectedTiles = concat $ expectedBlanks : expectedLetters 

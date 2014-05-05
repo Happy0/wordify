@@ -7,3 +7,10 @@ module Tests.FormedWordsTest where
         where
             squareMap = M.fromList $ (M.assocs emptySquares ++ verticles ++ horizontals)
             Board (emptySquares) = emptyBoard
+
+
+ --   attachRightWord :: Assertion
+ --   attachRightWord =
+ --   	do
+    		
+

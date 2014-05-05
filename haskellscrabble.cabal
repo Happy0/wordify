@@ -38,4 +38,5 @@ test-suite tests
     test-framework-hunit,
     test-framework-quickcheck2,
     directory,
-    containers
+    containers,
+    random

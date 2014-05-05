@@ -51,18 +51,18 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove, GameTransition
          then wordFormedFirstMove currentBoard placed 
          else wordsFormedMidGame currentBoard placed
 
-  exchangeMove :: Game -> [Tile] -> IO (Either ScrabbleError GameTransition)
+  exchangeMove :: Game -> [Tile] -> Either ScrabbleError GameTransition
   exchangeMove game tiles 
-    | not (gameStatus game == InProgress) = return $ Left GameNotInProgress
+    | not (gameStatus game == InProgress) = Left GameNotInProgress
     | otherwise = 
       do
-        exchangeOutcome <- exchangeLetters (bag game) tiles
+        let exchangeOutcome = exchangeLetters (bag game) tiles
         case exchangeOutcome of
-          Nothing -> return $ Left CannotExchangeWhenNoLettersInBag
+          Nothing -> Left CannotExchangeWhenNoLettersInBag
           Just (givenTiles, newBag) -> 
             do
               let newPlayer = exchange player tiles givenTiles
-              return $ maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
+              maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
                         let (nextPlayer, newGame) = updateGame game exchangedPlayer (board game) newBag
                         in Right $ ExchangeTransition newGame player exchangedPlayer) newPlayer
     where
