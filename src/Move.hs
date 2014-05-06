@@ -55,14 +55,12 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove, GameTransition
   exchangeMove game tiles 
     | not (gameStatus game == InProgress) = Left GameNotInProgress
     | otherwise = 
-      do
         let exchangeOutcome = exchangeLetters (bag game) tiles
-        case exchangeOutcome of
+        in case exchangeOutcome of
           Nothing -> Left CannotExchangeWhenNoLettersInBag
           Just (givenTiles, newBag) -> 
-            do
               let newPlayer = exchange player tiles givenTiles
-              maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
+              in maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
                         let (nextPlayer, newGame) = updateGame game exchangedPlayer (board game) newBag
                         in Right $ ExchangeTransition newGame player exchangedPlayer) newPlayer
     where

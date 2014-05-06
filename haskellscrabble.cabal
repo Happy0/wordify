@@ -21,7 +21,7 @@ library
   other-modules:       Game.Internal
 
   build-depends:       base, containers, array, random, mtl, transformers, QuickCheck, 
-                       parsec, deepseq
+                       parsec, deepseq, unordered-containers
   hs-source-dirs:      src
 
 test-suite tests
