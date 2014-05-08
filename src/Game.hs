@@ -1,6 +1,6 @@
 module Game(Game, player1, player2, optionalPlayers, currentPlayer,
  board, bag, dictionary, playerNumber, moveNumber, makeGame, getGameStatus,
-  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, passes, numberOfPlayers) where
+  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, passes, numberOfPlayers, history, History(History)) where
 
   import Player
   import Board
@@ -12,6 +12,7 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
   import Data.Maybe
   import Control.Applicative
   import Game.Internal
+  import qualified Data.Sequence as Seq
   
   {-
     Starts a new game. 
@@ -27,7 +28,7 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
   makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
   makeGame (play1, play2, optionalPlayers) bag dictionary =
    if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress)
+    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress initialHistory)
     where
           lettersInBag = bagSize bag
           numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
@@ -44,6 +45,8 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
              where
                 (player3, thirdBag) = givePlayerTiles thirdPlayer bag
                 makePlayer4 player = givePlayerTiles player thirdBag
+
+          initialHistory = History bag Seq.empty
 
   getPlayers :: Game -> [Player]
   getPlayers game = [player1 game, player2 game] ++ optionals

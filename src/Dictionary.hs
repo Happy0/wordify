@@ -25,9 +25,8 @@ module Dictionary (Dictionary, isValidWord, makeDictionary, invalidWords) where
       case fileContents of 
         Left _ -> return $ Left (DictionaryFileNotFound filePath)
         Right dictContents -> 
-          do
               let dictWords = parseFile dictContents
-              case dictWords of 
+              in case dictWords of 
                 Left _ -> return $ Left (MalformedDictionaryFile filePath)
                 Right wordList -> return $ Right (Dictionary $ HashSet.fromList wordList)
 

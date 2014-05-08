@@ -1,4 +1,4 @@
-module Move (makeBoardMove, passMove, finaliseGame, exchangeMove, GameTransition(MoveTransition, ExchangeTransition, PassTransition)) where
+module Move (makeMove, Move (PlaceTiles, Exchange, Pass), GameTransition(MoveTransition, ExchangeTransition, PassTransition)) where
 
   import ScrabbleError
   import FormedWord
@@ -15,8 +15,22 @@ module Move (makeBoardMove, passMove, finaliseGame, exchangeMove, GameTransition
   import Dictionary
   import Data.Foldable
   import Game.Internal
+  import Game
 
   data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game
+
+  makeMove :: Game -> Move -> Either ScrabbleError GameTransition
+  makeMove game move = flip addMoveToHistory move <$> gameTransition
+    where
+      gameTransition = case move of
+        PlaceTiles placed -> makeBoardMove game placed
+        Exchange exchanged -> exchangeMove game exchanged
+        Pass -> passMove game
+
+  addMoveToHistory :: GameTransition -> Move -> GameTransition
+  addMoveToHistory (MoveTransition game formedWords) move = MoveTransition (updateHistory game move) formedWords
+  addMoveToHistory (ExchangeTransition game oldPlayer newPlayer ) move = ExchangeTransition (updateHistory game move) oldPlayer newPlayer
+  addMoveToHistory (PassTransition game) move = PassTransition (updateHistory game move)
 
   makeBoardMove :: Game -> Map Pos Tile -> Either ScrabbleError GameTransition
   makeBoardMove game placed 

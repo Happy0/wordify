@@ -12,13 +12,25 @@ module Game.Internal (updateGame, Game(Game),
       board,
       bag,
       pass,
-      dictionary) where
+      dictionary,
+      updateHistory,
+      Move(PlaceTiles, Exchange, Pass),
+      History(History),
+      history) where
 
   import Player
   import Board
   import LetterBag
   import Dictionary
   import Control.Applicative
+  import Data.Map
+  import Pos
+  import Tile
+  import Data.Sequence
+
+  data Move = PlaceTiles (Map Pos Tile) | Exchange [Tile] | Pass
+
+  data History = History LetterBag (Seq Move)
 
   data GameStatus = InProgress | ToFinalise | Finished deriving (Eq, Show)
 
@@ -32,7 +44,8 @@ module Game.Internal (updateGame, Game(Game),
                      , playerNumber :: Int
                      , moveNumber :: Int
                      , passes :: Int
-                     , gameStatus :: GameStatus }
+                     , gameStatus :: GameStatus
+                     , history :: History }
 
   {-
     Updates the game with the new board and letter bag state, and the last player to play's state after replacing their played
@@ -87,3 +100,8 @@ module Game.Internal (updateGame, Game(Game),
       (playerNo, player) = nextPlayer game
       numPasses = passes game
       moveNo = moveNumber game
+
+  updateHistory :: Game -> Move -> Game
+  updateHistory game move = game {history = History originalBag (moveList |> move) }
+    where
+      History originalBag moveList = history game
