@@ -1,4 +1,4 @@
-module Move (makeMove, Move (PlaceTiles, Exchange, Pass), GameTransition(MoveTransition, ExchangeTransition, PassTransition)) where
+module Move (makeMove, Move (PlaceTiles, Exchange, Pass), GameTransition(MoveTransition, ExchangeTransition, PassTransition), restoreGame, newGame) where
 
   import ScrabbleError
   import FormedWord
@@ -16,6 +16,8 @@ module Move (makeMove, Move (PlaceTiles, Exchange, Pass), GameTransition(MoveTra
   import Data.Foldable
   import Game.Internal
   import Game
+  import qualified Data.List.NonEmpty as NE
+  import qualified Data.Traversable as T
 
   data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game
 
@@ -26,6 +28,25 @@ module Move (makeMove, Move (PlaceTiles, Exchange, Pass), GameTransition(MoveTra
         PlaceTiles placed -> makeBoardMove game placed
         Exchange exchanged -> exchangeMove game exchanged
         Pass -> passMove game
+
+  {- 
+    Restores a game from a list of moves. The game must be set up in the way the original game was set up
+    (including the letter bag constructed with the same tiles and random generator, dictionary and the list of players
+    in the original order.)
+ 
+    If the game is not set up as it was originally, this function will return a scrabble error with the move which was invalid
+    with the given state. For example, if the original players are not ordered in the correct way then the player will not have
+    the required tiles to make the move.
+  -}
+  restoreGame :: Game -> NE.NonEmpty Move -> Either ScrabbleError (NE.NonEmpty GameTransition)
+  restoreGame game (mv NE.:| moves) = T.sequence $ NE.scanl nextMove (makeMove game mv) moves 
+    where
+      nextMove transition mv = transition >>= \success -> makeMove (newGame success) mv
+ 
+  newGame :: GameTransition -> Game
+  newGame (MoveTransition game _) = game
+  newGame (ExchangeTransition game _ _) = game
+  newGame (PassTransition game) = game
 
   addMoveToHistory :: GameTransition -> Move -> GameTransition
   addMoveToHistory (MoveTransition game formedWords) move = MoveTransition (updateHistory game move) formedWords
