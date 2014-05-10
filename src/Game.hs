@@ -1,6 +1,6 @@
 module Game(Game, player1, player2, optionalPlayers, currentPlayer,
  board, bag, dictionary, playerNumber, moveNumber, makeGame, getGameStatus,
-  GameStatus(InProgress, ToFinalise, Finished), gameStatus, getPlayers, passes, numberOfPlayers, history, History(History)) where
+  GameStatus(InProgress, Finished), gameStatus, players, passes, numberOfPlayers, history, History(History)) where
 
   import Player
   import Board
@@ -48,8 +48,8 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
 
           initialHistory = History bag Seq.empty
 
-  getPlayers :: Game -> [Player]
-  getPlayers game = [player1 game, player2 game] ++ optionals
+  players :: Game -> [Player]
+  players game = [player1 game, player2 game] ++ optionals
    where
       optionals = case (optionalPlayers game) of 
                     Nothing -> []

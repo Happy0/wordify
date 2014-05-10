@@ -1,5 +1,5 @@
 module Game.Internal (updateGame, Game(Game),
-     GameStatus(InProgress, ToFinalise, Finished),
+     GameStatus(InProgress, Finished),
       moveNumber,
       playerNumber,
       currentPlayer,
@@ -32,7 +32,7 @@ module Game.Internal (updateGame, Game(Game),
 
   data History = History LetterBag (Seq Move)
 
-  data GameStatus = InProgress | ToFinalise | Finished deriving (Eq, Show)
+  data GameStatus = InProgress | Finished deriving (Eq, Show)
 
   data Game = Game { player1 :: Player
                      , player2 :: Player
