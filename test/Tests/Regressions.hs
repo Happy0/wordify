@@ -8,6 +8,7 @@ import qualified Test.Framework.Providers.HUnit as F
 
 import Tests.LetterBagTest
 import Tests.BoardTest
+import Tests.FormedWordsTest
 
 tests :: F.Test
 tests = F.testGroup "Regressions" [
@@ -32,6 +33,12 @@ tests = F.testGroup "Regressions" [
 			F.testCase "occupiedSquareAt function behaves as expected where the square is unoccupied" occupiedSquareAtUnoccupiedTest,
 			F.testCase "unoccupiedSquareAt function behaves as expected where the square is unoccupied" unoccupiedSquareAtTest,
 			F.testCase "unoccupiedSquareAt function behaves as expected where the square is occupied" unoccupiedSquareAtTestOccupied
+		],
+
+	F.testGroup "FormedWord"
+		[
+			F.testCase "Words can be attached to the right of an existing word" attachRightWord
+
 		]
 
 	]
