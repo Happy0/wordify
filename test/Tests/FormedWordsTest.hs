@@ -13,6 +13,7 @@ module Tests.FormedWordsTest where
     import Pos.Internal
     import qualified Data.Sequence as S
     import Square
+    import Control.Applicative
 
     testBoard :: Board
     testBoard = Board squareMap
@@ -29,7 +30,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach left test initialisation" $ isRight formed
+            assertBool "Unexpected error in wordsFormedMidGame in attach left test initialisation" $ isValid formed
             let Right wordsFormed = formed
 
             let expectedWord = S.fromList $ M.toList placed ++ [(Pos 7 5 "G5", Letter 'T' 1)]
@@ -48,7 +49,7 @@ module Tests.FormedWordsTest where
 
             let (overallscore, _) = wordsWithScores wordsFormed
 
-            assertEqual "Unexpected score for placed tile" ((1 + 1 + 1 + 1) * 2) overallscore
+            assertEqual "Unexpected score for placed tiles" ((1 + 1 + 1 + 1) * 2) overallscore
  
     attachRightWord :: Assertion
     attachRightWord =
@@ -59,7 +60,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach right test initialisation" $ isRight formed
+            assertBool "Unexpected error in wordsFormedMidGame in attach right test initialisation" $ isValid formed
 
             let Right wordsFormed = formed
 
@@ -80,7 +81,7 @@ module Tests.FormedWordsTest where
 
             let (overallscore, _) = wordsWithScores wordsFormed
 
-            assertEqual "Unexpected score for placed tile" (4 + 1 + (2 * 1) + 1 + 1 + 0) overallscore
+            assertEqual "Unexpected score for placed tiles" (4 + 1 + (2 * 1) + 1 + 1 + 0) overallscore
 
     attachAboveWord :: Assertion
     attachAboveWord =
@@ -91,7 +92,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isRight formed
+            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
 
             let Right wordsFormed = formed
 
@@ -108,7 +109,7 @@ module Tests.FormedWordsTest where
 
             let (overallscore, _) = wordsWithScores wordsFormed
 
-            assertEqual "Unexpected score for placed tile" ((2 * 1) + 3 + 1 + 1 + 1 + 1 + 4) overallscore
+            assertEqual "Unexpected score for placed tiles" ((2 * 1) + 3 + 1 + 1 + 1 + 1 + 4) overallscore
 
 
     attachWordBelow :: Assertion
@@ -120,7 +121,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isRight formed
+            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
 
             let Right wordsFormed = formed
 
@@ -139,26 +140,91 @@ module Tests.FormedWordsTest where
 
             let (overallscore, _) = wordsWithScores wordsFormed
 
-            assertEqual "Unexpected score for placed tile" (1 + 1 + 1 + 1 + 4 + 1 + 3) overallscore
+            assertEqual "Unexpected score for placed tiles" (1 + 1 + 1 + 1 + 4 + 1 + 3) overallscore
 
 
---    attachAboveAndBelow :: Assertion
---    attachAboveAndBelow =
+    attachAboveAndBelow :: Assertion
+    attachAboveAndBelow =
+        do
+            let abovePositions = catMaybes $ map posAt $ [(7,3), (7,4)]
+            let belowPositions = catMaybes $ map posAt $ [(7,10), (7,11)]
+            let placedPositions = (abovePositions ++ belowPositions)
+            let tiles = cycle $ [Letter 'A' 1, Letter 'B' 3]
+            let placed = M.fromList $ zip placedPositions tiles
+
+            let formed = wordsFormedMidGame testBoard placed
+
+            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["ABTELLYAB"]
+
+            let placedSquares = catMaybes $ map (squareAt testBoard) placedPositions
+            let tilesOnPlaced = zipWith putTileOn placedSquares tiles
+
+            let expectedFormedWord = S.fromList $ zip abovePositions (take 2 tilesOnPlaced) ++ (zip verticalPositions verticalSquares) ++ (zip belowPositions (drop 2 tilesOnPlaced))
+
+            assertEqual "Unexpected main word formed" expectedFormedWord (mainWord wordsFormed)
+
+            assertEqual "Expected empty adjecent words" [] (adjacentWords wordsFormed)
+
+            let (overallscore, _) = wordsWithScores wordsFormed
+
+            assertEqual "Unexpected score for placed tiles" ((2 * 1) + 3 + 1 + 1 + 1 + 1 + 4 + 1 + 3) overallscore
 
 
-    -- above and below
-    -- left and right
+    attachLeftAndRight :: Assertion
+    attachLeftAndRight =
+        do
+            let leftPositions = catMaybes $ map posAt $ [(3,7), (4,7)]
+            let rightPositions = catMaybes $ map posAt $ [(10,7), (11,7)]
+            let placedPositions = (leftPositions ++ rightPositions)
+            let tiles = cycle $ [Letter 'A' 1, Letter 'B' 3]
+            let placed = M.fromList $ zip placedPositions tiles
 
-    -- Parallel left
-    -- Parallel Right
-    -- Parallel below
-    -- Parallel above
+            let formed = wordsFormedMidGame testBoard placed
+
+            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["ABHELLOAB"]
+
+            let placedSquares = catMaybes $ map (squareAt testBoard) placedPositions
+            let tilesOnPlaced = zipWith putTileOn placedSquares tiles
+
+            let expectedFormedWord = S.fromList $ zip leftPositions (take 2 tilesOnPlaced) ++ (zip horizontalPositions horizontalSquares) ++ (zip rightPositions (drop 2 tilesOnPlaced))
+
+            assertEqual "Unexpected main word formed" expectedFormedWord (mainWord wordsFormed)
+
+            assertEqual "Expected empty adjecent words" [] (adjacentWords wordsFormed)
+
+            let (overallscore, _) = wordsWithScores wordsFormed
+
+            assertEqual "Unexpected score for placed tiles" ((2 * 1) + 3 + 4 + 1 + 1 + 1 + 1 + 1 + 3) overallscore
+
+
+
+    -- Adjacent words left
+    -- Adjacent words Right
+    -- Adjacent words below
+    -- Adjacent words above
+
+    -- Drop down and connect
 
     -- Pass above
     -- Pass below
     -- Pass left
     -- Pass right
 
+    -- first word valid
+    -- first word invalid
+
+    -- non contigious word horizontal
+    -- non contigious word vertical
+
+    -- Place Blank Nothing
 
 
 
@@ -170,6 +236,7 @@ module Tests.FormedWordsTest where
 
 
 
-    isRight :: Either a b -> Bool
-    isRight (Right _ ) = True
-    isRight _ = False
+
+    isValid :: Either a b -> Bool
+    isValid (Right _ ) = True
+    isValid _ = False

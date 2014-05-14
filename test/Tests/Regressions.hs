@@ -40,7 +40,9 @@ tests = F.testGroup "Regressions" [
 			F.testCase "Words can be attached to the left of an existing word" attachLeftWord,
 			F.testCase "Words can be attached to the right of an existing word" attachRightWord,
 			F.testCase "Words can be attached to the top of an existing word" attachWordBelow,
-			F.testCase "Words can be attached to the bottom of an existing word" attachAboveWord
+			F.testCase "Words can be attached to the bottom of an existing word" attachAboveWord,
+			F.testCase "Words can be attached to the top and bottom of an existing word" attachAboveAndBelow,
+			F.testCase "Words can be attached to the left and right of an existing word" attachLeftAndRight
 		]
 
 	]
