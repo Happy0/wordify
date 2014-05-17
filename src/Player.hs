@@ -9,7 +9,7 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
   type Score = Int
   type Name = String
 
-  data LetterRack = LetterRack [Tile] deriving Show
+  data LetterRack = LetterRack [Tile] deriving (Show, Eq)
 
   data Player = Player {name :: Name
                        , rack :: LetterRack

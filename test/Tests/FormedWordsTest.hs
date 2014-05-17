@@ -14,6 +14,8 @@ module Tests.FormedWordsTest where
     import qualified Data.Sequence as S
     import Square
     import Control.Applicative
+    import ScrabbleError
+    import Pos.Internal
 
     testBoard :: Board
     testBoard = Board squareMap
@@ -121,7 +123,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
+            assertBool "Unexpected error in wordsFormedMidGame in attach below test initialisation" $ isValid formed
 
             let Right wordsFormed = formed
 
@@ -185,7 +187,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertBool "Unexpected error in wordsFormedMidGame in attach above test initialisation" $ isValid formed
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
 
             let Right wordsFormed = formed
 
@@ -204,22 +206,301 @@ module Tests.FormedWordsTest where
 
             assertEqual "Unexpected score for placed tiles" ((2 * 1) + 3 + 4 + 1 + 1 + 1 + 1 + 1 + 3) overallscore
 
+    adjacentWordsLeft :: Assertion
+    adjacentWordsLeft = 
+        do
+            let positions = catMaybes $ map posAt [(8,5), (8,6), (8,8)]
+            let tiles = [Letter 'O' 1, Letter 'I' 1, Letter 'S' 1]
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
 
+            let formed = wordsFormedMidGame testBoard placed
 
-    -- Adjacent words left
-    -- Adjacent words Right
-    -- Adjacent words below
-    -- Adjacent words above
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
 
-    -- Drop down and connect
+            let Right wordsFormed = formed
 
-    -- Pass above
-    -- Pass below
-    -- Pass left
-    -- Pass right
+            assertEqual "Unexpected words formed" ["OILS", "TO", "EI", "LS"] (wordStrings wordsFormed)
 
-    -- first word valid
-    -- first word invalid
+            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let positionsFromTop = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (8,5)
+            let squaresWithPositions = zip positionsFromTop $ (init squares) ++ [Normal $ Just $ Letter 'L' 1] ++ [last squares]
+            let expectedMainWord = S.fromList $ squaresWithPositions
+
+            assertEqual "Unexpected main word" expectedMainWord (mainWord wordsFormed)
+
+            let expectedWordsWithScores = (((1 + 1 + 1 + 1) * 2) + 2 + 2 + 4, [("OILS", ((1 + 1 + 1 + 1) * 2)), ("TO", 2), ("EI", 2), ("LS", 4)] )
+
+            assertEqual "Unexpected words with scores" expectedWordsWithScores (wordsWithScores wordsFormed)
+
+            let connectedTo = take 2 verticals ++ drop 3 verticals
+            let placedSquares = zip positions $ (init squares) ++ [last squares]
+            let expectedAdjacent = zipWith (\l r -> l S.<| S.singleton r) connectedTo placedSquares
+
+            assertEqual "Unexpected adjacent words" expectedAdjacent (adjacentWords wordsFormed)
+
+    adjacentWordsRight :: Assertion
+    adjacentWordsRight =
+        do
+            let positions = catMaybes $ map posAt [(6,4), (6,5), (6,6), (6,8)]
+            let tiles = [Letter 'B' 3, Letter 'I' 1, Letter 'T' 1, Letter 'R' 1]
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordsFormedMidGame testBoard placed
+
+            assertBool  "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["BITER", "IT", "TE", "RL"] (wordStrings wordsFormed)
+
+            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let positionsFromTop = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (6,4)
+            let squaresWithPositions = zip positionsFromTop $ (init squares) ++ [Normal $ Just $ Letter 'E' 1] ++ [last squares]
+            let expectedMainWord = S.fromList $ squaresWithPositions
+
+            assertEqual "Unexpected main word" expectedMainWord (mainWord wordsFormed)
+
+            let expectedWordsWithScores = ((3 + 1 + 3 + 1 + 1) + 2 + 4 + 2, [("BITER",(3 + 1 + 3 + 1 + 1)) , ("IT", 2), ("TE", 4), ("RL", 2)] )
+
+            assertEqual "Unexpected words with scores" expectedWordsWithScores (wordsWithScores wordsFormed)
+
+            let connectedTo = take 2 verticals ++ drop 3 verticals
+            let placedSquares = zip positions $ (init squares) ++ [last squares]
+            let expectedAdjacent = zipWith (\l r -> l S.<| S.singleton r) (drop 1 placedSquares) connectedTo
+
+            assertEqual "Unexpected adjacent words" expectedAdjacent (adjacentWords wordsFormed)
+
+    adjacentWordsAbove :: Assertion
+    adjacentWordsAbove =
+        do
+            let positions = catMaybes $ map posAt [(6,6), (8,6)]
+            let tiles = [Letter 'H' 4, Letter 'J' 8]
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordsFormedMidGame testBoard placed
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["HEJ", "HE", "JL"] (wordStrings wordsFormed)
+
+            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let positionsFromLeft = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,6)
+            let squaresWithPositions = zip positionsFromLeft $ (init squares) ++ [Normal $ Just $ Letter 'E' 1] ++ [last squares]
+            let expectedMainWord = S.fromList $ squaresWithPositions
+
+            assertEqual "Unexpected main word" expectedMainWord (mainWord wordsFormed)
+
+            let expectedWordsWithScores = (((4 * 3) + 1 + 8) + 13 + 9, [("HEJ", ((4 * 3) + 1 + 8)), ("HE", 13), ("JL", 9)] )
+
+            assertEqual "Unexpected words with scores" expectedWordsWithScores (wordsWithScores wordsFormed)
+
+            let connectedTo = [head (drop 1 horizontals)] ++ [head $ drop 3 horizontals]
+            let placedSquares = zip positions $ (init squares) ++ [last squares]
+            let expectedAdjacent = zipWith (\l r -> l S.<| S.singleton r) placedSquares connectedTo
+
+            assertEqual "Unexpected adjacent words" expectedAdjacent (adjacentWords wordsFormed)
+
+    adjacentWordsBelow :: Assertion
+    adjacentWordsBelow = 
+        do
+            let positions = catMaybes $ map posAt [(6,8), (8,8)]
+            let tiles = [Letter 'I' 1, Letter 'L' 1]
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordsFormedMidGame testBoard placed
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["ILL", "EI", "LL"] (wordStrings wordsFormed)
+
+            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let positionsFromLeft = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,8)
+            let squaresWithPositions = zip positionsFromLeft $ (init squares) ++ [Normal $ Just $ Letter 'L' 1] ++ [last squares]
+            let expectedMainWord = S.fromList $ squaresWithPositions
+
+            assertEqual "Unexpected main word" expectedMainWord (mainWord wordsFormed)
+
+            let expectedWordsWithScores = (6 + 2 + 4, [("ILL", 6), ("EI", 2), ("LL", 4)] )
+
+            assertEqual "Unexpected words with scores" expectedWordsWithScores (wordsWithScores wordsFormed)
+
+            let connectedTo = [head (drop 1 horizontals)] ++ [head $ drop 3 horizontals]
+            let placedSquares = zip positions $ (init squares) ++ [last squares]
+            let expectedAdjacent = zipWith (\l r -> l S.<| S.singleton r) connectedTo placedSquares
+
+            assertEqual "Unexpected adjacent words" expectedAdjacent (adjacentWords wordsFormed)
+
+    placedOneTileAbove :: Assertion
+    placedOneTileAbove =
+        do
+            let placed = catMaybes $ map posAt [(9,6)]
+            let tiles = [Letter 'Y' 4]
+            let placedTiles = M.fromList $ zip placed tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["YO"] (wordStrings wordsFormed)
+
+    placedOneTileBelow :: Assertion
+    placedOneTileBelow =
+        do
+            let placed = catMaybes $ map posAt [(9,8)]
+            let tiles = [Letter 'I' 1]
+            let placedTiles = M.fromList $ zip placed tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["OI"] (wordStrings wordsFormed)
+
+    placedOneTileRight :: Assertion
+    placedOneTileRight =
+        do
+            let placed = catMaybes $ map posAt [(8,5)]
+            let tiles = [Letter 'O' 1]
+            let placedTiles = M.fromList $ zip placed tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["TO"] (wordStrings wordsFormed)
+
+    placedOneTileLeft :: Assertion
+    placedOneTileLeft =
+        do
+            let placed = catMaybes $ map posAt [(6,9)]
+            let tiles = [Letter 'O' 1]
+            let placedTiles = M.fromList $ zip placed tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in wordsFormedMidGame test initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["OY"] (wordStrings wordsFormed)
+
+    passesAbove :: Assertion
+    passesAbove =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,4)
+            let tiles = [Letter 'H' 4, Letter 'A' 1, Letter 'S' 1]
+            let placedTiles = M.fromList $ zip positions tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["HAS", "ATELLY"] (wordStrings wordsFormed)
+
+    passesBelow :: Assertion
+    passesBelow =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,10)
+            let tiles = [Letter 'H' 4, Letter 'A' 1, Letter 'S' 1]
+            let placedTiles = M.fromList $ zip positions tiles
+
+            let formed = wordsFormedMidGame testBoard placedTiles
+
+            assertBool "Unexpected error in initialisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["HAS", "TELLYA"] (wordStrings wordsFormed)
+
+    passesThroughTwoWords :: Assertion
+    passesThroughTwoWords =
+        do
+            let setupPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (9,8)
+            let setupSquares = [Normal $ Just $ Letter 'F' 4, Normal $ Just $ Letter 'F' 4]
+
+            let boardSetup = Board $ M.fromList $ (allSquares testBoard) ++ zip setupPositions setupSquares
+
+            let placePositions = catMaybes $ map posAt [(8,9), (10,9)]
+            let tiles = [Letter 'O' 1, Letter 'O' 1]
+            let placedTiles = M.fromList $ zip placePositions tiles
+
+            let formed = wordsFormedMidGame boardSetup placedTiles
+
+            assertBool "Unexpected error in initilisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed" ["YOFO"] (wordStrings wordsFormed)
+
+            assertEqual "Unexpected score for word formed" (10, [("YOFO", 10)])(wordsWithScores wordsFormed)
+
+    firstWordThroughStar :: Assertion
+    firstWordThroughStar =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x + 1, y)) (6,8)
+            let tiles = map (\lett -> Letter lett 1) "LAST"
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordFormedFirstMove emptyBoard placed
+
+            assertBool "Unexpected error in initilisation" $ isValid formed
+
+            let Right wordsFormed = formed
+
+            assertEqual "Unexpected words formed by valid first move" (wordsWithScores wordsFormed) (8, [("LAST", 8)])
+
+    firstWordNotThroughStar :: Assertion
+    firstWordNotThroughStar =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x, y + 1)) (8,9)
+            let tiles = map (\lett -> Letter lett 1) "LAST"
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordFormedFirstMove emptyBoard placed
+
+            assertEqual "Unexpected result for placing tiles which do not intersect the star on the first move" (Left DoesNotIntersectCoverTheStarTile) formed
+
+    firstWordNotContigiousWord :: Assertion
+    firstWordNotContigiousWord =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x + 1, y)) (6,8)
+            let tiles = map (\lett -> Letter lett 1) "LAST"
+            let placedList = zip positions tiles
+            let placed = M.fromList $ (take 1 placedList) ++ (drop 2 placedList)
+
+            let formed = wordFormedFirstMove emptyBoard placed
+
+            assertEqual "Unexpected error when placing tiles which are not in a connected line " (Left $ MisplacedLetter (Pos 8 8 "H8") ) formed
+
+    doesNotConnectWithWord :: Assertion
+    doesNotConnectWithWord =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x+1, y)) (4,15)
+            let tiles = map (\lett -> Letter lett 1) "LAST"
+            let placedList = zip positions tiles
+            let placed = M.fromList $ placedList
+
+            let formed = wordsFormedMidGame emptyBoard placed
+
+            assertEqual "Placing tiles that do not connect with a word does not throw the expected error" (Left DoesNotConnectWithWord) formed
 
     -- non contigious word horizontal
     -- non contigious word vertical

@@ -16,7 +16,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
     | DictionaryFileNotFound FilePath
     | MalformedDictionaryFile FilePath
     | NotEnoughLettersInStartingBag Int
-    | MisplacedLetter Pos Square
+    | MisplacedLetter Pos
     | DoesNotConnectWithWord
     | NoTilesPlaced
     | DoesNotIntersectCoverTheStarTile
@@ -27,7 +27,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
     | GameNotInProgress
     | CannotExchangeWhenNoLettersInBag
     | PlayerCannotExchange LetterRack [Tile]
-    | MiscError String
+    | MiscError String deriving Eq
 
   instance Show ScrabbleError
    where
@@ -36,7 +36,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
     show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
     show (LetterBagFileNotOpenable path) = "Letter bag file " ++ path ++ " was not openable"
     show (NotEnoughLettersInStartingBag num) = "A starting bag must have enough tiles to distribute to the players to start a game. Bag has " ++ show num ++ " tiles."
-    show (MisplacedLetter pos square) = "Placed tiles were not legally placed. Starting at tile placed at pos: " ++ show pos
+    show (MisplacedLetter pos) = "Placed tiles were not legally placed. Starting at tile placed at pos: " ++ show pos
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
