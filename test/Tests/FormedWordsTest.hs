@@ -502,21 +502,51 @@ module Tests.FormedWordsTest where
 
             assertEqual "Placing tiles that do not connect with a word does not throw the expected error" (Left DoesNotConnectWithWord) formed
 
-    -- non contigious word horizontal
-    -- non contigious word vertical
+    nonContigiousHorizontal :: Assertion
+    nonContigiousHorizontal =
+        do
+            let positions = catMaybes $ map posAt [(5,9), (6,9),(8,10),(9,9)]
+            let tiles = [Letter 'T' 1, Letter 'O' 1, Letter 'E' 1, Letter 'D' 2]
+            let placedList = zip positions tiles
+            let placed = M.fromList placedList
 
-    -- Place Blank Nothing
+            let formed = wordsFormedMidGame testBoard placed
 
+            assertEqual "Unexpected outcome when placing tiles which are not in a connected line while passing through a word" (Left $ MisplacedLetter (Pos 8 10 "H10") ) formed
 
+    nonContigiousVertical :: Assertion
+    nonContigiousVertical =
+        do
+            let positions = catMaybes $ map posAt [(9,6), (9,8), (10,9), (9,10)]
+            let tiles = [Letter 'T' 1, Letter 'Y' 1, Letter 'E' 1, Letter 'D' 2]
+            let placedList = zip positions tiles
+            let placed = M.fromList placedList
 
+            let formed = wordsFormedMidGame testBoard placed
 
+            assertEqual "Unexpected outcome when placing tiles which are not in a connected line while passing through a word" (Left $ MisplacedLetter (Pos 9 10 "I10") ) formed
 
+    placeBlankNothing :: Assertion
+    placeBlankNothing =
+        do
+            let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x+1,y)) (10,7)
+            let tiles = [Letter 'T' 1, Blank Nothing, Letter 'A' 1]
+            let placed = M.fromList $ zip positions tiles
 
+            let formed = wordsFormedMidGame testBoard placed
 
+            assertEqual "Unexpected outcome when placing a blank tile without a chosen letter" (Left $ CannotPlaceBlankWithoutLetter $ Pos 11 7 "K7") formed
 
+    placeOnOccupiedSquare :: Assertion
+    placeOnOccupiedSquare =
+        do
+            let tiles = [Letter 'T' 1, Blank Nothing, Letter 'A' 1]
 
+            let placed = M.fromList $ zip verticalPositions tiles
 
+            let formed = wordsFormedMidGame testBoard placed
 
+            assertEqual "Unexpected outcome for tiles placed on an already occupied square" (Left $ PlacedTileOnOccupiedSquare (head verticalPositions) (head tiles)) formed
 
     isValid :: Either a b -> Bool
     isValid (Right _ ) = True

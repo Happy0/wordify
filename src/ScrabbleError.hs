@@ -41,7 +41,7 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
     show (PlacedTileOnOccupiedSquare pos tile) = "Move replaces a tile already on the board at" ++ show pos ++ ". This is not a legal move."
-    show (CannotPlaceBlankWithoutLetter pos) = "A played blank letter at must be given a letter."
+    show (CannotPlaceBlankWithoutLetter pos) = "A played blank tile must be given a letter. Blank tile played at " ++ show pos ++ " was not given a letter."
     show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
     show (PlayerCannotPlace rack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
     show (CannotExchangeWhenNoLettersInBag) = "Cannot exchange letters when there are no letters in the bag."

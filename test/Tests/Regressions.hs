@@ -56,7 +56,11 @@ tests = F.testGroup "Regressions" [
             F.testCase "Words formed can pass through two existing words" passesThroughTwoWords,
             F.testCase "A first word is valid if it passes through the star" firstWordThroughStar,
             F.testCase "A first word is invalid if it does not pass through the star" firstWordNotThroughStar,
-            F.testCase "If a word does not connect with any words on the board, the expected error is returned" doesNotConnectWithWord
+            F.testCase "If a word does not connect with any words on the board, the expected error is returned" doesNotConnectWithWord,
+            F.testCase "If a word forms a horizontal line, with one placed tile in the middle not in the line, the expected error is returned" nonContigiousHorizontal,
+            F.testCase "If a word forms a vertical line, with one placed tile in the middle not in the line, the expected error is returned" nonContigiousVertical,
+            F.testCase "Cannot placed a blank tile without giving it a letter" placeBlankNothing,
+            F.testCase "Cannot placed a tile on a square which is already occupied" placeOnOccupiedSquare
         ]
 
     ]

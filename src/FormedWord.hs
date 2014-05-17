@@ -91,7 +91,7 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
 
         posTileIfNotBlank (pos,tile) = 
           if (tile == Blank Nothing) then Left (CannotPlaceBlankWithoutLetter pos) else Right (pos, tile)
-        squareIfUnoccupied (pos,tile) = maybe (Left  (PlacedTileOnOccupiedSquare pos tile)) (\sq ->
+        squareIfUnoccupied (pos,tile) = maybe (Left (PlacedTileOnOccupiedSquare pos tile)) (\sq ->
          (Right (pos, putTileOn sq tile))) $ unoccupiedSquareAt board pos
         mapAsList = Map.toList tiles
 
