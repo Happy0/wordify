@@ -5,6 +5,8 @@ module Tests.SharedTestData where
     import Pos
     import Square
     import Pos.Internal
+    import qualified Data.Map as M
+    import LetterBag
 
     horizontalPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (5,7)
     horizontalSquares = [Normal $ Just (Letter 'H' 4), Normal $ Just (Letter 'E' 1), DoubleLetter $ Just (Letter 'L' 1), Normal $ Just (Letter 'L' 1), DoubleLetter $ Just (Letter 'O' 1)]
@@ -17,3 +19,7 @@ module Tests.SharedTestData where
     rogueAbove = (Pos 7 3 "G3", DoubleLetter $ Just (Letter 'X' 2))
     rogueBelow = (Pos 7 11 "G11", Normal $ Just (Letter 'Z' 2))
     verticals = zip verticalPositions verticalSquares
+
+    isValid :: Either a b -> Bool
+    isValid (Right _ ) = True
+    isValid _ = False

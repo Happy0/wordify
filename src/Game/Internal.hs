@@ -53,9 +53,9 @@ module Game.Internal (updateGame, Game(Game),
 
     Yields a tuple with the next player to play, and the current game state.
   -}
-  updateGame :: Game -> Player -> Board -> LetterBag -> (Player, Game)
-  updateGame game player newBoard newBag = (newPlayer,
-   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = player, playerNumber = newPlayerNum, moveNumber = succ moveNo, passes = 0})
+  updateGame :: Game -> Player -> Board -> LetterBag -> Game
+  updateGame game player newBoard newBag = 
+   updatedPlayerGame {board = newBoard, bag = newBag, currentPlayer = newPlayer, playerNumber = newPlayerNum, moveNumber = succ moveNo, passes = 0}
     where
       updatedPlayerGame = updateCurrentPlayer game player
       (newPlayerNum, newPlayer) = nextPlayer game
@@ -67,7 +67,7 @@ module Game.Internal (updateGame, Game(Game),
       1 -> game {player1 = player}
       2 -> game {player2 = player}
       3 -> game {optionalPlayers = (\(player3, player4) -> (player, player4)) <$> optional }
-      4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (player4 >> Just player))) <$> optional  }
+      4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (Just player))) <$> optional  }
 
     where
       playing = playerNumber game

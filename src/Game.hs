@@ -25,10 +25,10 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
     Yields a tuple with the first player and the initial game state. Returns a 'Left' if there are not enough
     tiles in the letter bag to distribute to the players.
   -}
-  makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError (Player, Game)
+  makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError Game
   makeGame (play1, play2, optionalPlayers) bag dictionary =
    if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (player1, Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress initialHistory)
+    else Right $ (Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress initialHistory)
     where
           lettersInBag = bagSize bag
           numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers

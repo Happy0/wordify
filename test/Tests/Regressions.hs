@@ -9,6 +9,7 @@ import qualified Test.Framework.Providers.HUnit as F
 import Tests.LetterBagTest
 import Tests.BoardTest
 import Tests.FormedWordsTest
+import Tests.FullGameTest
 
 tests :: F.Test
 tests = F.testGroup "Regressions" [
@@ -61,6 +62,11 @@ tests = F.testGroup "Regressions" [
             F.testCase "If a word forms a vertical line, with one placed tile in the middle not in the line, the expected error is returned" nonContigiousVertical,
             F.testCase "Cannot placed a blank tile without giving it a letter" placeBlankNothing,
             F.testCase "Cannot placed a tile on a square which is already occupied" placeOnOccupiedSquare
+        ],
+
+    F.testGroup "PlayGameTest"
+        [
+            F.testCase "The full game playthrough test succeeds as expected" playThroughTest        
         ]
 
     ]

@@ -547,7 +547,3 @@ module Tests.FormedWordsTest where
             let formed = wordsFormedMidGame testBoard placed
 
             assertEqual "Unexpected outcome for tiles placed on an already occupied square" (Left $ PlacedTileOnOccupiedSquare (head verticalPositions) (head tiles)) formed
-
-    isValid :: Either a b -> Bool
-    isValid (Right _ ) = True
-    isValid _ = False

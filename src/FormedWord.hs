@@ -130,7 +130,7 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
                   if (not $ stillOnPath lastPos pos direction)
                    then Left $ MisplacedLetter pos
                     else 
-                      if (isDirectlyAfter pos lastPos direction) then Right $ (word |> (pos, square), pos) else
+                      if (isDirectlyAfter lastPos pos direction) then Right $ (word |> (pos, square), pos) else
                         let between = after direction lastPos in
                         if expectedLettersInbetween direction lastPos pos between
                          then Right $ ( word >< ( between |> (pos,square) ), pos)

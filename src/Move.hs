@@ -43,13 +43,13 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
       if hasEmptyRack player && (bagSize letterBag == 0)
        then
         do
-          let (newPlayer, beforeFinalisingGame) = updateGame game player board letterBag
+          let beforeFinalisingGame = updateGame game player board letterBag
           let finalisedGame = finaliseGame beforeFinalisingGame
           return $ GameFinished finalisedGame (Just formed) (players beforeFinalisingGame)
         else
           do
             let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag (Map.size placed)
-            let (nextPlayer, updatedGame) = updateGame game newPlayer board newBag
+            let updatedGame = updateGame game newPlayer board newBag
             return $ MoveTransition updatedGame formed
     where
       player = currentPlayer game
@@ -71,7 +71,7 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
       Just (givenTiles, newBag) -> 
           let newPlayer = exchange player tiles givenTiles
           in maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
-                    let (nextPlayer, newGame) = updateGame game exchangedPlayer (board game) newBag
+                    let newGame = updateGame game exchangedPlayer (board game) newBag
                     in Right $ ExchangeTransition newGame player exchangedPlayer) newPlayer
     where
       player = currentPlayer game

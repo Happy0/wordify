@@ -39,4 +39,5 @@ test-suite tests
     test-framework-quickcheck2,
     directory,
     containers,
-    random
+    random,
+    semigroups
