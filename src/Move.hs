@@ -20,6 +20,10 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
   import qualified Data.List.NonEmpty as NE
   import qualified Data.Traversable as T
 
+  import qualified Data.Map as M
+  import Data.Char
+
+
   data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game | GameFinished Game (Maybe FormedWords) [Player]
 
   makeMove :: Game -> Move -> Either ScrabbleError GameTransition
@@ -116,10 +120,11 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
   finaliseGame :: Game -> Game
   finaliseGame game
     | (gameStatus game == Finished) = game
-    | otherwise = game {player1 = play1, player2 = play2, optionalPlayers = optional, gameStatus = Finished}
+    | otherwise = game {player1 = play1, player2 = play2, optionalPlayers = optional, gameStatus = Finished, moveNumber = pred moveNo}
       where
         unplayedValues = Prelude.sum $ Prelude.map tileValues allPlayers
         allPlayers = players game
+        moveNo = moveNumber game
 
         play1 = finalisePlayer (player1 game)
         play2 = finalisePlayer (player2 game)

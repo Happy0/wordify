@@ -16,12 +16,12 @@ module Tests.FullGameTest where
     import Tests.SharedTestData
     import Test.HUnit.Base
     import Data.Char
+    import qualified Data.Sequence as Seq
 
     data Direction = Horizontal | Vertical
 
     letterValues :: M.Map Char Int
-    letterValues = M.fromList $ [('A', 1), ('B',3), ('C', 3), ('D', 2), ('E', 1), ('F',4),('G',2),('H',4),('I',1),('J',8),('K',5),('L',1)
-        ,('M',3),('N',1),('O',1),('P',3),('Q',10),('R', 1), ('S',1), ('T',1),('U',1),('V',4),('W',4),('X',8),('Y',4),('Z',10)]
+    letterValues = M.fromList $ [('A', 1), ('B',3), ('C', 3), ('D', 2), ('E', 1), ('F',4),('G',2),('H',4),('I',1),('J',8),('K',5),('L',1) ,('M',3),('N',1),('O',1),('P',3),('Q',10),('R', 1), ('S',1), ('T',1),('U',1),('V',4),('W',4),('X',8),('Y',4),('Z',10)]
 
     testDictionary :: IO (Either ScrabbleError Dictionary)
     testDictionary = makeDictionary "Config\\engSet\\en.txt"
@@ -75,10 +75,13 @@ module Tests.FullGameTest where
                     , placeMap "ROOTY" Vertical (3,2)
                     , placeMap "ETUIS" Vertical (14,4)
                     , placeMap "RACING" Vertical (1,10)
-                    -- placeMap "HATP" Vertical (11,4)
-
-                    
-
+                    , placeMap "HATP" Vertical (11,4)
+                    , placeMap "HAES" Vertical (12,2)
+                    , placeMap "DOUX" Vertical (15,1)
+                    , placeMap "GEM" Vertical (13,1)
+                    , placeMap "Q" Horizontal (4,9) `M.union` placeMap "T" Horizontal (6,9)
+                    , placeMap "IO" Vertical (6,13)
+                    , placeMap "FIT" Vertical (10,2)
                 ]
 
 
@@ -99,13 +102,44 @@ module Tests.FullGameTest where
 
                         let Right testGame = game
 
-                        let moveTransitions = restoreGame testGame $ NE.fromList $ init moves
+                        let moveTransitions = restoreGame testGame $ NE.fromList $ moves
 
                         case moveTransitions of
                             Left err ->
                                 assertFailure $ "Unable to play through test game, error was: " ++ show err
-                            Right transitions -> 
-                                return ()
+                            Right transitions ->
+                                do
+                                    let finalTransition = NE.last transitions
+                                    assertBool "Expect the game to have ended" $ isFinalTransition finalTransition
 
+                                    let finalGame = newGame finalTransition
+
+                                    assertEqual "Unexpected number of moves" (length moves) (moveNumber finalGame)
+
+                                    assertEqual "Unexpected history for game" (History bag (Seq.fromList moves)) (history finalGame)
+
+                                    let finalBoard = board finalGame
+
+                                    let [finalPlayer1, finalPlayer2, finalPlayer3, finalPlayer4] = players finalGame
+
+                                    assertEqual "Unexpected final score for player 1" (189 - 5) (score finalPlayer1)
+                                    assertEqual "Unexpected remaining tiles for player 1" [Letter 'T' 1, Letter 'F' 4] (tilesOnRack finalPlayer1)
+
+                                    assertEqual "Unexpected remaining tiles for player 2" [Letter 'L' 1] (tilesOnRack finalPlayer2)
+                                    -- assertEqual "Unexpected final score for player 2" (186 - 1) (score finalPlayer2)
+
+                                    assertEqual "Unexpected remaining tiles for player 3" [Letter 'E' 1] (tilesOnRack finalPlayer3)
+                                    assertEqual "Unexpected score for player 3" (110 - 1) (score finalPlayer3)
+
+                                    assertEqual "Unexpected remaing tiles for player 4" [] (tilesOnRack finalPlayer4)
+                                    assertEqual "Unexpected score for winning player" (154 + 1 + 5 + 1) (score finalPlayer4)
+
+
+
+        where
+            isFinalTransition trans =
+             case trans of
+                GameFinished _ _ _ -> True
+                otherwise -> False
 
 

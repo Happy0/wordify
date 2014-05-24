@@ -33,7 +33,8 @@ tests = F.testGroup "Regressions" [
             F.testCase "occupiedSquareAt function behaves as expected" squareAtTest,
             F.testCase "occupiedSquareAt function behaves as expected where the square is unoccupied" occupiedSquareAtUnoccupiedTest,
             F.testCase "unoccupiedSquareAt function behaves as expected where the square is unoccupied" unoccupiedSquareAtTest,
-            F.testCase "unoccupiedSquareAt function behaves as expected where the square is occupied" unoccupiedSquareAtTestOccupied
+            F.testCase "unoccupiedSquareAt function behaves as expected where the square is occupied" unoccupiedSquareAtTestOccupied,
+            F.testCase "Bonus squres and normal squares are where they are expected on the board" boardCorrectlyFormed
         ],
 
     F.testGroup "FormedWord"

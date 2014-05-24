@@ -137,7 +137,7 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
                           else Left $ MisplacedLetter pos
                 ) (Seq.singleton x, minPos ) $ xs
 
-        placedList = Map.toList tiles
+        placedList = Map.toAscList tiles
 
         stillOnPath lastPos thisPos direction = (staticDirectionGetter direction thisPos) == staticDirectionGetter direction lastPos
         expectedLettersInbetween direction lastPos currentPos between =
@@ -147,16 +147,14 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
 
         getDirection
           -- If only one tile is placed, we look for the first tile it connects with if any. If it connects with none, we return 'Nothing'
-          | (minPos == maxPos) && not (Seq.null (lettersLeft board minPos))
-            || not (Seq.null (lettersRight board minPos)) = Just Horizontal
-          | (minPos == maxPos) && not (Seq.null (lettersBelow board minPos))
-           || not (Seq.null (lettersAbove board minPos)) = Just Vertical
+          | (minPos == maxPos) && (not (Seq.null (lettersLeft board minPos)) || not (Seq.null (lettersRight board minPos))) = Just Horizontal
+          | (minPos == maxPos) && (not (Seq.null (lettersBelow board minPos)) || not (Seq.null (lettersAbove board minPos))) = Just Vertical
           | (xPos minPos) == (xPos maxPos) = Just Vertical
           | (yPos minPos) == (yPos maxPos) = Just Horizontal
           | otherwise = Nothing
 
         staticDirectionGetter direction pos = if direction == Horizontal then yPos pos else xPos pos
+
         movingDirectionGetter direction pos = if direction == Horizontal then xPos pos else yPos pos
 
-        isDirectlyAfter pos nextPos direction = 
-          (movingDirectionGetter direction nextPos) == (movingDirectionGetter direction pos) + 1
+        isDirectlyAfter pos nextPos direction = (movingDirectionGetter direction nextPos) == (movingDirectionGetter direction pos) + 1

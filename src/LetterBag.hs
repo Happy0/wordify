@@ -63,7 +63,7 @@ import Data.STRef
   Q 10 1
   Z 10 1
 
- The letter bag is shuffled before it is returned.
+ If successful, the letter bag is shuffled before it is returned.
 
 -}
 makeBag :: FilePath -> IO (Either ScrabbleError LetterBag)
@@ -71,7 +71,7 @@ makeBag path = do
  ioOutcome <- Exc.try $ withFile path ReadMode (hGetContents >=> parseBagString path) :: IO (Either Exc.IOException (Either ScrabbleError LetterBag))
  case ioOutcome of
   Left _ -> return $ Left (LetterBagFileNotOpenable path)
-  Right x -> return x
+  Right x -> return $ fmap shuffleBag x
 
 parseBagString :: String -> String -> IO (Either ScrabbleError LetterBag)
 parseBagString path bagString  = 

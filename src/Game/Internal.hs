@@ -28,9 +28,9 @@ module Game.Internal (updateGame, Game(Game),
   import Tile
   import Data.Sequence
 
-  data Move = PlaceTiles (Map Pos Tile) | Exchange [Tile] | Pass
+  data Move = PlaceTiles (Map Pos Tile) | Exchange [Tile] | Pass deriving (Eq, Show)
 
-  data History = History LetterBag (Seq Move)
+  data History = History LetterBag (Seq Move) deriving (Eq, Show)
 
   data GameStatus = InProgress | Finished deriving (Eq, Show)
 

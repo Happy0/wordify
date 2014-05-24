@@ -524,7 +524,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordsFormedMidGame testBoard placed
 
-            assertEqual "Unexpected outcome when placing tiles which are not in a connected line while passing through a word" (Left $ MisplacedLetter (Pos 9 10 "I10") ) formed
+            assertEqual "Unexpected outcome when placing tiles which are not in a connected line while passing through a word" (Left $ MisplacedLetter (Pos 10 9 "J9") ) formed
 
     placeBlankNothing :: Assertion
     placeBlankNothing =
