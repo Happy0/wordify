@@ -1,6 +1,6 @@
 module Game(Game, player1, player2, optionalPlayers, currentPlayer,
  board, bag, dictionary, playerNumber, moveNumber, makeGame, getGameStatus,
-  GameStatus(InProgress, Finished), gameStatus, players, passes, numberOfPlayers, history, History(History)) where
+  GameStatus(InProgress, Finished), gameStatus, players, passes, numberOfPlayers, history, History(History),movesMade) where
 
   import Player
   import Board
@@ -13,7 +13,8 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
   import Control.Applicative
   import Game.Internal
   import qualified Data.Sequence as Seq
-  
+  import qualified Data.Foldable as F 
+ 
   {-
     Starts a new game. 
 
@@ -61,3 +62,8 @@ module Game(Game, player1, player2, optionalPlayers, currentPlayer,
 
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
+
+  movesMade :: Game -> [Move]
+  movesMade game = 
+    case (history game) of 
+      History _ moves -> F.toList moves

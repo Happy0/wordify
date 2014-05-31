@@ -1,4 +1,9 @@
-module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTransition, ExchangeTransition, PassTransition, GameFinished), restoreGame, newGame) where
+module Move (makeMove 
+            ,Move(PlaceTiles, Exchange, Pass)
+            ,GameTransition(MoveTransition, ExchangeTransition, PassTransition, GameFinished)
+            ,restoreGame
+            ,restoreGameLazy
+            ,newGame) where
 
   import ScrabbleError
   import FormedWord
@@ -7,13 +12,13 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
   import Data.Maybe
   import Game
   import Player
-  import Data.Map as Map
+  import qualified Data.Map as Map
   import Pos
   import Tile
   import LetterBag
   import Board
   import Dictionary
-  import Data.Foldable
+  import qualified Data.Foldable as F
   import Game.Internal
   import Game
   import Data.Maybe
@@ -22,7 +27,6 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
 
   import qualified Data.Map as M
   import Data.Char
-
 
   data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game | GameFinished Game (Maybe FormedWords) [Player]
 
@@ -36,7 +40,7 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
         Exchange exchanged -> exchangeMove game exchanged
         Pass -> passMove game
 
-  makeBoardMove :: Game -> Map Pos Tile -> Either ScrabbleError GameTransition
+  makeBoardMove :: Game -> M.Map Pos Tile -> Either ScrabbleError GameTransition
   makeBoardMove game placed =
     do
       formed <- formedWords
@@ -63,9 +67,14 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
       dict = dictionary game
       letterBag = bag game
 
-      formedWords = if (moveNo == 1)
-       then wordFormedFirstMove currentBoard placed 
-       else wordsFormedMidGame currentBoard placed
+      formedWords = if (any isPlaceMove (movesMade game))
+       then wordsFormedMidGame currentBoard placed
+       else wordFormedFirstMove currentBoard placed 
+
+      isPlaceMove mv = case mv of 
+                          PlaceTiles _ -> True
+                          otherwise -> False
+      
 
   exchangeMove :: Game -> [Tile] -> Either ScrabbleError GameTransition
   exchangeMove game tiles =
@@ -101,10 +110,18 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
     the required tiles to make the move.
   -}
   restoreGame :: Game -> NE.NonEmpty Move -> Either ScrabbleError (NE.NonEmpty GameTransition)
-  restoreGame game (mv NE.:| moves) = T.sequence $ NE.scanl nextMove (makeMove game mv) moves 
+  restoreGame game = T.sequence . restoreGameLazy game
+  
+  {-
+    Maps each move to a resulting game transition, if the move is legal. Has the same semantics as 'restoreGame'
+    but returns a list of 'Either' so that laziness can be maintained, meaning all the game transitions
+    dont have to be buffered before they can be consumed.  
+  -}
+  restoreGameLazy :: Game -> NE.NonEmpty Move -> NE.NonEmpty (Either ScrabbleError GameTransition)
+  restoreGameLazy game (mv NE.:| moves) = NE.scanl nextMove (makeMove game mv) moves 
     where
       nextMove transition mv = transition >>= \success -> makeMove (newGame success) mv
- 
+
   newGame :: GameTransition -> Game
   newGame (MoveTransition game _) = game
   newGame (ExchangeTransition game _ _) = game
@@ -147,7 +164,7 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
     where
       tilesInBag = bagSize letterBag
 
-  newBoard :: Board -> Map Pos Tile -> Either ScrabbleError Board
+  newBoard :: Board -> M.Map Pos Tile -> Either ScrabbleError Board
   newBoard board placed = foldM (\board (pos, tile) -> newBoardIfUnoccupied board pos tile) board $ Map.toList placed
     where
       newBoardIfUnoccupied board pos tile = maybe (Left $ PlacedTileOnOccupiedSquare pos tile) Right $ placeTile board tile pos
@@ -167,3 +184,7 @@ module Move (makeMove, Move(PlaceTiles, Exchange, Pass), GameTransition(MoveTran
     in case invalidWords dict strings of
       (x:xs) -> Left $ WordsNotInDictionary (x:xs)
       otherwise -> Right $ wordsWithScores formedWords
+
+
+
+
