@@ -17,6 +17,7 @@ module Tests.FullGameTest where
     import Test.HUnit.Base
     import Data.Char
     import qualified Data.Sequence as Seq
+    import qualified System.FilePath as F
 
     data Direction = Horizontal | Vertical
 
@@ -24,7 +25,7 @@ module Tests.FullGameTest where
     letterValues = M.fromList $ [('A', 1), ('B',3), ('C', 3), ('D', 2), ('E', 1), ('F',4),('G',2),('H',4),('I',1),('J',8),('K',5),('L',1) ,('M',3),('N',1),('O',1),('P',3),('Q',10),('R', 1), ('S',1), ('T',1),('U',1),('V',4),('W',4),('X',8),('Y',4),('Z',10)]
 
     testDictionary :: IO (Either ScrabbleError Dictionary)
-    testDictionary = makeDictionary "Config\\engSet\\en.txt"
+    testDictionary = makeDictionary $ "Config" ++ [F.pathSeparator] ++ "engSet" ++ [F.pathSeparator] ++ "en.txt"
 
     letterBag :: IO LetterBag
     letterBag = bagFromTiles $ map toTileBag tilesAsLetters

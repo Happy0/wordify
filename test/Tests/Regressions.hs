@@ -6,8 +6,8 @@ module Tests.Regressions
 import qualified Test.Framework as F
 import qualified Test.Framework.Providers.HUnit as F
 
-import Tests.LetterBagTest
 import Tests.BoardTest
+import Tests.LetterBagTest
 import Tests.FormedWordsTest
 import Tests.FullGameTest
 
