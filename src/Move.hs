@@ -28,7 +28,10 @@ module Move (makeMove
   import qualified Data.Map as M
   import Data.Char
 
-  data GameTransition = MoveTransition Game FormedWords | ExchangeTransition Game Player Player | PassTransition Game | GameFinished Game (Maybe FormedWords) [Player]
+  data GameTransition = MoveTransition Game FormedWords
+                        | ExchangeTransition Game Player Player 
+                        | PassTransition Game 
+                        | GameFinished Game (Maybe FormedWords) [Player]
 
   makeMove :: Game -> Move -> Either ScrabbleError GameTransition
   makeMove game move

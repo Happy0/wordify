@@ -136,7 +136,6 @@ module Tests.FullGameTest where
                                     assertEqual "Unexpected score for winning player" (154 + 1 + 5 + 1) (score finalPlayer4)
 
 
-
         where
             isFinalTransition trans =
              case trans of
