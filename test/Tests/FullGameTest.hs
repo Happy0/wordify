@@ -127,7 +127,7 @@ module Tests.FullGameTest where
                                     assertEqual "Unexpected remaining tiles for player 1" [Letter 'T' 1, Letter 'F' 4] (tilesOnRack finalPlayer1)
 
                                     assertEqual "Unexpected remaining tiles for player 2" [Letter 'L' 1] (tilesOnRack finalPlayer2)
-                                    -- assertEqual "Unexpected final score for player 2" (186 - 1) (score finalPlayer2)
+                                    assertEqual "Unexpected final score for player 2" ( (136 + 50) - 1) (score finalPlayer2) -- This player scored a bingo word
 
                                     assertEqual "Unexpected remaining tiles for player 3" [Letter 'E' 1] (tilesOnRack finalPlayer3)
                                     assertEqual "Unexpected score for player 3" (110 - 1) (score finalPlayer3)

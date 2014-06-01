@@ -59,15 +59,25 @@ module FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstM
   playerPlaced (FormedWords _ _ placed) = Map.toList placed
 
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
-  wordsWithScores (FirstWord firstWord) =
-   let score = scoreWord Seq.empty (fmap snd firstWord) in (score, [(makeString firstWord, score)])
-  wordsWithScores (FormedWords mainWord otherWords placed) = (Prelude.sum scores, Prelude.zip strings scores)
+  wordsWithScores (FirstWord firstWord) = 
+      let score = scoreWord Seq.empty (fmap snd firstWord) 
+      in (bingoBonus (Seq.length firstWord) + score, [(makeString firstWord, score)])
+  wordsWithScores (FormedWords mainWord otherWords placed) =
+	  (bingoBonus (Map.size placed) + Prelude.sum scores, Prelude.zip strings scores)
     where
       allWords = mainWord : otherWords
       strings = Prelude.map makeString allWords
       scores = Prelude.map (\formedWord -> let (placed, alreadyPlaced) = partitionPlaced formedWord 
                                            in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
       partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos placed) formedWord
+ 
+
+  {-
+    It is a rule in scrabble that if the player manages to place all 7 letters, they receive a bonus of '50'
+    to their score.
+  -}
+  bingoBonus :: Int -> Int
+  bingoBonus playedLetters = if playedLetters == 7 then 50 else 0
 
   {-
     Returns the words formed by the play as strings.
