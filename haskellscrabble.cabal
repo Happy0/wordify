@@ -30,8 +30,6 @@ test-suite tests
   type: exitcode-stdio-1.0
   hs-source-dirs: test .
   main-is: Tests.hs
-  other-modules:
-    Tests.SharedTestData
 
   build-depends:
     haskellscrabble,
