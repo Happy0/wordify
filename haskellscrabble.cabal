@@ -23,6 +23,8 @@ library
   build-depends:       base, containers, array, random, mtl, transformers, QuickCheck, 
                        parsec, deepseq, unordered-containers, semigroups
   hs-source-dirs:      src
+  
+  ghc-options: -O2 -Wall 
 
 test-suite tests
   type: exitcode-stdio-1.0
@@ -45,4 +47,4 @@ test-suite tests
     semigroups,
     filepath
 
-  
+  ghc-options: -O2 -Wall 
