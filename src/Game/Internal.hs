@@ -51,7 +51,7 @@ module Game.Internal (updateGame, Game(Game),
     Updates the game with the new board and letter bag state, and the last player to play's state after replacing their played
     tiles with new tiles from the letter bag. 
 
-    Yields a tuple with the next player to play, and the current game state.
+    Yields the next game state.
   -}
   updateGame :: Game -> Player -> Board -> LetterBag -> Game
   updateGame game player newBoard newBag = 

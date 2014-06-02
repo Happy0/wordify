@@ -18,6 +18,8 @@ module Tests.FullGameTest where
     import Data.Char
     import qualified Data.Sequence as Seq
     import qualified System.FilePath as F
+    import Control.Monad
+    import Data.List.Split    
 
     data Direction = Horizontal | Vertical
 
@@ -31,6 +33,21 @@ module Tests.FullGameTest where
     letterBag = bagFromTiles $ map toTileBag tilesAsLetters
         where
             tilesAsLetters = "JEARVINENVO_NILLEWBKONUIEUWEAZBDESIAPAEOOURGOCDSNIADOAACAR_RMYELTUTYTEREOSITNIRFGPHAQLHESOIITXFDMETG"
+
+    setupGame :: IO (Either ScrabbleError Game)
+    setupGame =
+      do
+        bag <- letterBag
+        dict <- testDictionary
+        return $ resultGame bag dict
+      where
+        resultGame bag dict =
+          do
+            dc <- dict
+            let [player1, player2,player3,player4] = map makePlayer ["a","b","c","d"]
+            makeGame (player1, player2, Just (player3, Just player4)) bag dc
+
+
 
     placeMap :: String -> Direction -> (Int, Int) -> M.Map Pos Tile 
     placeMap letters direction pos = M.fromList $ zip positions tiles
@@ -88,58 +105,81 @@ module Tests.FullGameTest where
 
     playThroughTest :: Assertion
     playThroughTest = 
+      do
+        game <- setupGame
+        assertBool "Could not initialise game for test " $ isValid game
+
+        let Right testGame = game
+        bag <- letterBag
+        let moveTransitions = restoreGame testGame $ NE.fromList $ moves
+
+        case moveTransitions of
+            Left err ->
+                assertFailure $ "Unable to play through test game, error was: " ++ show err
+            Right transitions ->
+                do
+                    let finalTransition = NE.last transitions
+                    assertBool "Expect the game to have ended" $ isFinalTransition finalTransition
+
+                    let finalGame = newGame finalTransition
+
+                    assertEqual "Unexpected number of moves" (length moves) (moveNumber finalGame)
+
+                    assertEqual "Unexpected history for game" (History bag (Seq.fromList moves)) (history finalGame)
+
+                    let finalBoard = board finalGame
+
+                    let [finalPlayer1, finalPlayer2, finalPlayer3, finalPlayer4] = players finalGame
+
+                    assertEqual "Unexpected final score for player 1" (189 - 5) (score finalPlayer1)
+                    assertEqual "Unexpected remaining tiles for player 1" [Letter 'T' 1, Letter 'F' 4] (tilesOnRack finalPlayer1)
+
+                    assertEqual "Unexpected remaining tiles for player 2" [Letter 'L' 1] (tilesOnRack finalPlayer2)
+                    assertEqual "Unexpected final score for player 2" ( (136 + 50) - 1) (score finalPlayer2) -- This player scored a bingo word
+
+                    assertEqual "Unexpected remaining tiles for player 3" [Letter 'E' 1] (tilesOnRack finalPlayer3)
+                    assertEqual "Unexpected score for player 3" (110 - 1) (score finalPlayer3)
+
+                    assertEqual "Unexpected remaing tiles for player 4" [] (tilesOnRack finalPlayer4)
+                    assertEqual "Unexpected score for winning player" (154 + 1 + 5 + 1) (score finalPlayer4)
+
+
+      where
+        isFinalTransition trans =
+         case trans of
+            GameFinished _ _ _ -> True
+            otherwise -> False
+
+    gameEndsOnConsecutiveSkips :: Assertion
+    gameEndsOnConsecutiveSkips = 
         do
-            bag <- letterBag
-            dict <- testDictionary
+          game <- setupGame
+          -- 8 consecutive passes ends the game
+          let skipMoves = NE.fromList $ replicate 8 Pass
+          assertBool "Could not initialise game for test " $ isValid game
 
-            case dict of
-                Left err -> assertFailure $ "Failed to load dictionary from file in test initialisation. Error was: " ++ show err
-                Right dic ->
-                    do
-                        let [player1, player2,player3,player4] = map makePlayer ["a","b","c","d"]
-                        let game = makeGame (player1, player2, Just (player3, Just player4)) bag dic
+          let Right testGame = game 
+          let transitions = restoreGame testGame skipMoves
+          let lastGame = fmap NE.last transitions
+          assertBool ("Unexpected failure when playing moves ") $ isValid lastGame
 
-                        assertBool "Could not initialise game for test " $ isValid game
+          let Right finalTrans = lastGame
 
-                        let Right testGame = game
-
-                        let moveTransitions = restoreGame testGame $ NE.fromList $ moves
-
-                        case moveTransitions of
-                            Left err ->
-                                assertFailure $ "Unable to play through test game, error was: " ++ show err
-                            Right transitions ->
-                                do
-                                    let finalTransition = NE.last transitions
-                                    assertBool "Expect the game to have ended" $ isFinalTransition finalTransition
-
-                                    let finalGame = newGame finalTransition
-
-                                    assertEqual "Unexpected number of moves" (length moves) (moveNumber finalGame)
-
-                                    assertEqual "Unexpected history for game" (History bag (Seq.fromList moves)) (history finalGame)
-
-                                    let finalBoard = board finalGame
-
-                                    let [finalPlayer1, finalPlayer2, finalPlayer3, finalPlayer4] = players finalGame
-
-                                    assertEqual "Unexpected final score for player 1" (189 - 5) (score finalPlayer1)
-                                    assertEqual "Unexpected remaining tiles for player 1" [Letter 'T' 1, Letter 'F' 4] (tilesOnRack finalPlayer1)
-
-                                    assertEqual "Unexpected remaining tiles for player 2" [Letter 'L' 1] (tilesOnRack finalPlayer2)
-                                    assertEqual "Unexpected final score for player 2" ( (136 + 50) - 1) (score finalPlayer2) -- This player scored a bingo word
-
-                                    assertEqual "Unexpected remaining tiles for player 3" [Letter 'E' 1] (tilesOnRack finalPlayer3)
-                                    assertEqual "Unexpected score for player 3" (110 - 1) (score finalPlayer3)
-
-                                    assertEqual "Unexpected remaing tiles for player 4" [] (tilesOnRack finalPlayer4)
-                                    assertEqual "Unexpected score for winning player" (154 + 1 + 5 + 1) (score finalPlayer4)
+          case finalTrans of
+              GameFinished _ _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8 
+              otherwise -> assertFailure "Unexpected end state. Expected 'Game finished' "
 
 
-        where
-            isFinalTransition trans =
-             case trans of
-                GameFinished _ _ _ -> True
-                otherwise -> False
+    gameDoesNotEndOnNonConsecutiveSkips :: Assertion
+    gameDoesNotEndOnNonConsecutiveSkips =
+      do
+        let skips = intercalate (replicate 4 Pass) $ splitEvery 4 moves
+        
+
+      where
+        gameFinished transition = case transitionOf
+                                     GameFinished _ _ _ _ -> True
+                                     otherwise = False
+                                     
 
 
