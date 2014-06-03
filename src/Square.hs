@@ -44,11 +44,11 @@ module Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord
 
   -}
   applyWordBonus :: Square -> (Int -> Int)
-  applyWordBonus (Normal (Just tile)) = (+0)
+  applyWordBonus (Normal _ ) = (+0)
   applyWordBonus (DoubleLetter (Just tile)) = (+ (tileValue tile) )
   applyWordBonus (TripleLetter (Just tile)) = (+ ((tileValue tile) * 2))
-  applyWordBonus (DoubleWord (Just tile)) = (*2)
-  applyWordBonus (TripleWord (Just tile)) = (*3)
+  applyWordBonus (DoubleWord _) = (*2)
+  applyWordBonus (TripleWord _) = (*3)
   applyWordBonus _ = (+0)
 
   isWordBonus :: Square -> Bool
