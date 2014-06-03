@@ -16,7 +16,7 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
                        , score :: Score } deriving Show
 
   makePlayer :: String -> Player
-  makePlayer name = Player name (LetterRack []) 0
+  makePlayer playerName = Player playerName (LetterRack []) 0
 
   tilesOnRack :: Player -> [Tile]
   tilesOnRack (Player _ (LetterRack rack) _) = rack
@@ -32,20 +32,19 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
       currentScore = score player
 
   hasEmptyRack :: Player -> Bool
-  hasEmptyRack (Player name (LetterRack rack) score) = null rack
+  hasEmptyRack player = null $ tilesOnRack player
 
   tileValues :: Player -> Int
-  tileValues (Player name (LetterRack (rack)) score) = sum $ map tileValue rack
+  tileValues player = sum $ map tileValue (tilesOnRack player)
 
   {-
     Adds tiles to the player's tile rack.
   -}
   giveTiles :: Player -> [Tile] -> Player
-  giveTiles (Player name (LetterRack tiles) score) newTiles =
-   Player name (LetterRack $ newTiles ++ tiles) score
+  giveTiles player newTiles = player {rack = LetterRack $ newTiles ++ tilesOnRack player}
 
   removeTiles :: Player -> [Tile] -> Player
-  removeTiles (Player name (LetterRack rack) score) removeTiles = Player name (LetterRack $ rack \\ removeTiles) score
+  removeTiles player toRemove = player {rack = LetterRack $ tilesOnRack player \\ toRemove}
 
   {-
     Removes played tiles from the player's tile rack, if it was possible for the player
@@ -58,17 +57,16 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
      then Just $  player `removedFromRack` tiles
       else Nothing
     where
-      removedFromRack (Player name (LetterRack rack) score) tiles = 
-        Player name (LetterRack $ deleteFirstsBy isPlayable rack tiles) score
+      removedFromRack playing playedTiles = player {rack = LetterRack (deleteFirstsBy isPlayable (tilesOnRack playing) playedTiles) }
 
   {-
     Returns true if the player cannot place any of the given tiles. A player cannot play
     a Blank tile that they have not given a letter, or a tile not on their rack.
   -}
   playerCanPlace :: Player -> [Tile] -> Bool
-  playerCanPlace (Player _ (LetterRack rack) _ ) played = isNothing $ find isInvalid playedList
+  playerCanPlace player played = isNothing $ find isInvalid playedList
     where
-      (playedFrequencies, rackFrequencies) = tileFrequencies played rack
+      (playedFrequencies, rackFrequencies) = tileFrequencies played $ tilesOnRack player
       playedList = Map.toList playedFrequencies
 
       isInvalid (tile, freq) =
