@@ -191,6 +191,10 @@ module Tests.FullGameTest where
 
         assertEqual "Expected game to still be in progress" InProgress (gameStatus lastGame)
 
+        assertEqual "Unexpected player's move" ((10 `mod` 4) + 1) (playerNumber lastGame)
+
+        assertEqual "Unexpected current player" (fmap fst (optionalPlayers lastGame)) ( Just (currentPlayer lastGame))
+
       where
         splitEvery n = takeWhile (not . null) . unfoldr (Just . splitAt n) 
 

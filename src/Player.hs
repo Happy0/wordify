@@ -13,7 +13,7 @@ module Player (Player, LetterRack, name, rack, score, makePlayer, increaseScore,
 
   data Player = Player {name :: Name
                        , rack :: LetterRack
-                       , score :: Score } deriving Show
+                       , score :: Score } deriving (Show, Eq)
 
   makePlayer :: String -> Player
   makePlayer playerName = Player playerName (LetterRack []) 0
