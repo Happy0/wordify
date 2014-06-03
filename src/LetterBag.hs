@@ -17,15 +17,10 @@ import Control.Monad
 import qualified Control.Exception as Exc
 import ScrabbleError
 import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Combinator
-import Text.Parsec.Token
-import Text.ParserCombinators.Parsec.Char
 import Data.Char
 import LetterBag.Internal
 import System.IO
-import Control.DeepSeq
 import Data.Array.ST
-import Control.Monad
 import Control.Monad.ST
 import Data.STRef
 
@@ -78,10 +73,10 @@ parseBagString path bagString  =
   let parseResult = parseBag bagString in 
     case parseResult of
       Left _ -> return $ Left (MalformedLetterBagFile path)
-      Right tiles ->
+      Right parsedTiles ->
         do 
-          generator <- newStdGen
-          return $ Right (LetterBag tiles (length tiles) generator)
+          gen <- newStdGen
+          return $ Right (LetterBag parsedTiles (length parsedTiles) gen)
 
 {-
   Creates a letter bag from a list of tiles. The order of the tiles is retained in the resulting letter bag.
@@ -90,7 +85,7 @@ parseBagString path bagString  =
   it to be shuffled using this generator in the future.
 -}
 bagFromTiles :: [Tile] -> IO LetterBag
-bagFromTiles tiles = newStdGen >>= return . LetterBag tiles (length tiles)
+bagFromTiles bagTiles = newStdGen >>= return . LetterBag bagTiles (length bagTiles)
 
 {-
   Takes 'n' numbers from a letter bag, yielding 'Nothing'
@@ -99,12 +94,12 @@ bagFromTiles tiles = newStdGen >>= return . LetterBag tiles (length tiles)
   value is the new bag.
 -}
 takeLetters :: LetterBag -> Int -> Maybe ([Tile], LetterBag)
-takeLetters (LetterBag tiles lettersLeft generator) numTake =
+takeLetters (LetterBag bagTiles lettersLeft gen) numTake =
   if (newNumLetters < 0) then Nothing
-   else Just (taken, LetterBag newLetters newNumLetters generator)
+   else Just (taken, LetterBag newLetters newNumLetters gen)
   where
     newNumLetters = lettersLeft - numTake
-    (taken, newLetters) = splitAt numTake tiles
+    (taken, newLetters) = splitAt numTake bagTiles
 
 {-
   Exchanges given tiles for the same number of tiles from the bag.
@@ -116,11 +111,11 @@ takeLetters (LetterBag tiles lettersLeft generator) numTake =
   given, and the new letterbag.
 -}
 exchangeLetters :: LetterBag -> [Tile] -> (Maybe ([Tile], LetterBag))
-exchangeLetters (LetterBag tiles lettersLeft generator) exchanged =
+exchangeLetters (LetterBag bagTiles lettersLeft gen) exchanged =
   if (lettersLeft == 0) then Nothing else takeLetters (shuffleBag intermediateBag) numLettersGiven
     where
       numLettersGiven = length exchanged
-      intermediateBag = LetterBag (exchanged ++ tiles) (lettersLeft + numLettersGiven) generator
+      intermediateBag = LetterBag (exchanged ++ bagTiles) (lettersLeft + numLettersGiven) gen
 
 {-
   Shuffles the contents of a letter bag. The bag is shuffled using the random generator which was created
@@ -132,20 +127,20 @@ exchangeLetters (LetterBag tiles lettersLeft generator) exchanged =
 -}
 shuffleBag :: LetterBag -> LetterBag
 shuffleBag (LetterBag _ 0 gen) =  LetterBag [] 0 gen
-shuffleBag (LetterBag tiles size generator) =
-  let (newTiles, newGenerator) = shuffle tiles generator size
+shuffleBag (LetterBag bagTiles size gen) =
+  let (newTiles, newGenerator) = shuffle bagTiles gen size
   in (LetterBag newTiles size newGenerator)
 
   where
     -- Taken from http://www.haskell.org/haskellwiki/Random_shuffle
     shuffle :: [a] -> StdGen -> Int -> ([a],StdGen)
-    shuffle xs gen listLength = runST (do
-            g <- newSTRef gen
+    shuffle xs randomGen listLength = runST (do
+            g <- newSTRef randomGen
             let randomRST lohi = do
                   (a,s') <- liftM (randomR lohi) (readSTRef g)
                   writeSTRef g s'
                   return a
-            ar <- newArray n xs
+            ar <- newArr n xs
             xs' <- forM [1..n] $ \i -> do
                     j <- randomRST (i,n)
                     vi <- readArray ar i
@@ -156,8 +151,8 @@ shuffleBag (LetterBag tiles size generator) =
             return (xs',gen'))
       where
         n = listLength
-        newArray :: Int -> [a] -> ST s (STArray s Int a)
-        newArray n xs =  newListArray (1,n) xs
+        newArr :: Int -> [a] -> ST s (STArray s Int a)
+        newArr z zs =  newListArray (1,z) zs
 
 {- 
   Creates a letter bag using a list of tiles, and a generator which should be used when shuffling the bag.
@@ -165,7 +160,7 @@ shuffleBag (LetterBag tiles size generator) =
   recorded, with any shuffling yielding the same bag as in the original game.
 -}
 makeBagUsingGenerator :: [Tile] -> StdGen -> LetterBag
-makeBagUsingGenerator tiles generator = LetterBag tiles (length tiles) generator
+makeBagUsingGenerator tiles randomGenerator = LetterBag tiles (length tiles) randomGenerator
 
 {-
   Get the letter bag's current generator, which will be used to shuffle the contents of the bag in the next exchange
@@ -180,12 +175,8 @@ getGenerator = generator
   a letter bag with all the tiles remaining so that letter bags are unique between game instances.
 -}
 shuffleWithNewGenerator :: LetterBag -> IO LetterBag
-shuffleWithNewGenerator (LetterBag tiles size generator) = 
-  do
-    newGenerator <- newStdGen
-    let newBag = LetterBag tiles size newGenerator
-    return $ shuffleBag newBag
-
+shuffleWithNewGenerator letterBag = fmap (\newGen -> shuffleBag $ letterBag { generator = newGen }) newStdGen
+ 
 parseBag :: String -> Either ParseError [Tile]
 parseBag contents = parse bagFile "Malformed letter bag file" contents
   where

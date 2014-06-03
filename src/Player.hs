@@ -1,4 +1,4 @@
-module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveTiles, tilesOnRack,
+module Player (Player, LetterRack, name, rack, score, makePlayer, increaseScore, giveTiles, tilesOnRack,
  removePlayedTiles, removeTiles, hasEmptyRack, tileValues, reduceScore, exchange) where
 
   import Tile
@@ -19,7 +19,7 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
   makePlayer playerName = Player playerName (LetterRack []) 0
 
   tilesOnRack :: Player -> [Tile]
-  tilesOnRack (Player _ (LetterRack rack) _) = rack
+  tilesOnRack (Player _ (LetterRack letters) _) = letters
 
   increaseScore :: Player -> Int -> Player
   increaseScore player justScored = player {score = currentScore + justScored}
@@ -84,10 +84,10 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
         Just $ giveTiles (removeTiles player exchanged) received
 
   playerCanExchange :: Player -> [Tile] -> Bool
-  playerCanExchange (Player _ ( LetterRack rack) _ ) exchanged = isNothing $ find cannotExchange exchangedList
+  playerCanExchange (Player _ ( LetterRack letterRack) _ ) exchanged = isNothing $ find cannotExchange exchangedList
 
     where
-      (exchangedFrequencies, rackFrequencies) = tileFrequencies exchanged rack
+      (exchangedFrequencies, rackFrequencies) = tileFrequencies exchanged letterRack
       exchangedList = Map.toList exchangedFrequencies
 
       cannotExchange (tile, freq) =
@@ -99,10 +99,10 @@ module Player (Player, LetterRack, rack, score, makePlayer, increaseScore, giveT
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
 
   tileFrequencies :: [Tile] -> [Tile] -> ((Map.Map Tile Int), (Map.Map Tile Int))
-  tileFrequencies given rack = (givenFrequencies, rackFrequencies)
+  tileFrequencies given letterRack = (givenFrequencies, rackFrequencies)
     where
       buildFrequencies tiles = foldl addFrequency (Map.empty) tiles
       addFrequency dict tile = Map.alter newFrequency tile dict
       newFrequency m = Just $ maybe 1 succ m -- Default freq of one, or inc existing frequency
       givenFrequencies = buildFrequencies given
-      rackFrequencies = buildFrequencies rack
+      rackFrequencies = buildFrequencies letterRack

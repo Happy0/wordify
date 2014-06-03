@@ -18,8 +18,8 @@ module Tests.FullGameTest where
     import Data.Char
     import qualified Data.Sequence as Seq
     import qualified System.FilePath as F
-    import Control.Monad
-    import Data.List.Split    
+    import Control.Monad   
+    import Data.List
 
     data Direction = Horizontal | Vertical
 
@@ -173,13 +173,25 @@ module Tests.FullGameTest where
     gameDoesNotEndOnNonConsecutiveSkips :: Assertion
     gameDoesNotEndOnNonConsecutiveSkips =
       do
-        let skips = intercalate (replicate 4 Pass) $ splitEvery 4 moves
+        game <- setupGame
+        assertBool "Could not initialise game for test " $ isValid game
+
+        let Right testGame = game 
+          
+
+        let movesWithSkips = take 10 $ concat $ intersperse (replicate 4 Pass) $ splitEvery 4 moves
         
+        let transitions = restoreGame testGame $ NE.fromList movesWithSkips
+
+        assertBool "Unexpected error making moves" $ isValid transitions
+
+        let Right gameTransitions = transitions
+
+        let lastGame = newGame $ NE.last gameTransitions
+
+        assertEqual "Expected game to still be in progress" InProgress (gameStatus lastGame)
 
       where
-        gameFinished transition = case transitionOf
-                                     GameFinished _ _ _ _ -> True
-                                     otherwise = False
-                                     
+        splitEvery n = takeWhile (not . null) . unfoldr (Just . splitAt n) 
 
 

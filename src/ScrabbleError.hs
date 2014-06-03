@@ -4,10 +4,8 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
    PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
    GameNotInProgress, CannotExchangeWhenNoLettersInBag, PlayerCannotExchange)) where
 
-  import Control.Exception
   import Control.Monad.Error
   import Pos
-  import Square
   import Tile
   import Player
 
@@ -40,13 +38,14 @@ module ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBag
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
     show (NoTilesPlaced) = "No tiles were placed in the move."
     show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
-    show (PlacedTileOnOccupiedSquare pos tile) = "Move replaces a tile already on the board at" ++ show pos ++ ". This is not a legal move."
+    show (PlacedTileOnOccupiedSquare pos _) = "Move replaces a tile already on the board at " ++ show pos ++ ". This is not a legal move."
     show (CannotPlaceBlankWithoutLetter pos) = "A played blank tile must be given a letter. Blank tile played at " ++ show pos ++ " was not given a letter."
     show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
-    show (PlayerCannotPlace rack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
+    show (PlayerCannotPlace letterRack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show letterRack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
     show (CannotExchangeWhenNoLettersInBag) = "Cannot exchange letters when there are no letters in the bag."
-    show (PlayerCannotExchange rack tiles) = "Player does not have the letters to exchange " ++ show tiles ++ ". Tiles on rack: " ++ show rack ++ ". Blank tiles must not be labeled."
+    show (PlayerCannotExchange letterRack tiles) = "Player does not have the letters to exchange " ++ show tiles ++ ". Tiles on rack: " ++ show letterRack ++ ". Blank tiles must not be labeled."
     show (GameNotInProgress) = "A move was attempted on a game that is not in progress."
+    show (MiscError str) = str
 
   instance Error ScrabbleError where
     noMsg = MiscError "Unexpected internal error"

@@ -2,8 +2,8 @@
 module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPos, posMin, posMax) where
 
   import qualified Data.Map as Map
-  import Data.Char
   import Pos.Internal
+  import Data.Maybe
 
   posMin :: Int
   posMin = 1 
@@ -36,13 +36,14 @@ module Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPo
   {- A map keyed by tuples representing (x,y) co-ordinates, and valued by their
   corresponding Pos types -}
   posMap :: Map.Map (Int, Int) Pos
-  posMap = Map.fromList coordTuples
+  posMap = Map.fromList $ catMaybes coordTuples
       where
           coordTuples = zipWith makeTuple (sequence [[posMin..posMax], [posMin..posMax]]) $ cycle ['A'..'O']
-          makeTuple (x:y:_) gridLetter =  ((y,x) , Pos y x (gridLetter : show x) )
+          makeTuple (x:y:_) gridLetter = Just $ ((y,x) , Pos y x (gridLetter : show x) )
+          makeTuple _ _ = Nothing        
 
   xPos :: Pos -> Int
-  xPos (Pos x y _) = x
+  xPos (Pos x _ _) = x
 
   yPos :: Pos -> Int
   yPos (Pos _ y _) = y

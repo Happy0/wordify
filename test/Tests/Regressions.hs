@@ -68,7 +68,8 @@ tests = F.testGroup "Regressions" [
     F.testGroup "PlayGameTest"
         [
             F.testCase "The full game playthrough test succeeds as expected" playThroughTest,
-            F.testCase "The game is ended if all players skip twice consecutively" playThroughTest 
+            F.testCase "The game is ended if all players skip twice consecutively" gameEndsOnConsecutiveSkips,
+            F.testCase "The game is not ended if skips are not consecutive twice" gameDoesNotEndOnNonConsecutiveSkips 
         ]
 
     ]
