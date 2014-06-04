@@ -28,7 +28,7 @@ module Wordify.Rules.Move (makeMove
   import qualified Data.Map as M
   import Data.Char
 
-  data GameTransition = MoveTransition Game FormedWords
+  data GameTransition = MoveTransition Player Game FormedWords
                         | ExchangeTransition Game Player Player 
                         | PassTransition Game 
                         | GameFinished Game (Maybe FormedWords) [Player]
@@ -61,7 +61,7 @@ module Wordify.Rules.Move (makeMove
           do
             let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag (Map.size placed)
             let updatedGame = updateGame game newPlayer board newBag
-            return $ MoveTransition updatedGame formed
+            return $ MoveTransition newPlayer updatedGame formed
     where
       player = currentPlayer game
       playedTiles = Map.elems placed
@@ -126,13 +126,13 @@ module Wordify.Rules.Move (makeMove
       nextMove transition mv = transition >>= \success -> makeMove (newGame success) mv
 
   newGame :: GameTransition -> Game
-  newGame (MoveTransition game _) = game
+  newGame (MoveTransition _ game _) = game
   newGame (ExchangeTransition game _ _) = game
   newGame (PassTransition game) = game
   newGame (GameFinished game _ _) = game
 
   addMoveToHistory :: GameTransition -> Move -> GameTransition
-  addMoveToHistory (MoveTransition game formedWords) move = MoveTransition (updateHistory game move) formedWords
+  addMoveToHistory (MoveTransition player game formedWords) move = MoveTransition player (updateHistory game move) formedWords
   addMoveToHistory (ExchangeTransition game oldPlayer newPlayer ) move = ExchangeTransition (updateHistory game move) oldPlayer newPlayer
   addMoveToHistory (PassTransition game) move = PassTransition (updateHistory game move)
   addMoveToHistory (GameFinished game wordsFormed players) move = GameFinished (updateHistory game move) wordsFormed players
