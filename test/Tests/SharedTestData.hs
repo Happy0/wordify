@@ -1,12 +1,12 @@
 module Tests.SharedTestData where
 
     import Data.Maybe
-    import Tile
-    import Pos
-    import Square
-    import Pos.Internal
+    import Wordify.Rules.Tile
+    import Wordify.Rules.Pos
+    import Wordify.Rules.Square
+    import Wordify.Rules.Pos.Internal
     import qualified Data.Map as M
-    import LetterBag
+    import Wordify.Rules.LetterBag
 
     horizontalPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (5,7)
     horizontalSquares = [Normal $ Just (Letter 'H' 4), Normal $ Just (Letter 'E' 1), DoubleLetter $ Just (Letter 'L' 1), Normal $ Just (Letter 'L' 1), DoubleLetter $ Just (Letter 'O' 1)]

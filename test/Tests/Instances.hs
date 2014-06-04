@@ -1,17 +1,17 @@
 module Tests.Instances where
 
-    import Tile
+    import Wordify.Rules.Tile
     import Test.QuickCheck (Arbitrary, arbitrary, listOf, (==>), sized, oneof, choose, Gen, elements)
-    import LetterBag
-    import Pos
+    import Wordify.Rules.LetterBag
+    import Wordify.Rules.Pos
     import Data.Char
-    import Pos.Internal
-    import Square
+    import Wordify.Rules.Pos.Internal
+    import Wordify.Rules.Square
     import Data.Map
-    import Board
-    import Board.Internal
+    import Wordify.Rules.Board
+    import Wordify.Rules.Board.Internal
     import System.Random
-    import LetterBag.Internal
+    import Wordify.Rules.LetterBag.Internal
 
     instance Arbitrary Tile where
         arbitrary = do

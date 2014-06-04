@@ -1,9 +1,9 @@
 module Tests.PosTest (inBoundsProperty, lettersRightProperty, lettersLeftProperty, lettersBelowProperty, lettersAboveProperty, correctGridPos) where
 
-  import Pos
+  import Wordify.Rules.Pos
   import Data.Maybe
   import Data.Char
-  import Pos.Internal
+  import Wordify.Rules.Pos.Internal
   import Tests.Instances
 
   inBoundsProperty :: (Int, Int) -> Bool

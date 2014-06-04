@@ -1,21 +1,21 @@
 module Tests.FormedWordsTest where
 
     import Tests.SharedTestData
-    import Pos
-    import Tile
-    import Board
-    import Board.Internal
+    import Wordify.Rules.Pos
+    import Wordify.Rules.Tile
+    import Wordify.Rules.Board
+    import Wordify.Rules.Board.Internal
     import qualified Data.Map as M
-    import FormedWord
+    import Wordify.Rules.FormedWord
     import Test.HUnit.Base
     import Data.Maybe
     import Data.Either
-    import Pos.Internal
+    import Wordify.Rules.Pos.Internal
     import qualified Data.Sequence as S
-    import Square
+    import Wordify.Rules.Square
     import Control.Applicative
-    import ScrabbleError
-    import Pos.Internal
+    import Wordify.Rules.ScrabbleError
+    import Wordify.Rules.Pos.Internal
 
     testBoard :: Board
     testBoard = Board squareMap

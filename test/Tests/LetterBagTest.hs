@@ -2,14 +2,13 @@ module Tests.LetterBagTest where
 
     import Test.QuickCheck (Property, quickCheck)
     import Test.QuickCheck.Monadic as Q (assert, monadicIO, pick, pre, run) 
-    import LetterBag
-    import Data.List
-    import LetterBag.Internal
-    import Tile
+    import Wordify.Rules.LetterBag
+    import Wordify.Rules.LetterBag.Internal
+    import Wordify.Rules.Tile
     import Tests.Utils
     import System.IO (hPutStr, hFlush, hPutStrLn, hClose)
     import Test.HUnit.Base as H
-    import ScrabbleError
+    import Wordify.Rules.ScrabbleError
     import Data.Map
     import Data.Maybe
     import qualified Data.List as L
@@ -28,7 +27,7 @@ module Tests.LetterBagTest where
       in if (bagSize bag < 10) then sameTiles bag shuffled else bagIsShuffled bag shuffled && sameTiles bag shuffled
 
       where
-        sameTiles originalBag shuffledBag = bagSize originalBag == (length $ (tiles originalBag) `intersect` (tiles shuffledBag))
+        sameTiles originalBag shuffledBag = bagSize originalBag == (length $ (tiles originalBag) `L.intersect` (tiles shuffledBag))
         bagIsShuffled originalBag shuffledBag = not $ originalBag == shuffledBag
 
     shuffleTwiceProperty :: LetterBag -> Bool
@@ -89,7 +88,7 @@ module Tests.LetterBagTest where
           let letters = ['A' .. ]
           let values = [1 .. 5]
           let distributions = [1 .. 5]
-          let inputLines = unlines $ zipWith3 (\letter value distribution -> intersperse ' ' $ letter : (show value) ++ (show distribution)) letters values distributions
+          let inputLines = unlines $ zipWith3 (\letter value distribution -> L.intersperse ' ' $ letter : (show value) ++ (show distribution)) letters values distributions
           hPutStrLn handle "_ 2" -- 2 Blank tiles
           hPutStr handle inputLines
           hFlush handle
@@ -103,7 +102,7 @@ module Tests.LetterBagTest where
               let expectedBlanks = replicate 2 $ Blank Nothing
               let expectedTiles = concat $ expectedBlanks : expectedLetters 
 
-              H.assertBool "Letter bag contains expected letters" $ expectedTiles `intersect` tiles == expectedTiles
+              H.assertBool "Letter bag contains expected letters" $ expectedTiles `L.intersect` tiles == expectedTiles
               H.assertBool "Letter bag contains expected number of letters" $ (length expectedTiles) == (length tiles)
 
     makeBagInvalidPath :: Assertion

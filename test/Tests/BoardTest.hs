@@ -1,15 +1,15 @@
 module Tests.BoardTest where
 
-    import Board.Internal
-    import Pos
+    import Wordify.Rules.Board.Internal
+    import Wordify.Rules.Pos
     import Data.Maybe
-    import Square
-    import Tile
-    import Square
+    import Wordify.Rules.Square
+    import Wordify.Rules.Tile
+    import Wordify.Rules.Square
     import qualified Data.Map as M
-    import Pos.Internal
+    import Wordify.Rules.Pos.Internal
     import Test.HUnit.Base
-    import Board
+    import Wordify.Rules.Board
     import qualified Data.Sequence as Seq
     import Control.Monad
     import qualified Data.Set as S

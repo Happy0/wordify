@@ -1,17 +1,17 @@
 module Tests.FullGameTest where
 
-    import Dictionary
+    import Wordify.Rules.Dictionary
     import qualified Data.Map as M
-    import ScrabbleError
-    import LetterBag
-    import Pos
-    import Tile
+    import Wordify.Rules.ScrabbleError
+    import Wordify.Rules.LetterBag
+    import Wordify.Rules.Pos
+    import Wordify.Rules.Tile
     import Data.Maybe
-    import Move
+    import Wordify.Rules.Move
     import Test.HUnit.Base
-    import Player
-    import Game
-    import Move
+    import Wordify.Rules.Player
+    import Wordify.Rules.Game
+    import Wordify.Rules.Move
     import qualified Data.List.NonEmpty as NE
     import Tests.SharedTestData
     import Test.HUnit.Base
@@ -208,8 +208,9 @@ module Tests.FullGameTest where
             let newPlayer1 = player1 nextGame
             assertBool ("Player 1 should have new letters on their rack. Player 1 was: " ++ (show newPlayer1)) (not $ firstPlayer == newPlayer1)
 
-            assertBool "Game has transitioned to the next player " (currentPlayer nextGame) == (player2 testGame) 
-                && (playerNumber testGame == 2) && (moveNumber testGame) == 2
+            assertEqual "Game has transitioned to the next player " (currentPlayer nextGame)  (player2 testGame)
+            
+            assertBool "Player number and move number incremented" $ (playerNumber nextGame == 2) && (moveNumber nextGame) == 2
 
             let originalLetterBag = bag testGame
             let exchangedLetterBag = fmap snd (exchangeLetters originalLetterBag playerTiles)

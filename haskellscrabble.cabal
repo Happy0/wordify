@@ -16,9 +16,23 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Pos, Pos.Internal, LetterBag, LetterBag.Internal, Board, Board.Internal, Tile, Dictionary, Square, Player, Game, Move, FormedWord, ScrabbleError
+  exposed-modules: 
+    Wordify.Rules.Pos,
+    Wordify.Rules.Pos.Internal,
+    Wordify.Rules.LetterBag,
+    Wordify.Rules.LetterBag.Internal,
+    Wordify.Rules.Board, 
+    Wordify.Rules.Board.Internal,
+    Wordify.Rules.Tile,
+    Wordify.Rules.Dictionary,
+    Wordify.Rules.Square,
+    Wordify.Rules.Player,
+    Wordify.Rules.Game,
+    Wordify.Rules.Move,
+    Wordify.Rules.FormedWord,
+    Wordify.Rules.ScrabbleError
 
-  other-modules:       Game.Internal
+  other-modules:       Wordify.Rules.Game.Internal
 
   build-depends:       base, containers, array, random, mtl, transformers, QuickCheck, 
                        parsec, deepseq, unordered-containers, semigroups
