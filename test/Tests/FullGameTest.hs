@@ -175,27 +175,48 @@ module Tests.FullGameTest where
       do
         game <- setupGame
         assertBool "Could not initialise game for test " $ isValid game
-
         let Right testGame = game 
-          
-
         let movesWithSkips = take 10 $ concat $ intersperse (replicate 4 Pass) $ splitEvery 4 moves
-        
         let transitions = restoreGame testGame $ NE.fromList movesWithSkips
 
         assertBool "Unexpected error making moves" $ isValid transitions
 
         let Right gameTransitions = transitions
-
         let lastGame = newGame $ NE.last gameTransitions
 
         assertEqual "Expected game to still be in progress" InProgress (gameStatus lastGame)
-
         assertEqual "Unexpected player's move" ((10 `mod` 4) + 1) (playerNumber lastGame)
-
         assertEqual "Unexpected current player" (fmap fst (optionalPlayers lastGame)) ( Just (currentPlayer lastGame))
 
       where
         splitEvery n = takeWhile (not . null) . unfoldr (Just . splitAt n) 
+
+    exchangeMoveExchangesLetters :: Assertion
+    exchangeMoveExchangesLetters = 
+        do
+            game <- setupGame
+            assertBool "Could not initialise game for test " $ isValid game
+            let Right testGame = game 
+            let firstPlayer = player1 testGame
+            let playerTiles = tilesOnRack firstPlayer
+            let move = Exchange playerTiles
+            let outcome = makeMove testGame move
+
+            assertBool ("Expected move to be successful. ") $ isValid outcome
+
+            let Right nextGame = fmap newGame outcome
+            let newPlayer1 = player1 nextGame
+            assertBool ("Player 1 should have new letters on their rack. Player 1 was: " ++ (show newPlayer1)) (not $ firstPlayer == newPlayer1)
+
+            assertBool "Game has transitioned to the next player " (currentPlayer nextGame) == (player2 testGame) 
+                && (playerNumber testGame == 2) && (moveNumber testGame) == 2
+
+            let originalLetterBag = bag testGame
+            let exchangedLetterBag = fmap snd (exchangeLetters originalLetterBag playerTiles)
+
+            assertEqual "The letter bag for the game transition is as expected " exchangedLetterBag (Just $ bag nextGame)
+
+
+
 
 
