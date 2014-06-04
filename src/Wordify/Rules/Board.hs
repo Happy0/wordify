@@ -10,6 +10,9 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   import Data.Sequence as Seq
   import Wordify.Rules.Board.Internal
 
+  {- |
+    Returns all the squares on the board, ordered by column then row.
+  -}
   allSquares :: Board -> [(Pos, Square)]
   allSquares (Board (squares)) = Map.toList squares
 
