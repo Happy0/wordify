@@ -1,6 +1,6 @@
 module Wordify.Rules.Tile (Tile(Letter, Blank), tileValue, isPlayable, tileLetter) where
 
-{-
+{- |
 A tile is a letter with a value, or a Blank tile
 which may have been given a letter. Blank tiles
 always have the value '0'.
@@ -16,7 +16,7 @@ tileLetter (Letter char _) = Just char
 tileLetter (Blank (Just char)) = Just char
 tileLetter (Blank Nothing) = Nothing
 
-{-
+{- |
   isPlayble, applied to a played tile and compared against a tile
   returns true if a player returned a letter tile on their rack,
   or if the player played a Blank that has been given a letter

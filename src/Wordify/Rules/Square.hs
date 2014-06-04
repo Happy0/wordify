@@ -19,7 +19,7 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
   putTileOn (DoubleWord _) tile = DoubleWord $ Just tile
   putTileOn (TripleWord _) tile = TripleWord $ Just tile
 
-  {-
+  {- |
     Calculates the score of one played word.
 
     The first list contains squares that are already on the board
@@ -37,7 +37,7 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
       baseScore = (calcBaseScore xs) + (calcBaseScore ys)
       (wordBonuses, letterBonuses) = Seq.partition isWordBonus ys
 
-  {-
+  {- |
     The bonus operations that should be applied to the score of a word
     once it has been calculated. When using to calculate score, 
     double and triple word bonuses should be applied last.
@@ -56,7 +56,7 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
   isWordBonus (TripleWord _) = True
   isWordBonus _ = False
 
-  -- Base value of a square, without bonuses
+  -- | Base value of a square, without bonuses
   baseValue :: Square -> Int
   baseValue (Normal (Just tile)) = tileValue tile
   baseValue (DoubleLetter (Just tile)) = tileValue tile

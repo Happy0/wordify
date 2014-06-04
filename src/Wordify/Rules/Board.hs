@@ -1,4 +1,4 @@
-module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, squareAt, occupiedSquareAt,
+module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSquareAt,
  lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt) where
 
   import Wordify.Rules.Square
@@ -13,7 +13,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, squareAt, o
   allSquares :: Board -> [(Pos, Square)]
   allSquares (Board (squares)) = Map.toList squares
 
-  {-
+  {- |
     Places a tile on a square and yields the new board, if the 
     target square is empty. Otherwise yields 'Nothing'.
   -}
@@ -28,22 +28,28 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, squareAt, o
   squareAt :: Board -> Pos -> Maybe Square
   squareAt (Board squares)  = flip Map.lookup squares
 
+  {- | Returns the square at a given position if it is not occupied by a tile. Otherwise returns Nothing.-}
   unoccupiedSquareAt :: Board -> Pos -> Maybe Square
   unoccupiedSquareAt board pos = 
     squareAt board pos >>= (\sq -> if isOccupied sq then Nothing else Just sq)
 
+  {- | Returns the square at a given position if it is occupied by a tile. Otherwise returns Nothing.-}
   occupiedSquareAt :: Board -> Pos -> Maybe Square
   occupiedSquareAt board pos = squareAt board pos >>= squareIfOccupied
  
+  {- | All letters immediately above a given square until a non-occupied square -}
   lettersAbove :: Board -> Pos -> Seq (Pos,Square)
   lettersAbove board pos = walkFrom board pos above
 
+  {- | All letters immediately below a given square until a non-occupied square -}
   lettersBelow :: Board -> Pos -> Seq (Pos,Square)
   lettersBelow board pos = Seq.reverse $ walkFrom board pos below
 
+  {- | All letters immediately left of a given square until a non-occupied square -}
   lettersLeft :: Board -> Pos -> Seq (Pos,Square)
   lettersLeft board pos = Seq.reverse $ walkFrom board pos left
 
+  {- | All letters immediately right of a given square until a non-occupied square -}
   lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
 
@@ -59,7 +65,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, squareAt, o
       nextPos = direction(pos) >>= \nextPos -> occupiedSquareAt board nextPos >>=
         \sq -> return (nextPos, sq)
 
-  {-
+  {- |
     Creates an empty board. 
   -}
   emptyBoard :: Board

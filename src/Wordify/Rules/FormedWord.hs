@@ -1,4 +1,16 @@
-module Wordify.Rules.FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wordFormedFirstMove, wordStrings, wordsWithScores, mainWord, adjacentWords, playerPlaced) where
+module Wordify.Rules.FormedWord
+ (
+ FormedWords,
+ FormedWord,
+ wordsFormedMidGame,
+ wordFormedFirstMove,
+ wordStrings,
+ wordsWithScores,
+ mainWord,
+ adjacentWords,
+ playerPlaced,
+ bingoBonusApplied
+ ) where
 
   import Wordify.Rules.Pos
   import Wordify.Rules.Square
@@ -21,9 +33,9 @@ module Wordify.Rules.FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wo
   type FormedWord = Seq (Pos, Square)
   data Direction = Horizontal | Vertical deriving Eq
 
-  {- 
+  {- |
      Returns the word formed by the first move on the board. The word must cover
-     the star tile, and be linear.
+     the star tile, and be linear. Any blank tiles must be labeled.
    -}
   wordFormedFirstMove :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
   wordFormedFirstMove board tiles = 
@@ -32,10 +44,10 @@ module Wordify.Rules.FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wo
       else placedSquares board tiles >>= 
         \squares -> (\formed -> FirstWord $ main formed) <$> wordsFormed board squares
 
-  {- 
+  {- |
     Returns the words formed by the tiles played on the board. A played word
     must be connected to a tile already on the board (or intersect tiles on the board), 
-    and be formed linearly.
+    and be formed linearly. Any blank tiles must be labeled.
   -}
   wordsFormedMidGame :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
   wordsFormedMidGame board tiles = placedSquares board tiles >>=
@@ -46,18 +58,32 @@ module Wordify.Rules.FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wo
            then Right $ FormedWords x xs squares
             else Left $ DoesNotConnectWithWord
 
+  {- |
+    Returns the main word formed by the played tiles. The main word is
+    the linear stretch of tiles formed by the tiles placed.
+  -}
   mainWord :: FormedWords -> FormedWord
   mainWord (FirstWord word) = word
   mainWord (FormedWords main otherWords placed) = main
 
+  {- |
+    Returns the list of words which were adjacent to the main word formed. 
+  -}
   adjacentWords :: FormedWords -> [FormedWord]
   adjacentWords (FormedWords main otherWords _) = otherWords
   adjacentWords _ = []
 
+  {- | 
+    Returns the list of positions mapped to the squares that the player placed their tiles on.
+  -}
   playerPlaced :: FormedWords -> [(Pos, Square)]
   playerPlaced (FirstWord word) = Foldable.toList word
   playerPlaced (FormedWords _ _ placed) = Map.toList placed
 
+  {- |
+    Scores the words formed by the tiles placed. The first item in the tuple is the overall
+    score, while the second item is the list of scores for all the words formed.
+  -}
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
   wordsWithScores (FirstWord firstWord) = 
       let score = scoreWord Seq.empty (fmap snd firstWord) 
@@ -79,7 +105,13 @@ module Wordify.Rules.FormedWord (FormedWords, FormedWord, wordsFormedMidGame, wo
   bingoBonus :: Int -> Int -> Int
   bingoBonus score playedLetters = if playedLetters < 7 then score else score + 50
 
-  {-
+  {- |
+    Returns true if the player placed all 7 of their letters while forming these words, incurring a + 50 score bonus.
+  -}
+  bingoBonusApplied :: FormedWords -> Bool
+  bingoBonusApplied formed = (Prelude.length $ playerPlaced formed) == 7
+  
+  {- |
     Returns the words formed by the play as strings.
   -}
   wordStrings :: FormedWords -> [String]

@@ -15,7 +15,7 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   import qualified Data.Sequence as Seq
   import qualified Data.Foldable as F 
  
-  {-
+  {- |
     Starts a new game. 
 
     A game has at least 2 players, and 2 optional players (player 3 and 4.) The players should be newly created,
@@ -63,6 +63,9 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
 
+  {- |
+    Returns a history of the moves made in the game.
+  -}
   movesMade :: Game -> [Move]
   movesMade game = 
     case (history game) of 

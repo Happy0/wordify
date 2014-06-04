@@ -12,12 +12,22 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
 
   data Dictionary = Dictionary (HashSet.HashSet String) deriving Show
 
+  {- | 
+     Returns the list of words which are not present in the given dictionary from a 
+     list of input words.  
+  -}
   invalidWords :: Dictionary -> [String] -> [String]
   invalidWords dictionary = filter $ not . isValidWord dictionary
 
+  {-
+     RReturns true if the given word is in the given dictionary.
+  -}
   isValidWord :: Dictionary -> String -> Bool
   isValidWord (Dictionary dictionaryWords) = flip HashSet.member dictionaryWords
 
+  {- |
+    Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
+  -}
   makeDictionary :: FilePath -> IO (Either ScrabbleError Dictionary)
   makeDictionary filePath = 
     do

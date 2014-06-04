@@ -38,7 +38,7 @@ module Tests.FormedWordsTest where
             let expectedWord = S.fromList $ M.toList placed ++ [(Pos 7 5 "G5", Letter 'T' 1)]
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["TEST"]
 
-            let squares = catMaybes $ map (squareAt testBoard) positions
+            let squares = catMaybes $ map (unoccupiedSquareAt testBoard) positions
             let expectedSquares = zipWith putTileOn squares tiles
 
             let expectedFormedWord = S.fromList $ zip positions expectedSquares ++ [(Pos 7 5 "G5", Normal $ Just $ Letter 'T' 1)]
@@ -70,7 +70,7 @@ module Tests.FormedWordsTest where
 
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["YELLOW"]
 
-            let squares = catMaybes $ map (squareAt testBoard) positions
+            let squares = catMaybes $ map (unoccupiedSquareAt testBoard) positions
             let expectedSquares = zipWith putTileOn squares tiles
             
             let expectedFormedWord = S.fromList $ ((Pos 7 9 "G9"), (DoubleLetter $ Just $ Letter 'Y' 4)) : zip positions expectedSquares
@@ -100,7 +100,7 @@ module Tests.FormedWordsTest where
 
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["ABTELLY"]
 
-            let squares = catMaybes $ map (squareAt testBoard) positions
+            let squares = catMaybes $ map (unoccupiedSquareAt testBoard) positions
             let expectedFormedWord = S.fromList $ zip positions $ zipWith putTileOn squares tiles ++ verticalSquares
 
             assertEqual "Unexpected main word formed" expectedFormedWord (mainWord wordsFormed)
@@ -129,7 +129,7 @@ module Tests.FormedWordsTest where
 
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["TELLYAB"]
 
-            let squares = catMaybes $ map (squareAt testBoard) positions
+            let squares = catMaybes $ map (unoccupiedSquareAt testBoard) positions
 
             let leadingPositions = catMaybes $ map posAt $ iterate (\(x,y) -> (x,y + 1)) (7,5)
             let expectedFormedWord = S.fromList $ (zip leadingPositions verticalSquares) ++ (zip positions $ zipWith putTileOn squares tiles)
@@ -162,7 +162,7 @@ module Tests.FormedWordsTest where
 
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["ABTELLYAB"]
 
-            let placedSquares = catMaybes $ map (squareAt testBoard) placedPositions
+            let placedSquares = catMaybes $ map (unoccupiedSquareAt testBoard) placedPositions
             let tilesOnPlaced = zipWith putTileOn placedSquares tiles
 
             let expectedFormedWord = S.fromList $ zip abovePositions (take 2 tilesOnPlaced) ++ (zip verticalPositions verticalSquares) ++ (zip belowPositions (drop 2 tilesOnPlaced))
@@ -193,7 +193,7 @@ module Tests.FormedWordsTest where
 
             assertBool "Unexpected words formed " $ (wordStrings wordsFormed) == ["ABHELLOAB"]
 
-            let placedSquares = catMaybes $ map (squareAt testBoard) placedPositions
+            let placedSquares = catMaybes $ map (unoccupiedSquareAt testBoard) placedPositions
             let tilesOnPlaced = zipWith putTileOn placedSquares tiles
 
             let expectedFormedWord = S.fromList $ zip leftPositions (take 2 tilesOnPlaced) ++ (zip horizontalPositions horizontalSquares) ++ (zip rightPositions (drop 2 tilesOnPlaced))
@@ -222,7 +222,7 @@ module Tests.FormedWordsTest where
 
             assertEqual "Unexpected words formed" ["OILS", "TO", "EI", "LS"] (wordStrings wordsFormed)
 
-            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let squares = zipWith putTileOn (catMaybes $ map (unoccupiedSquareAt testBoard) positions) tiles
             let positionsFromTop = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (8,5)
             let squaresWithPositions = zip positionsFromTop $ (init squares) ++ [Normal $ Just $ Letter 'L' 1] ++ [last squares]
             let expectedMainWord = S.fromList $ squaresWithPositions
@@ -255,7 +255,7 @@ module Tests.FormedWordsTest where
 
             assertEqual "Unexpected words formed" ["BITER", "IT", "TE", "RL"] (wordStrings wordsFormed)
 
-            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let squares = zipWith putTileOn (catMaybes $ map (unoccupiedSquareAt testBoard) positions) tiles
             let positionsFromTop = catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) (6,4)
             let squaresWithPositions = zip positionsFromTop $ (init squares) ++ [Normal $ Just $ Letter 'E' 1] ++ [last squares]
             let expectedMainWord = S.fromList $ squaresWithPositions
@@ -288,7 +288,7 @@ module Tests.FormedWordsTest where
 
             assertEqual "Unexpected words formed" ["HEJ", "HE", "JL"] (wordStrings wordsFormed)
 
-            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let squares = zipWith putTileOn (catMaybes $ map (unoccupiedSquareAt testBoard) positions) tiles
             let positionsFromLeft = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,6)
             let squaresWithPositions = zip positionsFromLeft $ (init squares) ++ [Normal $ Just $ Letter 'E' 1] ++ [last squares]
             let expectedMainWord = S.fromList $ squaresWithPositions
@@ -321,7 +321,7 @@ module Tests.FormedWordsTest where
 
             assertEqual "Unexpected words formed" ["ILL", "EI", "LL"] (wordStrings wordsFormed)
 
-            let squares = zipWith putTileOn (catMaybes $ map (squareAt testBoard) positions) tiles
+            let squares = zipWith putTileOn (catMaybes $ map (unoccupiedSquareAt testBoard) positions) tiles
             let positionsFromLeft = catMaybes $ map posAt $ iterate (\(x,y) -> (x + 1, y)) (6,8)
             let squaresWithPositions = zip positionsFromLeft $ (init squares) ++ [Normal $ Just $ Letter 'L' 1] ++ [last squares]
             let expectedMainWord = S.fromList $ squaresWithPositions

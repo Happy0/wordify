@@ -103,7 +103,7 @@ module Wordify.Rules.Move (makeMove
       numPasses = passes game + 1
       gameFinished = numPasses == ((numberOfPlayers game) * 2)
 
-  {- 
+  {- |
     Restores a game from a list of moves. The game must be set up in the way the original game was set up
     (including the letter bag constructed with the same tiles and random generator, dictionary and the list of players
     in the original order.)
@@ -115,7 +115,7 @@ module Wordify.Rules.Move (makeMove
   restoreGame :: Game -> NE.NonEmpty Move -> Either ScrabbleError (NE.NonEmpty GameTransition)
   restoreGame game = T.sequence . restoreGameLazy game
   
-  {-
+  {- |
     Maps each move to a resulting game transition, if the move is legal. Has the same semantics as 'restoreGame'
     but returns a list of 'Either' so that laziness can be maintained, meaning all the game transitions
     dont have to be buffered before they can be consumed.  

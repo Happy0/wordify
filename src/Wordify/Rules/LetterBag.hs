@@ -24,39 +24,9 @@ import Data.Array.ST
 import Control.Monad.ST
 import Data.STRef
 
-{-
+{- |
   Creates a letter bag from a file where each line contains a space delimited letter character, letter value, and letter distribution.
-  A blank letter is represented by a '_' character and has no value.
-
-  Example file:
-
-  _ 2
-  E 1 12
-  A 1 9
-  I 1 9
-  O 1 8
-  N 1 6
-  R 1 6
-  T 1 6
-  L 1 4
-  S 1 4
-  U 1 4
-  D 2 4
-  G 2 3
-  B 3 2
-  C 3 2
-  M 3 2
-  P 3 2
-  F 4 2
-  H 4 2
-  V 4 2
-  W 4 2
-  Y 4 2
-  K 5 1
-  J 8 1
-  X 8 1
-  Q 10 1
-  Z 10 1
+  A blank letter is represented by a '_' character and has a disribution, but no value.
 
  If successful, the letter bag is shuffled before it is returned.
 
@@ -78,7 +48,7 @@ parseBagString path bagString  =
           gen <- newStdGen
           return $ Right (LetterBag parsedTiles (length parsedTiles) gen)
 
-{-
+{- |
   Creates a letter bag from a list of tiles. The order of the tiles is retained in the resulting letter bag.
 
   This function is effectful as it is necessary to create a stdGen for list to allow
@@ -87,7 +57,7 @@ parseBagString path bagString  =
 bagFromTiles :: [Tile] -> IO LetterBag
 bagFromTiles bagTiles = newStdGen >>= return . LetterBag bagTiles (length bagTiles)
 
-{-
+{- |
   Takes 'n' numbers from a letter bag, yielding 'Nothing'
   if there is not enough tiles left in the bag or a 'Just'
   tuple where the left value is the taken tiles, and the right
@@ -101,7 +71,7 @@ takeLetters (LetterBag bagTiles lettersLeft gen) numTake =
     newNumLetters = lettersLeft - numTake
     (taken, newLetters) = splitAt numTake bagTiles
 
-{-
+{- |
   Exchanges given tiles for the same number of tiles from the bag.
   The exchanged letters are added to the bag, the bag is then shuffled, 
   and then the same number of tiles as exchanged are drawn from the bag.
@@ -117,7 +87,7 @@ exchangeLetters (LetterBag bagTiles lettersLeft gen) exchanged =
       numLettersGiven = length exchanged
       intermediateBag = LetterBag (exchanged ++ bagTiles) (lettersLeft + numLettersGiven) gen
 
-{-
+{- |
   Shuffles the contents of a letter bag. The bag is shuffled using the random generator which was created
   while constructing the bag.
 
@@ -154,7 +124,7 @@ shuffleBag (LetterBag bagTiles size gen) =
         newArr :: Int -> [a] -> ST s (STArray s Int a)
         newArr z zs =  newListArray (1,z) zs
 
-{- 
+{- |
   Creates a letter bag using a list of tiles, and a generator which should be used when shuffling the bag.
   This function allows a game to be stepped through from the beginning where the moves and original generator were
   recorded, with any shuffling yielding the same bag as in the original game.
@@ -162,7 +132,7 @@ shuffleBag (LetterBag bagTiles size gen) =
 makeBagUsingGenerator :: [Tile] -> StdGen -> LetterBag
 makeBagUsingGenerator tiles randomGenerator = LetterBag tiles (length tiles) randomGenerator
 
-{-
+{- |
   Get the letter bag's current generator, which will be used to shuffle the contents of the bag in the next exchange
   or shuffle. If taken at the start of the game, with the original list of tiles in the bag in order, the game moves
   may be replayed in order with the original results of any shuffle retained.
@@ -170,7 +140,7 @@ makeBagUsingGenerator tiles randomGenerator = LetterBag tiles (length tiles) ran
 getGenerator :: LetterBag -> StdGen
 getGenerator = generator
 
-{-
+{- |
   Shuffles a letter bag using a new random generator. This function should be used when spawning a new game using
   a letter bag with all the tiles remaining so that letter bags are unique between game instances.
 -}

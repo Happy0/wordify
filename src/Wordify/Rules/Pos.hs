@@ -14,22 +14,23 @@ module Wordify.Rules.Pos (Pos, posAt, above, below, left, right, xPos, yPos, gri
   posAt :: (Int, Int) -> Maybe Pos
   posAt = flip Map.lookup posMap
 
-  -- The position above the given position, if it exists.
+  -- | The position above the given position, if it exists.
   above :: Pos -> Maybe Pos
   above (Pos x y _) = posAt (x,y + 1) 
 
-  -- The position below the given position, if it exists.
+  -- | The position below the given position, if it exists.
   below :: Pos -> Maybe Pos
   below (Pos x y _) = posAt (x, y - 1 ) 
 
-  -- The position to the left of the given position, if it exists.
+  -- | The position to the left of the given position, if it exists.
   left :: Pos -> Maybe Pos
   left (Pos x y _) = posAt (x - 1, y) 
 
-  -- The position to the right of the given position, if it exists.
+  -- | The position to the right of the given position, if it exists.
   right :: Pos -> Maybe Pos
   right (Pos x y _) = posAt (x + 1, y)
 
+  -- | The position of the star square
   starPos :: Pos
   starPos = Pos 8 8 "H8"
 

@@ -46,7 +46,7 @@ module Wordify.Rules.Player (Player, LetterRack, name, rack, score, makePlayer, 
   removeTiles :: Player -> [Tile] -> Player
   removeTiles player toRemove = player {rack = LetterRack $ tilesOnRack player \\ toRemove}
 
-  {-
+  {- |
     Removes played tiles from the player's tile rack, if it was possible for the player
     to play those tiles in the first place. A player may play a tile on his rack, unless
     it is a blank, which must first be assigned a letter. 
@@ -59,7 +59,7 @@ module Wordify.Rules.Player (Player, LetterRack, name, rack, score, makePlayer, 
     where
       removedFromRack playing playedTiles = player {rack = LetterRack (deleteFirstsBy isPlayable (tilesOnRack playing) playedTiles) }
 
-  {-
+  {- |
     Returns true if the player cannot place any of the given tiles. A player cannot play
     a Blank tile that they have not given a letter, or a tile not on their rack.
   -}
