@@ -9,21 +9,38 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
   import Wordify.Rules.Tile
   import Wordify.Rules.Player
 
-  data ScrabbleError = LetterBagFileNotOpenable String
+  data ScrabbleError =
+    -- | The caller has supplied an invalid path to a letter bag file, or the file is not openable
+    LetterBagFileNotOpenable String
+    -- | The letter bag file is marformed, so could not be parsed.
     | MalformedLetterBagFile FilePath
+    -- | The path given to a dictionary file was invalid.
     | DictionaryFileNotFound FilePath
+    -- | The dictionary file could not be parsed as it was malformed.
     | MalformedDictionaryFile FilePath
+    -- | A letter bag with insufficient tiles was used to create a game.
     | NotEnoughLettersInStartingBag Int
+    -- | The player has made an illegal tile placement. Tiles placed must form a line of tiles.
     | MisplacedLetter Pos
+    -- | The tiles the player placed do not connect with any word (applies after the first move on the board)
     | DoesNotConnectWithWord
+    -- | The client put the player in the situation to be able to place no tiles.
     | NoTilesPlaced
+    -- | The first move on the board does not cover the star.
     | DoesNotIntersectCoverTheStarTile
+    -- | The client allowed the player to place tiles on a square that is already occupied with tiles.
     | PlacedTileOnOccupiedSquare Pos Tile
+    -- | A blank tile must be labeled with a letter before being placed.
     | CannotPlaceBlankWithoutLetter Pos
+    -- | The tiles the player placed formed one or more words which are not in the dictionary.
     | WordsNotInDictionary [String]
+    -- | Client errors. The client should not put the player in the situation to be able to do these things.
     | PlayerCannotPlace LetterRack [Tile]
+    -- | The client allowed a move to be made when the game is finished.
     | GameNotInProgress
+    -- | The client allowed the player to attempt to exchange when no letters were left in the bag.
     | CannotExchangeWhenNoLettersInBag
+    -- | The client allowed the player to attempt to exchange tiles that they do not have.
     | PlayerCannotExchange LetterRack [Tile]
     | MiscError String deriving Eq
 
