@@ -28,9 +28,16 @@ module Wordify.Rules.Move (makeMove
   import qualified Data.Map as M
   import Data.Char
 
-  data GameTransition = MoveTransition Player Game FormedWords
-                        | ExchangeTransition Game Player Player 
+  data GameTransition = -- | The new player (with their updated letter rack and score), new game state, and the words formed by the move
+                        MoveTransition Player Game FormedWords
+                        -- | The new game state, and the player with their rack before and after the exchange respectively.
+                        | ExchangeTransition Game Player Player
+                        -- | The new game state with the opportunity to play passed on to the next player.
                         | PassTransition Game 
+                        {- | 
+                          The game has finished. The final game state, and the final words formed (if the game was ended by a
+                          player placing their final tiles.)
+                        -}
                         | GameFinished Game (Maybe FormedWords) [Player]
 
   makeMove :: Game -> Move -> Either ScrabbleError GameTransition

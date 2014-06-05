@@ -203,9 +203,18 @@ module Tests.FullGameTest where
             let outcome = makeMove testGame move
 
             assertBool ("Expected move to be successful. ") $ isValid outcome
+            let Right transition = outcome
 
-            let Right nextGame = fmap newGame outcome
+            let nextGame = newGame transition
             let newPlayer1 = player1 nextGame
+
+
+            case transition of 
+                ExchangeTransition game playerBefore playerAfter -> 
+                    do
+                        assertEqual "playerBefore in the transition should be the player before making the move" (firstPlayer) playerBefore
+                        assertEqual "playerAfter in the transition should be the player after making the move" (newPlayer1) playerAfter
+
             assertBool ("Player 1 should have new letters on their rack. Player 1 was: " ++ (show newPlayer1)) (not $ firstPlayer == newPlayer1)
 
             assertEqual "Game has transitioned to the next player " (currentPlayer nextGame)  (player2 testGame)
