@@ -169,7 +169,6 @@ module Tests.FullGameTest where
               GameFinished _ _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8 
               otherwise -> assertFailure "Unexpected end state. Expected 'Game finished' "
 
-
     gameDoesNotEndOnNonConsecutiveSkips :: Assertion
     gameDoesNotEndOnNonConsecutiveSkips =
       do
@@ -225,6 +224,22 @@ module Tests.FullGameTest where
             let exchangedLetterBag = fmap snd (exchangeLetters originalLetterBag playerTiles)
 
             assertEqual "The letter bag for the game transition is as expected " exchangedLetterBag (Just $ bag nextGame)
+
+    playerInMoveTransitionIsAsExpected :: Assertion
+    playerInMoveTransitionIsAsExpected =
+        do
+            game <- setupGame
+            assertBool "Could not initialise game for test " $ isValid game
+            let Right testGame = game
+
+            let move = head moves
+            let outcome = makeMove testGame move
+
+            case outcome of
+                Right (MoveTransition player game formedwords) ->
+                    do
+                        assertEqual "Player should be the new state of the player in the game " (player1 game) player
+                otherwise -> assertFailure "Failed to set up test correctly."
 
 
 

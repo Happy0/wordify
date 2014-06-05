@@ -69,7 +69,8 @@ tests = F.testGroup "Regressions" [
             F.testCase "The full game playthrough test succeeds as expected" playThroughTest,
             F.testCase "The game is ended if all players skip twice consecutively" gameEndsOnConsecutiveSkips,
             F.testCase "The game is not ended if skips are not consecutive twice" gameDoesNotEndOnNonConsecutiveSkips,
-            F.testCase "An exchange move behaves as expected" exchangeMoveExchangesLetters 
+            F.testCase "An exchange move behaves as expected" exchangeMoveExchangesLetters,
+            F.testCase "A player is as expected in the returned MoveTransition" playerInMoveTransitionIsAsExpected
         ]
 
     ]
