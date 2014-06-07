@@ -9,6 +9,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   import Control.Monad
   import Data.Sequence as Seq
   import Wordify.Rules.Board.Internal
+  import Control.Applicative
 
   {- |
     Returns all the squares on the board, ordered by column then row.
@@ -21,12 +22,11 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
     target square is empty. Otherwise yields 'Nothing'.
   -}
   placeTile :: Board -> Tile -> Pos -> Maybe Board
-  placeTile (Board (squares)) tile pos = 
-    squareAt (Board squares) pos >>= boardIfSquareEmpty
-    where
-      boardIfSquareEmpty square = if (isOccupied square) then Nothing else
-       Just (Board $ Map.insert pos (newSquare square) squares)
-      newSquare square = putTileOn square tile
+  placeTile board tile pos = 
+    (\sq -> insertSquare board pos (putTileOn sq tile)) <$> unoccupiedSquareAt board pos
+
+  insertSquare :: Board -> Pos -> Square -> Board
+  insertSquare (Board squares) pos square = Board $ Map.insert pos square squares
 
   squareAt :: Board -> Pos -> Maybe Square
   squareAt (Board squares)  = flip Map.lookup squares
