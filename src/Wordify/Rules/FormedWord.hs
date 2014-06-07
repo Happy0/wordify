@@ -64,21 +64,21 @@ module Wordify.Rules.FormedWord
   -}
   mainWord :: FormedWords -> FormedWord
   mainWord (FirstWord word) = word
-  mainWord (FormedWords main otherWords placed) = main
+  mainWord formed = main formed
 
   {- |
     Returns the list of words which were adjacent to the main word formed. 
   -}
   adjacentWords :: FormedWords -> [FormedWord]
-  adjacentWords (FormedWords main otherWords _) = otherWords
-  adjacentWords _ = []
+  adjacentWords (FirstWord _) = []
+  adjacentWords formed = otherWords formed
 
   {- | 
     Returns the list of positions mapped to the squares that the player placed their tiles on.
   -}
   playerPlaced :: FormedWords -> [(Pos, Square)]
   playerPlaced (FirstWord word) = Foldable.toList word
-  playerPlaced (FormedWords _ _ placed) = Map.toList placed
+  playerPlaced formed = Map.toList $ placed formed
 
   {- |
     Scores the words formed by the tiles placed. The first item in the tuple is the overall
@@ -88,14 +88,14 @@ module Wordify.Rules.FormedWord
   wordsWithScores (FirstWord firstWord) = 
       let score = scoreWord Seq.empty (fmap snd firstWord) 
       in (bingoBonus score (Seq.length firstWord), [(makeString firstWord, score)])
-  wordsWithScores (FormedWords mainWord otherWords placed) =
-	  ((bingoBonus (Prelude.sum scores) (Map.size placed)), Prelude.zip strings scores)
+  wordsWithScores (FormedWords mainW others played) =
+	  ((bingoBonus (Prelude.sum scores) (Map.size played)), Prelude.zip strings scores)
     where
-      allWords = mainWord : otherWords
+      allWords = mainW : others
       strings = Prelude.map makeString allWords
-      scores = Prelude.map (\formedWord -> let (placed, alreadyPlaced) = partitionPlaced formedWord 
-                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd placed) ) allWords
-      partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos placed) formedWord
+      scores = Prelude.map (\formedWord -> let (played, alreadyPlaced) = partitionPlaced formedWord 
+                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd played) ) allWords
+      partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos played) formedWord
  
 
   {-

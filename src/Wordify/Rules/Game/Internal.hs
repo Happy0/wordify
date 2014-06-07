@@ -66,12 +66,12 @@ module Wordify.Rules.Game.Internal (updateGame, Game(Game),
     case playing of
       1 -> game {player1 = player}
       2 -> game {player2 = player}
-      3 -> game {optionalPlayers = (\(player3, player4) -> (player, player4)) <$> optional }
-      4 -> game {optionalPlayers = (\(player3, player4) -> (player3, (Just player))) <$> optional  }
+      3 -> game {optionalPlayers = (\(_, player4) -> (player, player4)) <$> maybePlayers }
+      _ -> game {optionalPlayers = (\(player3, _) -> (player3, (Just player))) <$> maybePlayers  }
 
     where
       playing = playerNumber game
-      optional = optionalPlayers game
+      maybePlayers = optionalPlayers game
 
   {- Returns the next player to play. If there are optional players, loops back round to 'player 1' where appropriate. -}
   nextPlayer :: Game -> (Int, Player)
@@ -82,16 +82,16 @@ module Wordify.Rules.Game.Internal (updateGame, Game(Game),
       if (playing == 2) then (3, player3 )
       else 
         case player4 of
-          Just player4 -> (4, player4)
+          Just playr4 -> (4, playr4)
           Nothing -> (1, playr1)
-        ) $ optional
-    | (playing == 4) = (1, playr1)
+        ) $ maybePlayers
+    | otherwise = (1, playr1)
 
     where
       playing = playerNumber game
       playr2 = player2 game
       playr1 = player1 game
-      optional = optionalPlayers game
+      maybePlayers = optionalPlayers game
 
 
   pass :: Game -> Game

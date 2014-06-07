@@ -6,11 +6,8 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   import Wordify.Rules.Board
   import Wordify.Rules.Dictionary
   import Wordify.Rules.LetterBag
-  import Data.IntMap as IntMap
-  import Data.List
   import Wordify.Rules.ScrabbleError
   import Data.Maybe
-  import Control.Applicative
   import Wordify.Rules.Game.Internal
   import qualified Data.Sequence as Seq
   import qualified Data.Foldable as F 
@@ -27,27 +24,27 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
     tiles in the letter bag to distribute to the players.
   -}
   makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError Game
-  makeGame (play1, play2, optionalPlayers) bag dictionary =
-   if (numberOfPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
-    else Right $ (Game player1 player2 optional emptyBoard finalBag dictionary player1 1 1 0 InProgress initialHistory)
+  makeGame (play1, play2, maybePlayers) initialBag dict =
+   if (numPlayers * 7 > lettersInBag) then Left (NotEnoughLettersInStartingBag lettersInBag)
+    else Right $ (Game initialPlayer1 initialPlayer2 initialOptionalPlayers emptyBoard finalBag dict initialPlayer1 1 1 0 InProgress initialHistory)
     where
-          lettersInBag = bagSize bag
-          numberOfPlayers = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) optionalPlayers
-          (player1, firstBag) = givePlayerTiles play1 bag
-          (player2, secondBag) = givePlayerTiles play2 firstBag
-          (optional, finalBag) = maybe (Nothing, secondBag) (\optional -> fillOptional optional secondBag) optionalPlayers
-          givePlayerTiles player bag = maybe (player, bag) (\(tiles, newBag) -> (giveTiles player tiles, newBag) ) $ takeLetters bag 7
+          lettersInBag = bagSize initialBag
+          numPlayers = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) maybePlayers
+          (initialPlayer1, firstBag) = givePlayerTiles play1 initialBag
+          (initialPlayer2, secondBag) = givePlayerTiles play2 firstBag
+          (initialOptionalPlayers, finalBag) = maybe (Nothing, secondBag) (\optional -> fillOptional optional secondBag) maybePlayers
+          givePlayerTiles player currentBag = maybe (player, currentBag) (\(givenTiles, newBag) -> (giveTiles player givenTiles, newBag) ) $ takeLetters currentBag 7
 
-          fillOptional (thirdPlayer, optional) bag =
+          fillOptional (thirdPlayer, optional) letterBag =
              case optional of 
                 Nothing -> (Just (player3, Nothing), thirdBag)
                 Just (lastPlayer) -> let (player4, fourthBag) = makePlayer4 lastPlayer
                                      in (Just (player3, (Just player4)), fourthBag)
              where
-                (player3, thirdBag) = givePlayerTiles thirdPlayer bag
+                (player3, thirdBag) = givePlayerTiles thirdPlayer letterBag
                 makePlayer4 player = givePlayerTiles player thirdBag
 
-          initialHistory = History bag Seq.empty
+          initialHistory = History initialBag Seq.empty
 
   players :: Game -> [Player]
   players game = [player1 game, player2 game] ++ optionals
@@ -61,7 +58,7 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   getGameStatus game = gameStatus game
 
   numberOfPlayers :: Game -> Int
-  numberOfPlayers game = 2 + maybe 0 (\(player3, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
+  numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
 
   {- |
     Returns a history of the moves made in the game.

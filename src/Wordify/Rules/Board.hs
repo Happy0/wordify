@@ -63,9 +63,9 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   -}
   walkFrom :: Board -> Pos -> (Pos -> Maybe Pos) -> Seq (Pos,Square)
   walkFrom board pos direction = maybe (mzero) (\(next,sq) ->
-   (next, sq) <| (walkFrom board next direction) ) nextPos
+   (next, sq) <| (walkFrom board next direction) ) neighbourPos
     where
-      nextPos = direction(pos) >>= \nextPos -> occupiedSquareAt board nextPos >>=
+      neighbourPos = direction(pos) >>= \nextPos -> occupiedSquareAt board nextPos >>=
         \sq -> return (nextPos, sq)
 
   {- |
@@ -98,9 +98,10 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
       posSquares = mapMaybe (\((x,y), sq) -> fmap (\pos -> (pos, sq)) (posAt (x,y))) labeledSquares
 
       toSquare :: String -> Square
-      toSquare "N" = Normal Nothing
       toSquare "DL" = DoubleLetter Nothing
       toSquare "TL" = TripleLetter Nothing
       toSquare "DW" = DoubleWord Nothing
-      toSquare "TW" = TripleWord Nothing 
+      toSquare "TW" = TripleWord Nothing
+      toSquare _ = Normal Nothing
+
 

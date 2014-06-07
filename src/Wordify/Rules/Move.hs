@@ -40,6 +40,11 @@ module Wordify.Rules.Move (makeMove
                         -}
                         | GameFinished Game (Maybe FormedWords) [Player]
 
+  {-|
+    Transitiions the game to the next state. If the move places tiles, the player must have the tiles to place and
+    place the tiles legally. If the move exchanges tiles, the bag must not be empty and the player must have the
+    tiles to exchange. A ScrabbleError is returned if these condtions are not the case.
+  -}
   makeMove :: Game -> Move -> Either ScrabbleError GameTransition
   makeMove game move
     | (not $ gameStatus game == InProgress) = Left GameNotInProgress

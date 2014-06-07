@@ -130,7 +130,7 @@ shuffleBag (LetterBag bagTiles size gen) =
   recorded, with any shuffling yielding the same bag as in the original game.
 -}
 makeBagUsingGenerator :: [Tile] -> StdGen -> LetterBag
-makeBagUsingGenerator tiles randomGenerator = LetterBag tiles (length tiles) randomGenerator
+makeBagUsingGenerator bagTiles randomGenerator = LetterBag bagTiles (length bagTiles) randomGenerator
 
 {- |
   Get the letter bag's current generator, which will be used to shuffle the contents of the bag in the next exchange
@@ -151,29 +151,29 @@ parseBag :: String -> Either ParseError [Tile]
 parseBag contents = parse bagFile "Malformed letter bag file" contents
   where
     bagFile =
-      do tiles <- many bagLine
+      do bagTiles <- many bagLine
          eof
-         let flattenedTiles = concat tiles
+         let flattenedTiles = concat bagTiles
          return $ flattenedTiles
 
     bagLine =
-      do tiles <- try (letterTiles) <|> blankTiles
-         return tiles
+      do bagTiles <- try (letterTiles) <|> blankTiles
+         return bagTiles
 
     letterTiles =
       do 
-         tileLetter <- letter
-         space
+         tileCharacter <- letter
+         _ <- space
          value <- many digit
-         space
+         _ <- space
          distribution <- many digit
-         newline
-         return $ replicate (read distribution) (Letter (toUpper tileLetter) (read value))
+         _ <- newline
+         return $ replicate (read distribution) (Letter (toUpper tileCharacter) (read value))
 
     blankTiles =
       do 
-        char <- char '_'
-        space
+        _ <- char '_'
+        _ <- space
         distribution <- many digit
-        newline
+        _ <- newline
         return $ replicate (read distribution) (Blank Nothing)
