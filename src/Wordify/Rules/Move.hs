@@ -24,9 +24,9 @@ module Wordify.Rules.Move (makeMove
   import Data.Maybe
   import qualified Data.List.NonEmpty as NE
   import qualified Data.Traversable as T
-
   import qualified Data.Map as M
   import Data.Char
+  import Control.Error.Util
 
   data GameTransition = -- | The new player (with their updated letter rack and score), new game state, and the words formed by the move
                         MoveTransition Player Game FormedWords
@@ -177,16 +177,13 @@ module Wordify.Rules.Move (makeMove
   newBoard :: Board -> M.Map Pos Tile -> Either ScrabbleError Board
   newBoard board placed = foldM (\board (pos, tile) -> newBoardIfUnoccupied board pos tile) board $ Map.toList placed
     where
-      newBoardIfUnoccupied board pos tile = maybe (Left $ PlacedTileOnOccupiedSquare pos tile) Right $ placeTile board tile pos
+      newBoardIfUnoccupied board pos tile = note (PlacedTileOnOccupiedSquare pos tile) $ placeTile board tile pos
 
   
   removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either ScrabbleError Player
   removeLettersandGiveScore player tiles justScored = 
-    let newPlayer = removePlayedTiles player tiles 
-    in case newPlayer of
-      Nothing -> Left $ PlayerCannotPlace (rack player) tiles
-      Just (playerUpdatedRack) -> Right $ increaseScore playerUpdatedRack justScored
-    
+    let newPlayer = flip increaseScore justScored <$> removePlayedTiles player tiles 
+    in note (PlayerCannotPlace (rack player) tiles) newPlayer
 
   scoresIfWordsLegal :: Dictionary -> FormedWords -> Either ScrabbleError (Int, [(String, Int)])
   scoresIfWordsLegal dict formedWords = 
