@@ -1,6 +1,6 @@
 module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, MalformedLetterBagFile,
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
-  MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotIntersectCoverTheStarTile,
+  MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotCoverTheStarTile,
    PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
    GameNotInProgress, CannotExchangeWhenNoLettersInBag, PlayerCannotExchange)) where
 
@@ -27,21 +27,21 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
     -- | The client put the player in the situation to be able to place no tiles.
     | NoTilesPlaced
     -- | The first move on the board does not cover the star.
-    | DoesNotIntersectCoverTheStarTile
+    | DoesNotCoverTheStarTile
     -- | The client allowed the player to place tiles on a square that is already occupied with tiles.
     | PlacedTileOnOccupiedSquare Pos Tile
     -- | A blank tile must be labeled with a letter before being placed.
     | CannotPlaceBlankWithoutLetter Pos
     -- | The tiles the player placed formed one or more words which are not in the dictionary.
     | WordsNotInDictionary [String]
-    -- | Client errors. The client should not put the player in the situation to be able to do these things.
+    -- | The caller allowed the client to place tiles on the board which were not in their rack.
     | PlayerCannotPlace LetterRack [Tile]
-    -- | The client allowed a move to be made when the game is finished.
-    | GameNotInProgress
-    -- | The client allowed the player to attempt to exchange when no letters were left in the bag.
+    -- | The caller allowed the player to attempt to exchange when no letters were left in the bag.
     | CannotExchangeWhenNoLettersInBag
-    -- | The client allowed the player to attempt to exchange tiles that they do not have.
+    -- | The caller allowed the player to attempt to exchange tiles that they do not have.
     | PlayerCannotExchange LetterRack [Tile]
+        -- | The caller allowed a move to be made when the game is finished.
+    | GameNotInProgress
     | MiscError String deriving Eq
 
   instance Show ScrabbleError
@@ -54,7 +54,7 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
     show (MisplacedLetter pos) = "Placed tiles were not legally placed. Starting at tile placed at pos: " ++ show pos
     show (DoesNotConnectWithWord) = "Placed tiles do not connect with an existing word on the board."
     show (NoTilesPlaced) = "No tiles were placed in the move."
-    show (DoesNotIntersectCoverTheStarTile) = "First move must go through the star."
+    show (DoesNotCoverTheStarTile) = "First move must go through the star."
     show (PlacedTileOnOccupiedSquare pos _) = "Move replaces a tile already on the board at " ++ show pos ++ ". This is not a legal move."
     show (CannotPlaceBlankWithoutLetter pos) = "A played blank tile must be given a letter. Blank tile played at " ++ show pos ++ " was not given a letter."
     show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs

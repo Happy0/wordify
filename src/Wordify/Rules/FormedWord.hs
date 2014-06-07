@@ -40,7 +40,7 @@ module Wordify.Rules.FormedWord
   wordFormedFirstMove :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
   wordFormedFirstMove board tiles = 
     if (starPos `Map.notMember` tiles) 
-      then Left DoesNotIntersectCoverTheStarTile
+      then Left DoesNotCoverTheStarTile
       else placedSquares board tiles >>= 
         \squares -> (\formed -> FirstWord $ main formed) <$> wordsFormed board squares
 

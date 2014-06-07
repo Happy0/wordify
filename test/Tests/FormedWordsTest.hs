@@ -476,7 +476,7 @@ module Tests.FormedWordsTest where
 
             let formed = wordFormedFirstMove emptyBoard placed
 
-            assertEqual "Unexpected result for placing tiles which do not intersect the star on the first move" (Left DoesNotIntersectCoverTheStarTile) formed
+            assertEqual "Unexpected result for placing tiles which do not intersect the star on the first move" (Left DoesNotCoverTheStarTile) formed
 
     firstWordNotContigiousWord :: Assertion
     firstWordNotContigiousWord =
