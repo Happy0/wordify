@@ -93,9 +93,9 @@ module Wordify.Rules.FormedWord
     where
       allWords = mainW : others
       strings = Prelude.map makeString allWords
-      scores = Prelude.map (\formedWord -> let (played, alreadyPlaced) = partitionPlaced formedWord 
-                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd played) ) allWords
-      partitionPlaced formedWord = Seq.partition (\(pos, square) -> Map.member pos played) formedWord
+      scores = Prelude.map (\formedWord -> let (notAlreadyPlaced, alreadyPlaced) = partitionPlaced formedWord 
+                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd notAlreadyPlaced) ) allWords
+      partitionPlaced formedWord = Seq.partition (\(pos, _) -> Map.member pos played) formedWord
  
 
   {-
@@ -116,7 +116,7 @@ module Wordify.Rules.FormedWord
   -}
   wordStrings :: FormedWords -> [String]
   wordStrings (FirstWord word) = [makeString word]
-  wordStrings (FormedWords mainWord otherWords _) = Prelude.map makeString (mainWord : otherWords)
+  wordStrings formed = Prelude.map makeString $ (main formed) : otherWords formed
 
   makeString :: FormedWord -> String
   makeString word = catMaybes $ Prelude.map (\(_, sq) -> tileIfOccupied sq >>= tileLetter) $ Foldable.toList word
@@ -178,6 +178,7 @@ module Wordify.Rules.FormedWord
                          then Right $ ( word >< ( between |> (pos,square) ), pos)
                           else Left $ MisplacedLetter pos
                 ) (Seq.singleton x, minPos ) $ xs
+              [] -> Left NoTilesPlaced
 
         placedList = Map.toAscList tiles
 

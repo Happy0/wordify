@@ -36,7 +36,8 @@ module Wordify.Rules.Move (makeMove
                         | PassTransition Game 
                         {- | 
                           The game has finished. The final game state, and the final words formed (if the game was ended by a
-                          player placing their final tiles.)
+                          player placing their final tiles.) The players before their scores were increased or decreased is also
+                          given.
                         -}
                         | GameFinished Game (Maybe FormedWords) [Player]
 
