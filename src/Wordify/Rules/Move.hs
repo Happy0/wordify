@@ -9,8 +9,6 @@ module Wordify.Rules.Move (makeMove
   import Wordify.Rules.FormedWord
   import Control.Monad
   import Control.Applicative
-  import Data.Maybe
-  import Wordify.Rules.Game
   import Wordify.Rules.Player
   import qualified Data.Map as Map
   import Wordify.Rules.Pos
@@ -18,15 +16,13 @@ module Wordify.Rules.Move (makeMove
   import Wordify.Rules.LetterBag
   import Wordify.Rules.Board
   import Wordify.Rules.Dictionary
-  import qualified Data.Foldable as F
   import Wordify.Rules.Game.Internal
   import Wordify.Rules.Game
-  import Data.Maybe
   import qualified Data.List.NonEmpty as NE
   import qualified Data.Traversable as T
   import qualified Data.Map as M
-  import Data.Char
   import Control.Error.Util
+  import Control.Arrow
 
   data GameTransition = -- | The new player (with their updated letter rack and score), new game state, and the words formed by the move
                         MoveTransition Player Game FormedWords
@@ -48,7 +44,7 @@ module Wordify.Rules.Move (makeMove
   -}
   makeMove :: Game -> Move -> Either ScrabbleError GameTransition
   makeMove game move
-    | (not $ gameStatus game == InProgress) = Left GameNotInProgress
+    | gameStatus game /= InProgress = Left GameNotInProgress
     | otherwise = flip addMoveToHistory move <$> gameTransition
     where
       gameTransition = case move of
@@ -61,60 +57,60 @@ module Wordify.Rules.Move (makeMove
     do
       formed <- formedWords
       (overallScore, _) <- scoresIfWordsLegal dict formed
-      board <- newBoard currentBoard placed 
-      player <- removeLettersandGiveScore player playedTiles overallScore
+      nextBoard <- newBoard currentBoard placed 
+      intermediatePlayer <- removeLettersandGiveScore player playedTiles overallScore
 
-      if hasEmptyRack player && (bagSize letterBag == 0)
+      if hasEmptyRack intermediatePlayer && (bagSize letterBag == 0)
        then
         do
-          let beforeFinalisingGame = updateGame game player board letterBag
+          let beforeFinalisingGame = updateGame game intermediatePlayer nextBoard letterBag
           let finalisedGame = finaliseGame beforeFinalisingGame
           return $ GameFinished finalisedGame (Just formed) (players beforeFinalisingGame)
         else
           do
-            let (newPlayer, newBag) = updatePlayerRackAndBag player letterBag (Map.size placed)
-            let updatedGame = updateGame game newPlayer board newBag
+            let (newPlayer, newBag) = updatePlayerRackAndBag intermediatePlayer letterBag (Map.size placed)
+            let updatedGame = updateGame game newPlayer nextBoard newBag
             return $ MoveTransition newPlayer updatedGame formed
     where
       player = currentPlayer game
       playedTiles = Map.elems placed
       currentBoard = board game
-      moveNo = moveNumber game
       dict = dictionary game
       letterBag = bag game
 
-      formedWords = if (any isPlaceMove (movesMade game))
+      formedWords = if any isPlaceMove (movesMade game)
        then wordsFormedMidGame currentBoard placed
        else wordFormedFirstMove currentBoard placed 
 
       isPlaceMove mv = case mv of 
                           PlaceTiles _ -> True
-                          otherwise -> False
+                          _ -> False
       
 
   exchangeMove :: Game -> [Tile] -> Either ScrabbleError GameTransition
-  exchangeMove game tiles =
-    let exchangeOutcome = exchangeLetters (bag game) tiles
+  exchangeMove game exchangedTiles =
+    let exchangeOutcome = exchangeLetters (bag game) exchangedTiles
     in case exchangeOutcome of
       Nothing -> Left CannotExchangeWhenNoLettersInBag
       Just (givenTiles, newBag) -> 
-          let newPlayer = exchange player tiles givenTiles
-          in maybe (Left $ PlayerCannotExchange (rack player) tiles) (\exchangedPlayer ->
-                    let newGame = updateGame game exchangedPlayer (board game) newBag
-                    in Right $ ExchangeTransition newGame player exchangedPlayer) newPlayer
+          let newPlayer = exchange player exchangedTiles givenTiles
+          in maybe (Left $ PlayerCannotExchange (rack player) exchangedTiles) (\exchangedPlayer ->
+                    let gameState = updateGame game exchangedPlayer (board game) newBag
+                    in Right $ ExchangeTransition gameState player exchangedPlayer) newPlayer
     where
       player = currentPlayer game
 
   passMove :: Game -> Either ScrabbleError GameTransition
   passMove game = 
-    let newGame = pass game 
+    let gameState = pass game 
     in 
+      Right $ 
       if gameFinished
-      then Right $ GameFinished (finaliseGame newGame) Nothing (players newGame)
-      else Right $ PassTransition newGame
+      then GameFinished (finaliseGame gameState) Nothing (players gameState)
+      else PassTransition gameState
     where
       numPasses = passes game + 1
-      gameFinished = numPasses == ((numberOfPlayers game) * 2)
+      gameFinished = numPasses == numberOfPlayers game * 2
 
   {- |
     Restores a game from a list of moves. The game must be set up in the way the original game was set up
@@ -136,7 +132,7 @@ module Wordify.Rules.Move (makeMove
   restoreGameLazy :: Game -> NE.NonEmpty Move -> NE.NonEmpty (Either ScrabbleError GameTransition)
   restoreGameLazy game (mv NE.:| moves) = NE.scanl nextMove (makeMove game mv) moves 
     where
-      nextMove transition mv = transition >>= \success -> makeMove (newGame success) mv
+      nextMove transition move = transition >>= \success -> makeMove (newGame success) move
 
   newGame :: GameTransition -> Game
   newGame (MoveTransition _ game _) = game
@@ -148,12 +144,12 @@ module Wordify.Rules.Move (makeMove
   addMoveToHistory (MoveTransition player game formedWords) move = MoveTransition player (updateHistory game move) formedWords
   addMoveToHistory (ExchangeTransition game oldPlayer newPlayer ) move = ExchangeTransition (updateHistory game move) oldPlayer newPlayer
   addMoveToHistory (PassTransition game) move = PassTransition (updateHistory game move)
-  addMoveToHistory (GameFinished game wordsFormed players) move = GameFinished (updateHistory game move) wordsFormed players
+  addMoveToHistory (GameFinished game wordsFormed allPlayers) move = GameFinished (updateHistory game move) wordsFormed allPlayers
 
   finaliseGame :: Game -> Game
   finaliseGame game
-    | (gameStatus game == Finished) = game
-    | otherwise = game {player1 = play1, player2 = play2, optionalPlayers = optional, gameStatus = Finished, moveNumber = pred moveNo}
+    | gameStatus game == Finished = game
+    | otherwise = game {player1 = play1, player2 = play2, optionalPlayers = optionals, gameStatus = Finished, moveNumber = pred moveNo}
       where
         unplayedValues = Prelude.sum $ Prelude.map tileValues allPlayers
         allPlayers = players game
@@ -161,42 +157,38 @@ module Wordify.Rules.Move (makeMove
 
         play1 = finalisePlayer (player1 game)
         play2 = finalisePlayer (player2 game)
-        optional = optionalPlayers game >>= (\(player3, maybePlayer4) ->
-            Just (finalisePlayer player3, (\play4 -> finalisePlayer play4) <$> maybePlayer4 ) )
+        optionals = optionalPlayers game >>= (\(player3, maybePlayer4) ->
+            Just (finalisePlayer player3, finalisePlayer <$> maybePlayer4 ) )
 
         finalisePlayer player = if hasEmptyRack player then increaseScore player unplayedValues
           else reduceScore player (tileValues player) 
 
   updatePlayerRackAndBag :: Player -> LetterBag -> Int -> (Player, LetterBag)
-  updatePlayerRackAndBag player letterBag numPlayed =
-    if tilesInBag == 0 
-    then (player, letterBag)
-    else
-        if (tilesInBag >= numPlayed)
-        then maybe (player, letterBag) (\(taken, newBag) -> 
-          (giveTiles player taken, newBag)) $ takeLetters letterBag numPlayed
-        else maybe (player, letterBag) (\(taken, newBag) -> 
-          (giveTiles player taken, newBag)) $ takeLetters letterBag tilesInBag
+  updatePlayerRackAndBag player letterBag numPlayed
+    | tilesInBag == 0 = (player, letterBag)
+    | tilesInBag >= numPlayed =
+       maybe (player, letterBag) (first (giveTiles player)) $ takeLetters letterBag numPlayed
+    | otherwise = maybe (player, letterBag) (first (giveTiles player)) $ takeLetters letterBag tilesInBag
     where
       tilesInBag = bagSize letterBag
 
   newBoard :: Board -> M.Map Pos Tile -> Either ScrabbleError Board
-  newBoard board placed = foldM (\board (pos, tile) -> newBoardIfUnoccupied board pos tile) board $ Map.toList placed
+  newBoard currentBoard placed = foldM (\oldBoard (pos, tile) -> newBoardIfUnoccupied oldBoard pos tile) currentBoard $ Map.toList placed
     where
-      newBoardIfUnoccupied board pos tile = note (PlacedTileOnOccupiedSquare pos tile) $ placeTile board tile pos
+      newBoardIfUnoccupied brd pos tile = note (PlacedTileOnOccupiedSquare pos tile) $ placeTile brd tile pos
 
   
   removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either ScrabbleError Player
-  removeLettersandGiveScore player tiles justScored = 
-    let newPlayer = flip increaseScore justScored <$> removePlayedTiles player tiles 
-    in note (PlayerCannotPlace (rack player) tiles) newPlayer
+  removeLettersandGiveScore player playedTiles justScored = 
+    let newPlayer = flip increaseScore justScored <$> removePlayedTiles player playedTiles 
+    in note (PlayerCannotPlace (rack player) playedTiles) newPlayer
 
   scoresIfWordsLegal :: Dictionary -> FormedWords -> Either ScrabbleError (Int, [(String, Int)])
   scoresIfWordsLegal dict formedWords = 
     let strings = wordStrings formedWords
     in case invalidWords dict strings of
       (x:xs) -> Left $ WordsNotInDictionary (x:xs)
-      otherwise -> Right $ wordsWithScores formedWords
+      _ -> Right $ wordsWithScores formedWords
 
 
 

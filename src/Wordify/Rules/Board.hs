@@ -15,7 +15,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
     Returns all the squares on the board, ordered by column then row.
   -}
   allSquares :: Board -> [(Pos, Square)]
-  allSquares (Board (squares)) = Map.toList squares
+  allSquares (Board squares) = Map.toList squares
 
   {- |
     Places a tile on a square and yields the new board, if the 
@@ -62,10 +62,10 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
     is reached.
   -}
   walkFrom :: Board -> Pos -> (Pos -> Maybe Pos) -> Seq (Pos,Square)
-  walkFrom board pos direction = maybe (mzero) (\(next,sq) ->
-   (next, sq) <| (walkFrom board next direction) ) neighbourPos
+  walkFrom board pos direction = maybe mzero (\(next,sq) ->
+   (next, sq) <| walkFrom board next direction) neighbourPos
     where
-      neighbourPos = direction(pos) >>= \nextPos -> occupiedSquareAt board nextPos >>=
+      neighbourPos = direction pos >>= \nextPos -> occupiedSquareAt board nextPos >>=
         \sq -> return (nextPos, sq)
 
   {- |
@@ -93,7 +93,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
 
       squares = (map . map) toSquare layout
       columns = Prelude.zip [1..15] squares
-      labeledSquares= concatMap (\(x, xs) -> columnToMapping x xs) columns
+      labeledSquares= concatMap (uncurry columnToMapping) columns
       columnToMapping columnNo columnSquares = Prelude.zipWith (\sq y -> ((columnNo,y),sq)) columnSquares [1..15]
       posSquares = mapMaybe (\((x,y), sq) -> fmap (\pos -> (pos, sq)) (posAt (x,y))) labeledSquares
 
