@@ -2,7 +2,7 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
  MalformedDictionaryFile, DictionaryFileNotFound, NotEnoughLettersInStartingBag,
   MisplacedLetter, DoesNotConnectWithWord, NoTilesPlaced, DoesNotCoverTheStarTile,
    PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
-   GameNotInProgress, CannotExchangeWhenNoLettersInBag, PlayerCannotExchange)) where
+   GameNotInProgress, CannotExchangeWhenNoLettersInBag, PlayerCannotExchange, MiscError)) where
 
   import Control.Monad.Error
   import Wordify.Rules.Pos
