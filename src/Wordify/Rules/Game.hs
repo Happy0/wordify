@@ -37,16 +37,16 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
         _ -> Left $ MiscError "Unexpected error in logic. There were not at least two players. This should never happen."
       where
         initialHistory = History startBag Seq.empty
-        initialisedBoard = emptyBoard
         firstPlayerNumber = 1
         firstMoveNumber = 1
         initialPasses = 0
         initialGameState = InProgress
 
         toOptionalPlayers :: [Player] -> Maybe (Player, Maybe Player)
-        toOptionalPlayers [] = Nothing
         toOptionalPlayers (x : []) = Just (x, Nothing)
         toOptionalPlayers (x : y : []) = Just (x, Just y)
+        toOptionalPlayers _ = Nothing
+
 
   initialisePlayers :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Either ScrabbleError (LetterBag, [Player])
   initialisePlayers (play1, play2, maybePlayers) initialBag = 
@@ -56,20 +56,20 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
       Just (finalBag, _) -> Right (finalBag, map snd (catMaybes transitions))
     where
       allPlayers = [play1, play2] ++ optionalsToPlayers maybePlayers
-      givePlayerTiles currentBag currentPlayer = 
-        (\(newTiles, newBag) -> (newBag, giveTiles currentPlayer newTiles)) <$> takeLetters currentBag 7
+      givePlayerTiles currentBag giveTo = 
+        (\(newTiles, newBag) -> (newBag, giveTiles giveTo newTiles)) <$> takeLetters currentBag 7
 
       distributeFinite :: (b -> a -> Maybe (b, a)) -> b -> [a] -> [Maybe (b, a)]
-      distributeFinite takeUsing distributeFrom distributeTo = go takeUsing (Just distributeFrom) distributeTo
+      distributeFinite takeUsing distributeFrom = go takeUsing (Just distributeFrom)
         where
           go :: (b -> a -> Maybe (b,a)) -> Maybe b -> [a] -> [Maybe (b, a)]
-          go giveBy _ [] = []
-          go giveBy Nothing (receiver : receivers) = Nothing : go giveBy Nothing receivers
+          go _ _ [] = []
+          go giveBy Nothing (_ : receivers) = Nothing : go giveBy Nothing receivers
           go giveBy (Just distributer) (receiver : receivers) =
             case giveBy distributer receiver of
               Nothing -> Nothing : go giveBy Nothing receivers
-              Just (currentDistributer, receiver) -> 
-                Just (currentDistributer, receiver) : go giveBy (Just currentDistributer) receivers
+              Just (currentDistributer, currentReceiver) -> 
+                Just (currentDistributer, currentReceiver) : go giveBy (Just currentDistributer) receivers
 
 
   optionalsToPlayers :: Maybe (Player, Maybe Player) -> [Player]
@@ -83,7 +83,7 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   players game = [player1 game, player2 game] ++ optionalsToPlayers (optionalPlayers game)
 
   getGameStatus :: Game -> GameStatus
-  getGameStatus game = gameStatus game
+  getGameStatus = gameStatus
 
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
@@ -93,5 +93,5 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
   -}
   movesMade :: Game -> [Move]
   movesMade game = 
-    case (history game) of 
+    case history game of 
       History _ moves -> F.toList moves

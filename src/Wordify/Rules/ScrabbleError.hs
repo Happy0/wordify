@@ -4,7 +4,6 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
    PlacedTileOnOccupiedSquare, CannotPlaceBlankWithoutLetter, WordsNotInDictionary, PlayerCannotPlace,
    GameNotInProgress, CannotExchangeWhenNoLettersInBag, PlayerCannotExchange, MiscError)) where
 
-  import Control.Monad.Error
   import Wordify.Rules.Pos
   import Wordify.Rules.Tile
   import Wordify.Rules.Player
@@ -63,7 +62,3 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
     show (PlayerCannotExchange letterRack tiles) = "Player does not have the letters to exchange " ++ show tiles ++ ". Tiles on rack: " ++ show letterRack ++ ". Blank tiles must not be labeled."
     show (GameNotInProgress) = "A move was attempted on a game that is not in progress."
     show (MiscError str) = str
-
-  instance Error ScrabbleError where
-    noMsg = MiscError "Unexpected internal error"
-    strMsg err = MiscError err
