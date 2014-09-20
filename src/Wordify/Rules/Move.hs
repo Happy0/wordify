@@ -187,9 +187,5 @@ module Wordify.Rules.Move (makeMove
   scoresIfWordsLegal dict formedWords = 
     let strings = wordStrings formedWords
     in case invalidWords dict strings of
-      (x:xs) -> Left $ WordsNotInDictionary (x:xs)
-      _ -> Right $ wordsWithScores formedWords
-
-
-
-
+      []-> Right $ wordsWithScores formedWords
+      xs -> Left $ WordsNotInDictionary xs

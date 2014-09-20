@@ -32,9 +32,9 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
   -- then multiply by word bonuses (DoubleWord, TripleWord)
   scoreWord xs ys = addBonuses (addBonuses baseScore letterBonuses) wordBonuses
     where
-      calcBaseScore squares = F.foldr (\square acc -> baseValue square + acc) (0) squares
-      addBonuses score squares = F.foldr applyWordBonus score squares     
-      baseScore = (calcBaseScore xs) + (calcBaseScore ys)
+      calcBaseScore = F.foldr (\square acc -> baseValue square + acc) 0
+      addBonuses = F.foldr applyWordBonus
+      baseScore = calcBaseScore xs + calcBaseScore ys
       (wordBonuses, letterBonuses) = Seq.partition isWordBonus ys
 
   {- |
@@ -43,10 +43,10 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
     double and triple word bonuses should be applied last.
 
   -}
-  applyWordBonus :: Square -> (Int -> Int)
+  applyWordBonus :: Square -> Int -> Int
   applyWordBonus (Normal _ ) = (+0)
-  applyWordBonus (DoubleLetter (Just tile)) = (+ (tileValue tile) )
-  applyWordBonus (TripleLetter (Just tile)) = (+ ((tileValue tile) * 2))
+  applyWordBonus (DoubleLetter (Just tile)) = (+ tileValue tile)
+  applyWordBonus (TripleLetter (Just tile)) = (+ tileValue tile * 2)
   applyWordBonus (DoubleWord _) = (*2)
   applyWordBonus (TripleWord _) = (*3)
   applyWordBonus _ = (+0)
@@ -58,20 +58,10 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
 
   -- | Base value of a square, without bonuses
   baseValue :: Square -> Int
-  baseValue (Normal (Just tile)) = tileValue tile
-  baseValue (DoubleLetter (Just tile)) = tileValue tile
-  baseValue (TripleLetter (Just tile)) = tileValue tile
-  baseValue (DoubleWord (Just tile)) = tileValue tile
-  baseValue (TripleWord (Just tile)) = tileValue tile
-  baseValue _ = 0
+  baseValue sq = maybe 0 tileValue $ tileIfOccupied sq
 
   squareIfOccupied :: Square -> Maybe Square
-  squareIfOccupied (Normal (Just tile)) = Just (Normal (Just tile))
-  squareIfOccupied (DoubleLetter (Just tile)) = Just (DoubleLetter (Just tile))
-  squareIfOccupied (TripleLetter (Just tile)) = Just (TripleLetter (Just tile))
-  squareIfOccupied (DoubleWord (Just tile)) = Just (DoubleWord (Just tile))
-  squareIfOccupied (TripleWord (Just tile)) = Just (TripleWord (Just tile))
-  squareIfOccupied _ = Nothing
+  squareIfOccupied sq = tileIfOccupied sq >> Just sq
 
   tileIfOccupied :: Square -> Maybe Tile
   tileIfOccupied (Normal (Just tile)) = Just tile

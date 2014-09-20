@@ -1,4 +1,4 @@
-module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invalidWords) where
+module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invalidWords, dictionaryFromWords) where
 
   import qualified Data.HashSet as HashSet
   import Wordify.Rules.ScrabbleError
@@ -17,10 +17,15 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   invalidWords dictionary = filter $ not . isValidWord dictionary
 
   {-
-     RReturns true if the given word is in the given dictionary.
+     Returns true if the given word is in the given dictionary.
   -}
   isValidWord :: Dictionary -> String -> Bool
   isValidWord (Dictionary dictionaryWords) = flip HashSet.member dictionaryWords
+
+  dictionaryFromWords :: [String] -> Dictionary
+  dictionaryFromWords wordList = Dictionary $ HashSet.fromList upperCaseWords
+    where
+      upperCaseWords = (map . map) toUpper wordList
 
   {- |
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
