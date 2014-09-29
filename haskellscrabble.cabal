@@ -5,7 +5,7 @@ name:                haskellscrabble
 version:             0.1.0.0
 synopsis:            A scrabble library
 -- description:         
-homepage:            http://www.github.com/happy0
+homepage:            http://www.github.com/happy0/haskellscrabble
 license:             GPL-3
 license-file:        LICENSE
 author:              Gordon Martin
