@@ -3,8 +3,8 @@
 
 name:                haskellscrabble
 version:             0.1.0.0
-synopsis:            A scrabble library
--- description:         
+synopsis:            A scrabble library capturing the core game logic of scrabble.
+description:         A scrabble library which enforces legal transitions between moves. Intended to facilitate the development of a playable game.
 homepage:            http://www.github.com/happy0/haskellscrabble
 license:             GPL-3
 license-file:        LICENSE
@@ -58,5 +58,3 @@ test-suite tests
     random,
     semigroups,
     filepath
-
-  ghc-options: -O2
