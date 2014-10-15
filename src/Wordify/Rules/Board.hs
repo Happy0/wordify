@@ -1,5 +1,5 @@
 module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSquareAt,
- lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt) where
+ lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt, prettyPrint) where
 
   import Wordify.Rules.Square
   import Wordify.Rules.Pos
@@ -10,6 +10,8 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   import Data.Sequence as Seq
   import Wordify.Rules.Board.Internal
   import Control.Applicative
+  import Data.List.Split
+  import Data.List
 
   {- |
     Returns all the squares on the board, ordered by column then row.
@@ -55,6 +57,26 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   {- | All letters immediately right of a given square until a non-occupied square -}
   lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
+
+  prettyPrint :: Board -> String
+  prettyPrint board =
+   let columns = transpose $ splitEvery 15 $ map (squareToString . snd) $ allSquares board
+   in  concat $ map (\(colNo, col) -> (rowStr colNo) ++ concat col ++ "\n") $ Prelude.zip [1 .. ] columns
+    where
+      rowStr number = if number < 10 then ((show number) ++ " | ") else (show number) ++ "| "
+      columnLabelSeparator = "  " ++ (Prelude.take (15 * 3) $ repeat '-')
+      columnLabels = concat $ Prelude.take 15 $ intersperse "  " $ map ( : []) ['A' .. ]
+
+      squareToString square = 
+        case (tileIfOccupied square) of
+          Just sq -> maybe "_ " ( : " ") $ tileLetter sq
+          Nothing -> 
+            case square of
+              (Normal _) -> "N  "
+              (DoubleLetter _) -> "DL "
+              (TripleLetter _) -> "TL "
+              (DoubleWord _) -> "DW "
+              (TripleWord _) -> "TW "
 
   {-
     Walks the tiles from a given position in a given direction
