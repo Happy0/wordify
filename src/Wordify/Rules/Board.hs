@@ -58,25 +58,28 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
 
+  {- | Pretty prints a board to a human readable string representation -}
   prettyPrint :: Board -> String
-  prettyPrint board =
-   let columns = transpose $ splitEvery 15 $ map (squareToString . snd) $ allSquares board
-   in  concat $ map (\(colNo, col) -> (rowStr colNo) ++ concat col ++ "\n") $ Prelude.zip [1 .. ] columns
+  prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels
     where
+      rows = transpose $ chunksOf 15 $ map (squareToString . snd) $ allSquares board
+      rowsWithLabels = concatMap (\(rowNo, row) -> (rowStr rowNo) ++ concat row ++ "\n") $ Prelude.zip [1 .. ] rows
+
+      rowStr :: Int -> String
       rowStr number = if number < 10 then ((show number) ++ " | ") else (show number) ++ "| "
-      columnLabelSeparator = "  " ++ (Prelude.take (15 * 3) $ repeat '-')
-      columnLabels = concat $ Prelude.take 15 $ intersperse "  " $ map ( : []) ['A' .. ]
+      columnLabelSeparator = "  " ++ (Prelude.take (15 * 5) $ repeat '-') ++ "\n"
+      columnLabels = "      " ++ (concat $ Prelude.take (15 *2) $ intersperse "    " $ map ( : []) ['A' .. ])
 
       squareToString square = 
         case (tileIfOccupied square) of
-          Just sq -> maybe "_ " ( : " ") $ tileLetter sq
+          Just sq -> maybe " [_] " (\lt -> " [" ++ lt : "] ") $ tileLetter sq
           Nothing -> 
             case square of
-              (Normal _) -> "N  "
-              (DoubleLetter _) -> "DL "
-              (TripleLetter _) -> "TL "
-              (DoubleWord _) -> "DW "
-              (TripleWord _) -> "TW "
+              (Normal _) -> "  N  "
+              (DoubleLetter _) -> "  DL "
+              (TripleLetter _) -> "  TL "
+              (DoubleWord _) -> "  DW "
+              (TripleWord _) -> "  TW "
 
   {-
     Walks the tiles from a given position in a given direction

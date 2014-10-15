@@ -6,6 +6,7 @@ module Tests.FullGameTest where
     import Wordify.Rules.LetterBag
     import Wordify.Rules.Pos
     import Wordify.Rules.Tile
+    import Wordify.Rules.Board
     import Data.Maybe
     import Wordify.Rules.Move
     import Test.HUnit.Base
@@ -142,8 +143,6 @@ module Tests.FullGameTest where
 
                     assertEqual "Unexpected remaing tiles for player 4" [] (tilesOnRack finalPlayer4)
                     assertEqual "Unexpected score for winning player" (154 + 1 + 5 + 1) (score finalPlayer4)
-
-
       where
         isFinalTransition trans =
          case trans of
