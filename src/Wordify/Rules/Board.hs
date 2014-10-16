@@ -13,6 +13,9 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   import Data.List.Split
   import Data.List
 
+  instance Show Board where
+    show = prettyPrint
+
   {- |
     Returns all the squares on the board, ordered by column then row.
   -}
@@ -62,17 +65,17 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   prettyPrint :: Board -> String
   prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels
     where
-      rows = transpose $ chunksOf 15 $ map (squareToString . snd) $ allSquares board
-      rowsWithLabels = concatMap (\(rowNo, row) -> (rowStr rowNo) ++ concat row ++ "\n") $ Prelude.zip [1 .. ] rows
+      rows = transpose . chunksOf 15 . map (squareToString . snd) . allSquares
+      rowsWithLabels = concatMap (\(rowNo, row) -> (rowStr rowNo) ++ concat row ++ "\n") . Prelude.zip [1 .. ] $ (rows board)
 
       rowStr :: Int -> String
       rowStr number = if number < 10 then ((show number) ++ " | ") else (show number) ++ "| "
       columnLabelSeparator = "  " ++ (Prelude.take (15 * 5) $ repeat '-') ++ "\n"
-      columnLabels = "      " ++ (concat $ Prelude.take (15 *2) $ intersperse "    " $ map ( : []) ['A' .. ])
+      columnLabels = "      " ++ (concat $ Prelude.take (15 * 2) . intersperse "    " . map ( : []) $ ['A' .. ])
 
       squareToString square = 
         case (tileIfOccupied square) of
-          Just sq -> maybe " [_] " (\lt -> " [" ++ lt : "] ") $ tileLetter sq
+          Just sq -> maybe " |_| " (\lt -> " |" ++ lt : "| ") $ tileLetter sq
           Nothing -> 
             case square of
               (Normal _) -> "  N  "
