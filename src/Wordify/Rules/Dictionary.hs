@@ -24,9 +24,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   isValidWord (Dictionary dictionaryWords) = flip HashSet.member dictionaryWords
 
   dictionaryFromWords :: [String] -> Dictionary
-  dictionaryFromWords wordList = Dictionary $ HashSet.fromList upperCaseWords
-    where
-      upperCaseWords = (map . map) toUpper wordList
+  dictionaryFromWords= Dictionary . HashSet.fromList . upperCaseWords 
 
   {- |
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
@@ -44,8 +42,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
                 Right wordList -> return $ Right (Dictionary $ HashSet.fromList wordList)
 
     where
-      toUpperCase = (map . map) toUpper       
-      parseFile contents = liftM toUpperCase $ parse dictionaryFile "Malformed dictionary file " contents
+      parseFile contents = liftM upperCaseWords  $ parse dictionaryFile "Malformed dictionary file " contents
 
       dictionaryFile = 
         do
@@ -55,7 +52,11 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
 
       word = 
         do
-          entry <- many letter :: Parser [Char]
+          entry <- many letter :: Parser String
           _ <- newline
           return entry
+  
+  upperCaseWords :: [String] -> [String]
+  upperCaseWords = (map . map) toUpper
+
 
