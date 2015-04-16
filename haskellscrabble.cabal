@@ -34,7 +34,7 @@ library
 
   other-modules:       Wordify.Rules.Game.Internal
 
-  build-depends:       base < 4.8, containers, array, random, mtl, transformers, QuickCheck, 
+  build-depends:       base >= 4.8, containers, array, random, mtl, transformers, QuickCheck, 
                        parsec, unordered-containers, semigroups, errors, safe, split
   hs-source-dirs:      src
   
@@ -45,7 +45,7 @@ test-suite tests
 
   build-depends:
     haskellscrabble,
-    base < 4.8,
+    base >= 4.8,
     QuickCheck,
     HUnit,
     test-framework,

@@ -4,6 +4,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   import Wordify.Rules.ScrabbleError
   import qualified Control.Exception as Exc
   import Text.ParserCombinators.Parsec
+  import Text.Parsec.Prim
   import Data.Char
   import Control.Monad
 
@@ -54,7 +55,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
 
       word = 
         do
-          entry <- many letter
+          entry <- many letter :: Parser [Char]
           _ <- newline
           return entry
 
