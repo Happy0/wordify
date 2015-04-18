@@ -7,7 +7,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   import Text.Parsec.Prim
   import Data.Char
   import Control.Monad
-  import qualified Control.Applicative  as A
+  import Control.Arrow
 
   data Dictionary = Dictionary (HashSet.HashSet String) deriving Show
 
@@ -31,8 +31,12 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
   -}
   makeDictionary :: FilePath -> IO (Either ScrabbleError Dictionary)
-  makeDictionary filePath = either (\_ -> Left (DictionaryFileNotFound filePath)) parseDictionary 
-        <$> (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String))) 
+  makeDictionary filePath = join . fmap parseDictionary <$> readDictionaryFile filePath
+
+  readDictionaryFile :: FilePath -> IO (Either ScrabbleError String)
+  readDictionaryFile filePath = convertFileError <$> (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String)))
+    where
+        convertFileError = left (\_ -> DictionaryFileNotFound filePath)
 
   parseDictionary :: String -> Either ScrabbleError Dictionary
   parseDictionary =  either (Left . MalformedDictionaryFile . show) (Right . dictionaryFromWords) . parseFile
