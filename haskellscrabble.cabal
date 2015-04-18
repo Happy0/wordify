@@ -35,7 +35,7 @@ library
   other-modules:       Wordify.Rules.Game.Internal
 
   build-depends:       base >= 4.8, containers, array, random, mtl, transformers, QuickCheck, 
-                       parsec, unordered-containers, semigroups, errors, safe, split, arrows
+                       parsec, unordered-containers, semigroups, errors < 2.0, safe, split, arrows
   hs-source-dirs:      src
   
 test-suite tests
