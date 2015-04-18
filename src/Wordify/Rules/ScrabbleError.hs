@@ -45,7 +45,7 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
 
   instance Show ScrabbleError
    where
-    show (MalformedDictionaryFile reason) = "Dictionary file " ++ reason ++ " was malformed."
+    show (MalformedDictionaryFile reason) = "Dictionary file could not be parsed for the following reason: " ++ reason
     show (MalformedLetterBagFile path) = "Letter bag file " ++ path ++ " was malformed."
     show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
     show (LetterBagFileNotOpenable path) = "Letter bag file " ++ path ++ " was not openable"

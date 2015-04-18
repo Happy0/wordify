@@ -31,16 +31,14 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
   -}
   makeDictionary :: FilePath -> IO (Either ScrabbleError Dictionary)
-  makeDictionary filePath =
-    do
-      contents <- (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String))) 
-      return $ either (\_ -> Left (DictionaryFileNotFound filePath)) parseDictionary contents
+  makeDictionary filePath = either (\_ -> Left (DictionaryFileNotFound filePath)) parseDictionary 
+        <$> (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String))) 
 
   parseDictionary :: String -> Either ScrabbleError Dictionary
   parseDictionary dictionaryString = 
     either (Left . MalformedDictionaryFile . show) (Right . dictionaryFromWords) $ parseFile dictionaryString
     where
-        parseFile = parse dictionaryFile "Malformed dictionary file" 
+        parseFile = parse dictionaryFile "" 
 
         dictionaryFile = 
             do
@@ -53,9 +51,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
             entry <- many letter :: Parser String
             _ <- newline
             return entry
-
-
-  
+ 
   upperCaseWords :: [String] -> [String]
   upperCaseWords = (map . map) toUpper
 
