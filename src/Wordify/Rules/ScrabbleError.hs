@@ -16,7 +16,7 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
     -- | The path given to a dictionary file was invalid.
     | DictionaryFileNotFound FilePath
     -- | The dictionary file could not be parsed as it was malformed.
-    | MalformedDictionaryFile FilePath
+    | MalformedDictionaryFile String
     -- | A letter bag with insufficient tiles was used to create a game.
     | NotEnoughLettersInStartingBag Int
     -- | The player has made an illegal tile placement. Tiles placed must form a line of tiles.
@@ -45,7 +45,7 @@ module Wordify.Rules.ScrabbleError (ScrabbleError(LetterBagFileNotOpenable, Malf
 
   instance Show ScrabbleError
    where
-    show (MalformedDictionaryFile path) = "Dictionary file " ++ path ++ " was malformed."
+    show (MalformedDictionaryFile reason) = "Dictionary file " ++ reason ++ " was malformed."
     show (MalformedLetterBagFile path) = "Letter bag file " ++ path ++ " was malformed."
     show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
     show (LetterBagFileNotOpenable path) = "Letter bag file " ++ path ++ " was not openable"

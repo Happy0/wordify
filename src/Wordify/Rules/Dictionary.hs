@@ -7,6 +7,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   import Text.Parsec.Prim
   import Data.Char
   import Control.Monad
+  import qualified Control.Applicative  as A
 
   data Dictionary = Dictionary (HashSet.HashSet String) deriving Show
 
@@ -30,31 +31,30 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
   -}
   makeDictionary :: FilePath -> IO (Either ScrabbleError Dictionary)
-  makeDictionary filePath = 
+  makeDictionary filePath =
     do
-      fileContents <- Exc.try (readFile filePath) :: IO (Either Exc.IOException String)
-      case fileContents of 
-        Left _ -> return $ Left (DictionaryFileNotFound filePath)
-        Right dictContents -> 
-              let dictWords = parseFile dictContents
-              in case dictWords of 
-                Left _ -> return $ Left (MalformedDictionaryFile filePath)
-                Right wordList -> return $ Right (Dictionary $ HashSet.fromList wordList)
+      contents <- (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String))) 
+      return $ either (\_ -> Left (DictionaryFileNotFound filePath)) parseDictionary contents
 
+  parseDictionary :: String -> Either ScrabbleError Dictionary
+  parseDictionary dictionaryString = 
+    either (Left . MalformedDictionaryFile . show) (Right . dictionaryFromWords) $ parseFile dictionaryString
     where
-      parseFile contents = liftM upperCaseWords  $ parse dictionaryFile "Malformed dictionary file " contents
+        parseFile = parse dictionaryFile "Malformed dictionary file" 
 
-      dictionaryFile = 
-        do
-          dictWords <- many word
-          _ <- eof
-          return dictWords
+        dictionaryFile = 
+            do
+            dictWords <- many word
+            _ <- eof
+            return dictWords
 
-      word = 
-        do
-          entry <- many letter :: Parser String
-          _ <- newline
-          return entry
+        word = 
+            do
+            entry <- many letter :: Parser String
+            _ <- newline
+            return entry
+
+
   
   upperCaseWords :: [String] -> [String]
   upperCaseWords = (map . map) toUpper
