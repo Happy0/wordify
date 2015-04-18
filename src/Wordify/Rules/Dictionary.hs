@@ -25,7 +25,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
   isValidWord (Dictionary dictionaryWords) = flip HashSet.member dictionaryWords
 
   dictionaryFromWords :: [String] -> Dictionary
-  dictionaryFromWords= Dictionary . HashSet.fromList . upperCaseWords 
+  dictionaryFromWords = Dictionary . HashSet.fromList . upperCaseWords 
 
   {- |
     Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
@@ -35,8 +35,7 @@ module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invali
         <$> (Exc.try (readFile filePath) :: (IO (Either Exc.IOException String))) 
 
   parseDictionary :: String -> Either ScrabbleError Dictionary
-  parseDictionary dictionaryString = 
-    either (Left . MalformedDictionaryFile . show) (Right . dictionaryFromWords) $ parseFile dictionaryString
+  parseDictionary =  either (Left . MalformedDictionaryFile . show) (Right . dictionaryFromWords) . parseFile
     where
         parseFile = parse dictionaryFile "" 
 
