@@ -38,11 +38,9 @@ module Wordify.Rules.FormedWord
      the star tile, and be linear. Any blank tiles must be labeled.
    -}
   wordFormedFirstMove :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
-  wordFormedFirstMove board tiles = 
-    if starPos `Map.notMember` tiles
-      then Left DoesNotCoverTheStarTile
-      else placedSquares board tiles >>= 
-        \squares -> (FirstWord . main) <$> wordsFormed board squares
+  wordFormedFirstMove board tiles
+    | starPos `Map.notMember` tiles = Left DoesNotCoverTheStarTile
+    | otherwise = placedSquares board tiles >>= fmap (FirstWord . main) . wordsFormed board
 
   {- |
     Returns the words formed by the tiles played on the board. A played word
@@ -122,7 +120,7 @@ module Wordify.Rules.FormedWord
   makeString word = M.mapMaybe (\(_, sq) -> tileIfOccupied sq >>= tileLetter) $ Foldable.toList word
 
   {-
-    Checks that the tiles can be placed, and if so turns a map of the squares at the placed positions.
+    Checks that the tiles can be placed, and if so returns a map of the squares at the placed positions.
     A tile may be placed if the square is not already occupied, and if it is not an unlabeled blank tile.
   -}
   placedSquares :: Board -> Map Pos Tile -> Either ScrabbleError (Map Pos Square)
@@ -166,7 +164,7 @@ module Wordify.Rules.FormedWord
 
         middleFirstWord direction =
          case placedList of 
-              x:[] -> Right (Seq.singleton x, minPos)
+              [x] -> Right (Seq.singleton x, minPos)
               (x:xs) -> 
                 foldM (\(word, lastPos) (pos, square) -> 
                   if not $ stillOnPath lastPos pos direction

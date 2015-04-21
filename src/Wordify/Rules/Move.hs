@@ -50,7 +50,7 @@ module Wordify.Rules.Move (makeMove
       gameTransition = case move of
         PlaceTiles placed -> makeBoardMove game placed
         Exchange exchanged -> exchangeMove game exchanged
-        Pass -> passMove game
+        Pass -> (Right . passMove) game
 
   makeBoardMove :: Game -> M.Map Pos Tile -> Either ScrabbleError GameTransition
   makeBoardMove game placed =
@@ -86,7 +86,6 @@ module Wordify.Rules.Move (makeMove
                           PlaceTiles _ -> True
                           _ -> False
       
-
   exchangeMove :: Game -> [Tile] -> Either ScrabbleError GameTransition
   exchangeMove game exchangedTiles =
     let exchangeOutcome = exchangeLetters (bag game) exchangedTiles
@@ -100,11 +99,10 @@ module Wordify.Rules.Move (makeMove
     where
       player = currentPlayer game
 
-  passMove :: Game -> Either ScrabbleError GameTransition
+  passMove :: Game -> GameTransition
   passMove game = 
     let gameState = pass game 
-    in 
-      Right $ 
+    in
       if gameFinished
       then GameFinished (finaliseGame gameState) Nothing (players gameState)
       else PassTransition gameState
