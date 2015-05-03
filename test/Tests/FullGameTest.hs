@@ -55,8 +55,8 @@ module Tests.FullGameTest where
         where
             positions =
                 case direction of
-                    Horizontal -> catMaybes $ map posAt $ iterate (\(x,y) -> (x+1,y)) pos
-                    Vertical -> catMaybes $ map posAt $ iterate (\(x,y) -> (x, y + 1)) pos
+                    Horizontal -> catMaybes $ takeWhile isJust <$> map posAt $ iterate (\(x,y) -> (x+1,y)) pos
+                    Vertical -> catMaybes $ takeWhile isJust <$> map posAt $ iterate (\(x,y) -> (x, y + 1)) pos
 
             tiles = map toTilePlaced letters
 

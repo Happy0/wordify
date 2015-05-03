@@ -20,7 +20,7 @@ tests = F.testGroup "Regressions" [
             F.testCase "Letter bag from file parsed correctly" makeBagTestSuccess,
             F.testCase "Letter bag returns error when makeBag file path invalid" makeBagInvalidPath
         ],
-
+    
     F.testGroup "Board"
         [
             F.testCase "allSquares function behaves as expected" allSquaresTest,
@@ -70,7 +70,6 @@ tests = F.testGroup "Regressions" [
             F.testCase "The game is ended if all players skip twice consecutively" gameEndsOnConsecutiveSkips,
             F.testCase "The game is not ended if skips are not consecutive twice" gameDoesNotEndOnNonConsecutiveSkips,
             F.testCase "An exchange move behaves as expected" exchangeMoveExchangesLetters,
-            F.testCase "A player is as expected in the returned MoveTransition" playerInMoveTransitionIsAsExpected
+            F.testCase "A player is as expected in the returned MoveTransition" playerInMoveTransitionIsAsExpected 
         ]
-
     ]

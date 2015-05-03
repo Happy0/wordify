@@ -24,6 +24,8 @@ import Data.Array.ST
 import Control.Monad.ST
 import Data.STRef
 
+
+
 {- |
   Creates a letter bag from a file where each line contains a space delimited letter character, letter value, and letter distribution.
   A blank letter is represented by a '_' character and has a disribution, but no value.
