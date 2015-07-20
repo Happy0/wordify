@@ -38,8 +38,8 @@ module Wordify.Rules.FormedWord
   data Direction = Horizontal | Vertical deriving Eq
 
   {- 
-    Pretty prints the places a given formed word intersects with letters that were already in the board
-    using brackets. E.g. T(HI)S would denote that the place placed a 'T' and an 'S' on to the board, using
+    Pretty prints the places a given formed word intersects with letters that were already on the board
+    using brackets. E.g. T(HI)S would denote that the player placed a 'T' and an 'S' on to the board, using
     the already placed word 'HI' to form the new word 'THIS'.
   -}
   prettyPrintIntersections :: PlacedSquares -> FormedWord -> String
