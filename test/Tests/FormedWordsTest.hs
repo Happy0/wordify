@@ -23,6 +23,23 @@ module Tests.FormedWordsTest where
             squareMap = M.fromList $ (M.assocs emptySquares ++ verticals ++ horizontals)
             Board (emptySquares) = emptyBoard
 
+    {-
+        Asserts that we can correctly add the bracket notation to a placed word
+     -}
+    testPrettyPrintIntersection :: Assertion
+    testPrettyPrintIntersection =
+        do
+            let positions = take 3 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (4,5)
+            let tiles = [Letter 'T' 1, Letter 'E' 1, Letter 'S' 1]
+            let placed = M.fromList $ zip positions $ map (Normal . Just) tiles
+
+            let formedPositions = catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (8,5)
+            let formed = S.fromList $ zip positions $ map (Normal . Just . flip Letter 1) ['T', 'I', 'N', 'G']
+
+            let actual = prettyPrintIntersections placed formed
+
+            assertEqual "Did not form expected pretty printed intersection" "TES(TING)" actual
+
     attachLeftWord :: Assertion
     attachLeftWord =
         do

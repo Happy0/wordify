@@ -71,8 +71,6 @@ module Wordify.Rules.FormedWord
         printLetter _ = '_'
 
 
-
-
   {- |
      Returns the word formed by the first move on the board. The word must cover
      the star tile, and be linear. Any blank tiles must be labeled.

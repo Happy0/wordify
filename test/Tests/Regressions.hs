@@ -38,6 +38,7 @@ tests = F.testGroup "Regressions" [
 
     F.testGroup "FormedWord"
         [
+            F.testCase "Where placed tiles intersect other tiles on the board can be pretty printed" testPrettyPrintIntersection,
             F.testCase "Words can be attached to the left of an existing word" attachLeftWord,
             F.testCase "Words can be attached to the right of an existing word" attachRightWord,
             F.testCase "Words can be attached to the top of an existing word" attachWordBelow,
