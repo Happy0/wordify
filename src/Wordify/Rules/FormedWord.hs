@@ -58,17 +58,17 @@ module Wordify.Rules.FormedWord
         addBracket bracket tiles = bracket ++ tiles
 
         squareToChar :: Square -> Char
-        squareToChar sq = maybe '_' id $ printLetter <$> tileIfOccupied sq
+        squareToChar sq = maybe '_' id $ tileIfOccupied sq >>= printLetter
 
         -- Splits whenever we encounter a series of squares that the player's word passes through
         -- on the board
         splitter :: PlacedSquares -> S.Splitter (Pos, Square)
         splitter placed = S.condense $ S.whenElt (flip (Map.notMember . fst) placed)
 
-        printLetter :: Tile -> Char
-        printLetter (Letter char _) = char
-        printLetter (Blank (Just char)) = toLower char
-        printLetter _ = '_'
+        printLetter :: Tile -> Maybe Char
+        printLetter (Letter char _) = Just char
+        printLetter (Blank (Just char)) = Just $ toLower char
+        printLetter _ = Nothing
 
         brokenSquaresToChars :: [[(Pos, Square)]] -> [[Char]]
         brokenSquaresToChars brokenSquares = (Prelude.map . Prelude.map) (squareToChar . snd) brokenSquares
