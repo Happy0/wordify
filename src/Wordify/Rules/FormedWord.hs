@@ -48,21 +48,21 @@ module Wordify.Rules.FormedWord
 
         denotePassThroughs :: Map Pos Square -> [(Pos, Square)] -> String
         denotePassThroughs placed formed =
-          let breaks = S.split (splitter placed) formed
+          let breaks = brokenSquaresToChars $ S.split (splitter placed) formed
           in case breaks of
-            (x:[]) -> Prelude.map (squareToChar . snd) x
-            (part:parts) -> concat $ Prelude.zipWith addBracket (cycle ["(",")"]) $ parts
+            (part : []) -> part -- No intersections, must be the first word
+            (part:parts) -> part ++ (concat $ Prelude.zipWith addBracket (cycle ["(",")"]) parts)
             [] -> ""
 
-        addBracket :: String -> [(Pos, Square)] -> String
-        addBracket bracket posSquares = bracket ++ (Prelude.map (squareToChar . snd)) posSquares
+        addBracket :: String -> String -> String
+        addBracket bracket tiles = bracket ++ tiles
 
         squareToChar :: Square -> Char
         squareToChar sq = maybe '_' id $ printLetter <$> tileIfOccupied sq
 
         -- Splits whenever we encounter a series of squares that the player's word passes through
         -- on the board
-        splitter :: Map Pos Square -> S.Splitter (Pos, Square)
+        splitter :: PlacedSquares -> S.Splitter (Pos, Square)
         splitter placed = S.condense $ S.whenElt (flip (Map.notMember . fst) placed)
 
         printLetter :: Tile -> Char
@@ -70,6 +70,8 @@ module Wordify.Rules.FormedWord
         printLetter (Blank (Just char)) = toLower char
         printLetter _ = '_'
 
+        brokenSquaresToChars :: [[(Pos, Square)]] -> [[Char]]
+        brokenSquaresToChars brokenSquares = (Prelude.map . Prelude.map) (squareToChar . snd) brokenSquares
 
   {- |
      Returns the word formed by the first move on the board. The word must cover

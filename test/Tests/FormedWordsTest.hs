@@ -31,10 +31,11 @@ module Tests.FormedWordsTest where
         do
             let positions = take 3 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (4,5)
             let tiles = [Letter 'T' 1, Letter 'E' 1, Letter 'S' 1]
-            let placed = M.fromList $ zip positions $ map (Normal . Just) tiles
+            let placedList =  zip positions $ map (Normal . Just) tiles
+            let placed = M.fromList placedList
 
             let formedPositions = catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (8,5)
-            let formed = S.fromList $ zip positions $ map (Normal . Just . flip Letter 1) ['T', 'I', 'N', 'G']
+            let formed = (S.fromList placedList) S.>< (S.fromList $ zip formedPositions $ map (Normal . Just . flip Letter 1) ['T', 'I', 'N', 'G'])
 
             let actual = prettyPrintIntersections placed formed
 
