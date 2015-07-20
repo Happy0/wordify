@@ -9,7 +9,8 @@ module Wordify.Rules.FormedWord
  mainWord,
  adjacentWords,
  playerPlaced,
- bingoBonusApplied
+ bingoBonusApplied,
+ prettyPrintIntersections
  ) where
 
   import Wordify.Rules.Pos
@@ -23,15 +24,54 @@ module Wordify.Rules.FormedWord
   import Control.Monad
   import Data.Foldable as Foldable
   import qualified Data.Maybe as M
+  import qualified Data.List.Split as S
+  import Data.Char
 
   data FormedWords =  FirstWord FormedWord  | FormedWords {
                                               main :: FormedWord
                                               , otherWords :: [FormedWord]
-                                              , placed :: Map Pos Square
+                                              , placed :: PlacedSquares
                                             } deriving (Show, Eq)
                                   
   type FormedWord = Seq (Pos, Square)
+  type PlacedSquares = Map Pos Square
   data Direction = Horizontal | Vertical deriving Eq
+
+  {- 
+    Pretty prints the places a given formed word intersects with letters that were already in the board
+    using brackets. E.g. T(HI)S would denote that the place placed a 'T' and an 'S' on to the board, using
+    the already placed word 'HI' to form the new word 'THIS'.
+  -}
+  prettyPrintIntersections :: PlacedSquares -> FormedWord -> String
+  prettyPrintIntersections placed formedWord = denotePassThroughs placed $ Foldable.toList formedWord
+    where
+
+        denotePassThroughs :: Map Pos Square -> [(Pos, Square)] -> String
+        denotePassThroughs placed formed =
+          let breaks = S.split (splitter placed) formed
+          in case breaks of
+            (x:[]) -> Prelude.map (squareToChar . snd) x
+            (part:parts) -> concat $ Prelude.zipWith addBracket (cycle ["(",")"]) $ parts
+            [] -> ""
+
+        addBracket :: String -> [(Pos, Square)] -> String
+        addBracket bracket posSquares = bracket ++ (Prelude.map (squareToChar . snd)) posSquares
+
+        squareToChar :: Square -> Char
+        squareToChar sq = maybe '_' id $ printLetter <$> tileIfOccupied sq
+
+        -- Splits whenever we encounter a series of squares that the player's word passes through
+        -- on the board
+        splitter :: Map Pos Square -> S.Splitter (Pos, Square)
+        splitter placed = S.condense $ S.whenElt (flip (Map.notMember . fst) placed)
+
+        printLetter :: Tile -> Char
+        printLetter (Letter char _) = char
+        printLetter (Blank (Just char)) = toLower char
+        printLetter _ = '_'
+
+
+
 
   {- |
      Returns the word formed by the first move on the board. The word must cover
