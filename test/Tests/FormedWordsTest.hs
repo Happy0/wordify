@@ -24,10 +24,10 @@ module Tests.FormedWordsTest where
             Board (emptySquares) = emptyBoard
 
     {-
-        Asserts that we can correctly add the bracket notation to a placed word
+        Asserts that we can correctly add the bracket notation to a placed word, prepending to a word
      -}
-    testPrettyPrintIntersection :: Assertion
-    testPrettyPrintIntersection =
+    testPrettyPrintIntersectionPrepend :: Assertion
+    testPrettyPrintIntersectionPrepend =
         do
             let positions = take 3 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (4,5)
             let tiles = [Letter 'T' 1, Letter 'E' 1, Letter 'S' 1]
@@ -40,6 +40,42 @@ module Tests.FormedWordsTest where
             let actual = prettyPrintIntersections placed formed
 
             assertEqual "Did not form expected pretty printed intersection" "TES(TING)" actual
+
+    testPrettyPrintIntersectionAppend :: Assertion
+    testPrettyPrintIntersectionAppend =
+        do
+            let positions = take 4 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (8,5)
+
+            let tiles =  map (flip Letter 1) ['T', 'I', 'N', 'G']
+            let placedList = zip positions $ map (Normal . Just) tiles
+            let placed = M.fromList placedList
+
+            let formedPositions = take 3 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (4,5)
+            let formed = (S.fromList $ zip formedPositions $ map (Normal . Just . flip Letter 1)  ['T','E','S']) S.><  S.fromList placedList
+
+            let actual = prettyPrintIntersections placed formed
+
+            assertEqual "Did not form expected pretty printed intersection" "(TES)TING" actual
+
+    testPrettyPrintThroughPlacedLetters :: Assertion
+    testPrettyPrintThroughPlacedLetters =
+        do
+            let positions = take 4 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (8,5)
+            let positions2 = take 2 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (13,5)
+
+            let tiles =  map (flip Letter 1) ['T', 'I', 'N', 'G']
+            let placedList = zip positions $ map (Normal . Just) tiles
+            let placed = M.fromList placedList
+
+            let alreadyPlacedList2 = zip positions2 $ map (Normal . Just) tiles
+
+            let formedPositions = take 3 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (4,5)
+            let formed = (S.fromList $ zip formedPositions $ map (Normal . Just . flip Letter 1)  ['T','E','S']) S.><  S.fromList placedList S.>< S.fromList alreadyPlacedList2
+
+            let actual = prettyPrintIntersections placed formed
+
+            assertEqual "Did not form expected pretty printed intersection" "(TES)TING(TI)" actual
+
 
     attachLeftWord :: Assertion
     attachLeftWord =

@@ -10,7 +10,12 @@ module Wordify.Rules.FormedWord
  adjacentWords,
  playerPlaced,
  bingoBonusApplied,
- prettyPrintIntersections
+ prettyPrintIntersections,
+ scoreWord,
+ makeString,
+ overallScore,
+ playerPlacedMap,
+ allWords
  ) where
 
   import Wordify.Rules.Pos
@@ -45,8 +50,7 @@ module Wordify.Rules.FormedWord
   prettyPrintIntersections :: PlacedSquares -> FormedWord -> String
   prettyPrintIntersections placed formedWord = denotePassThroughs placed $ Foldable.toList formedWord
     where
-
-        denotePassThroughs :: Map Pos Square -> [(Pos, Square)] -> String
+        denotePassThroughs :: PlacedSquares -> [(Pos, Square)] -> String
         denotePassThroughs placed formed =
           let breaks = brokenSquaresToChars $ S.split (splitter placed) formed
           in case breaks of
@@ -64,6 +68,43 @@ module Wordify.Rules.FormedWord
 
         brokenSquaresToChars :: [[(Pos, Square)]] -> [[Char]]
         brokenSquaresToChars brokenSquares = (Prelude.map . Prelude.map) (squareToChar . snd) brokenSquares
+
+  {- |
+    Scores an individual word. 
+
+    Note: overallscore should be used to obtain the overall score as it takes into account any bingo bonuses.
+    
+  -}
+  scoreWord :: PlacedSquares -> FormedWord -> Int
+  scoreWord played formed = 
+    let (notAlreadyPlaced, onBoardAlready) = partitionPlaced played formed
+    in scoreSquares onBoardAlready notAlreadyPlaced
+      where
+        partitionPlaced placed formed = (mapTuple . fmap) snd $ Seq.partition (\(pos, _) -> Map.member pos placed) formed
+
+        mapTuple :: (a -> b) -> (a, a) -> (b, b)
+        mapTuple f (a1, a2) = (f a1, f a2)
+
+  {- |
+    Calculates the overall score of the play.
+
+    If a player managed to place all 7 of their letters, then they receive a bingo bonus of 50 points.
+  -}
+  overallScore :: FormedWords -> Int
+  overallScore formedWords =
+    let wordsScore = Prelude.sum $ Prelude.map (scoreWord placed) $ allWords formedWords
+    in case (Prelude.length $ placed) of
+      7 -> wordsScore + 50
+      _ -> wordsScore
+      where
+        placed = playerPlacedMap formedWords
+
+  {-|
+    All the words formed by a play.
+  -}
+  allWords :: FormedWords -> [FormedWord]
+  allWords (FormedWords main adjacentWords _) = main :  adjacentWords
+  allWords (FirstWord firstWord) = [firstWord]
 
   {- |
      Returns the word formed by the first move on the board. The word must cover
@@ -110,30 +151,19 @@ module Wordify.Rules.FormedWord
   playerPlaced (FirstWord word) = Foldable.toList word
   playerPlaced formed = Map.toList $ placed formed
 
+  playerPlacedMap :: FormedWords -> Map Pos Square
+  playerPlacedMap (FirstWord word) = Map.fromList $ Foldable.toList word
+  playerPlacedMap formed = placed formed
+
   {- |
     Scores the words formed by the tiles placed. The first item in the tuple is the overall
     score, while the second item is the list of scores for all the words formed.
   -}
   wordsWithScores :: FormedWords -> (Int, [(String, Int)])
-  wordsWithScores (FirstWord firstWord) = 
-      let score = scoreWord Seq.empty (fmap snd firstWord) 
-      in (bingoBonus score (Seq.length firstWord), [(makeString firstWord, score)])
-  wordsWithScores (FormedWords mainW others played) =
-	  (bingoBonus (Prelude.sum scores) (Map.size played), Prelude.zip strings scores)
+  wordsWithScores formedWords = (overallScore formedWords, fmap wordAndScore allFormedWords)
     where
-      allWords = mainW : others
-      strings = Prelude.map makeString allWords
-      scores = Prelude.map (\formedWord -> let (notAlreadyPlaced, alreadyPlaced) = partitionPlaced formedWord 
-                                           in scoreWord (fmap snd alreadyPlaced) (fmap snd notAlreadyPlaced) ) allWords
-      partitionPlaced = Seq.partition (\(pos, _) -> Map.member pos played)
- 
-
-  {-
-    It is a rule in scrabble that if the player manages to place all 7 letters, they receive a bonus of '50'
-    to their score.
-  -}
-  bingoBonus :: Int -> Int -> Int
-  bingoBonus score playedLetters = if playedLetters < 7 then score else score + 50
+      allFormedWords = allWords formedWords
+      wordAndScore formedWord = (makeString formedWord, scoreWord (playerPlacedMap formedWords) formedWord)
 
   {- |
     Returns true if the player placed all 7 of their letters while forming these words, incurring a + 50 score bonus.

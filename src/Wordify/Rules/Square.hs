@@ -1,5 +1,5 @@
 module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWord, TripleWord),
-     isOccupied, scoreWord, squareIfOccupied, putTileOn, tileIfOccupied) where
+     isOccupied, scoreSquares, squareIfOccupied, putTileOn, tileIfOccupied) where
 
   import Wordify.Rules.Tile
   import Data.Sequence as Seq
@@ -27,10 +27,10 @@ module Wordify.Rules.Square (Square(Normal, DoubleLetter, TripleLetter, DoubleWo
 
     The second list contains squares that are newly occupied.
   -}
-  scoreWord :: Seq Square -> Seq Square -> Int
+  scoreSquares :: Seq Square -> Seq Square -> Int
   -- Calculate the base score then add the letter bonuses (doubleLetter, doubleWord),
   -- then multiply by word bonuses (DoubleWord, TripleWord)
-  scoreWord xs ys = addBonuses (addBonuses baseScore letterBonuses) wordBonuses
+  scoreSquares xs ys = addBonuses (addBonuses baseScore letterBonuses) wordBonuses
     where
       calcBaseScore = F.foldr (\square acc -> baseValue square + acc) 0
       addBonuses = F.foldr applyWordBonus
