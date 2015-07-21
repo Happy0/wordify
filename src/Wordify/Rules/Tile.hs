@@ -1,4 +1,6 @@
-module Wordify.Rules.Tile (Tile(Letter, Blank), tileValue, isPlayable, tileLetter) where
+module Wordify.Rules.Tile (Tile(Letter, Blank), tileValue, isPlayable, tileLetter, printLetter) where
+
+import Data.Char
 
 {- |
 A tile is a letter with a value, or a Blank tile
@@ -15,6 +17,14 @@ tileLetter :: Tile -> Maybe Char
 tileLetter (Letter char _) = Just char
 tileLetter (Blank (Just char)) = Just char
 tileLetter (Blank Nothing) = Nothing
+
+{-
+	Prints a letter in the style found on a scoresheet. E.g. blank letters are printed in lowercase.
+-}
+printLetter :: Tile -> Maybe Char
+printLetter (Letter char _) = Just char
+printLetter (Blank (Just char)) = Just $ toLower char
+printLetter _ = Nothing
 
 {- |
   isPlayble, applied to a played tile and compared against a tile

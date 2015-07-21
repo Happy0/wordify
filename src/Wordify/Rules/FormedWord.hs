@@ -51,11 +51,8 @@ module Wordify.Rules.FormedWord
           let breaks = brokenSquaresToChars $ S.split (splitter placed) formed
           in case breaks of
             (part : []) -> part -- No intersections, must be the first word
-            (part:parts) -> part ++ (concat $ Prelude.zipWith addBracket (cycle ["(",")"]) parts)
+            (part:parts) -> part ++ (concat $ Prelude.zipWith (++) (cycle ["(",")"]) parts)
             [] -> ""
-
-        addBracket :: String -> String -> String
-        addBracket bracket tiles = bracket ++ tiles
 
         squareToChar :: Square -> Char
         squareToChar sq = maybe '_' id $ tileIfOccupied sq >>= printLetter
@@ -64,11 +61,6 @@ module Wordify.Rules.FormedWord
         -- on the board
         splitter :: PlacedSquares -> S.Splitter (Pos, Square)
         splitter placed = S.condense $ S.whenElt (flip (Map.notMember . fst) placed)
-
-        printLetter :: Tile -> Maybe Char
-        printLetter (Letter char _) = Just char
-        printLetter (Blank (Just char)) = Just $ toLower char
-        printLetter _ = Nothing
 
         brokenSquaresToChars :: [[(Pos, Square)]] -> [[Char]]
         brokenSquaresToChars brokenSquares = (Prelude.map . Prelude.map) (squareToChar . snd) brokenSquares
