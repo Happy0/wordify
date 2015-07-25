@@ -1,9 +1,10 @@
-module Wordify.Rules.Move (makeMove 
-            ,Move(PlaceTiles, Exchange, Pass)
-            ,GameTransition(MoveTransition, ExchangeTransition, PassTransition, GameFinished)
-            ,restoreGame
-            ,restoreGameLazy
-            ,newGame) where
+module Wordify.Rules.Move (
+            Move(PlaceTiles, Exchange, Pass)
+           ,GameTransition(MoveTransition, ExchangeTransition, PassTransition, GameFinished)
+           ,makeMove
+           ,newGame
+           ,restoreGame
+           ,restoreGameLazy) where
 
   import Wordify.Rules.ScrabbleError
   import Wordify.Rules.FormedWord

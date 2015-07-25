@@ -57,6 +57,19 @@ module Tests.FormedWordsTest where
 
             assertEqual "Did not form expected pretty printed intersection" "(TES)TING" actual
 
+    testPrettyPrintIntersectionFirstWord :: Assertion
+    testPrettyPrintIntersectionFirstWord =
+        do
+            let positions = take 4 $ catMaybes $ map posAt $ iterate(\(x,y) -> (x + 1,y)) (8,5)
+            let tiles =  map (flip Letter 1) ['T', 'E', 'S', 'T']
+            let placedList = zip positions $ map (Normal . Just) tiles
+            let placed = M.fromList placedList
+
+            let formed = S.fromList $ zip positions $ map (Normal . Just) tiles
+
+            let actual = prettyPrintIntersections placed formed
+            assertEqual "Did not form expected pretty printed intersection" "TEST" actual
+
     testPrettyPrintThroughPlacedLetters :: Assertion
     testPrettyPrintThroughPlacedLetters =
         do

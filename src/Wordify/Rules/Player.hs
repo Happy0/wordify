@@ -1,5 +1,19 @@
-module Wordify.Rules.Player (Player, LetterRack, name, rack, score, makePlayer, increaseScore, giveTiles, tilesOnRack,
- removePlayedTiles, removeTiles, hasEmptyRack, tileValues, reduceScore, exchange) where
+module Wordify.Rules.Player (
+  Player,
+  LetterRack,
+  makePlayer,
+  name,
+  rack,
+  tilesOnRack,
+  score,
+  increaseScore,
+  giveTiles,
+  removePlayedTiles,
+  removeTiles,
+  hasEmptyRack,
+  tileValues,
+  reduceScore,
+  exchange) where
 
   import Wordify.Rules.Tile
   import Data.List

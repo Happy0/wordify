@@ -1,22 +1,20 @@
-module Wordify.Rules.FormedWord
- (
- FormedWords,
- FormedWord,
- wordsFormedMidGame,
- wordFormedFirstMove,
- wordStrings,
- wordsWithScores,
- mainWord,
- adjacentWords,
- playerPlaced,
- bingoBonusApplied,
- prettyPrintIntersections,
- scoreWord,
- makeString,
- overallScore,
- playerPlacedMap,
- allWords
- ) where
+module Wordify.Rules.FormedWord (FormedWords,
+                                 FormedWord,
+                                 PlacedSquares,
+                                 allWords,
+                                 mainWord,
+                                 adjacentWords,
+                                 playerPlaced,
+                                 playerPlacedMap,
+                                 scoreWord,
+                                 overallScore,
+                                 bingoBonusApplied,
+                                 prettyPrintIntersections,
+                                 makeString,
+                                 wordStrings,
+                                 wordsWithScores,
+                                 wordsFormedMidGame,
+                                 wordFormedFirstMove) where
 
   import Wordify.Rules.Pos
   import Wordify.Rules.Square
@@ -42,7 +40,7 @@ module Wordify.Rules.FormedWord
   type PlacedSquares = Map Pos Square
   data Direction = Horizontal | Vertical deriving Eq
 
-  {- 
+  {- |
     Pretty prints the places a given formed word intersects with letters that were already on the board
     using brackets. E.g. T(HI)S would denote that the player placed a 'T' and an 'S' on to the board, using
     the already placed word 'HI' to form the new word 'THIS'.
@@ -54,7 +52,6 @@ module Wordify.Rules.FormedWord
         denotePassThroughs placed formed =
           let breaks = brokenSquaresToChars $ S.split (splitter placed) formed
           in case breaks of
-            (part : []) -> part -- No intersections, must be the first word
             (part:parts) -> part ++ (concat $ Prelude.zipWith (++) (cycle ["(",")"]) parts)
             [] -> ""
 

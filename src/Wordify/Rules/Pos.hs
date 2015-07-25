@@ -1,5 +1,16 @@
 
-module Wordify.Rules.Pos (Pos, posAt, above, below, left, right, xPos, yPos, gridValue, starPos, posMin, posMax) where
+module Wordify.Rules.Pos (Pos,
+                          posAt,
+                          above,
+                          below,
+                          left,
+                          right,
+                          xPos,
+                          yPos,
+                          gridValue,
+                          starPos,
+                          posMin,
+                          posMax) where
 
   import qualified Data.Map as Map
   import Wordify.Rules.Pos.Internal

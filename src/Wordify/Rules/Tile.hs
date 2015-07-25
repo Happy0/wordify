@@ -18,7 +18,7 @@ tileLetter (Letter char _) = Just char
 tileLetter (Blank (Just char)) = Just char
 tileLetter (Blank Nothing) = Nothing
 
-{-
+{- |
 	Prints a letter in the style found on a scoresheet. E.g. blank letters are printed in lowercase.
 -}
 printLetter :: Tile -> Maybe Char

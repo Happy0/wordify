@@ -1,5 +1,14 @@
-module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSquareAt,
- lettersAbove, lettersBelow, lettersLeft, lettersRight, unoccupiedSquareAt, prettyPrint) where
+module Wordify.Rules.Board(Board,
+                           emptyBoard,
+                           allSquares,
+                           placeTile,
+                           occupiedSquareAt,
+                           lettersAbove,
+                           lettersBelow,
+                           lettersLeft,
+                           lettersRight,
+                           unoccupiedSquareAt,
+                           prettyPrint) where
 
   import Wordify.Rules.Square
   import Wordify.Rules.Pos
@@ -61,7 +70,7 @@ module Wordify.Rules.Board(Board, allSquares, emptyBoard, placeTile, occupiedSqu
   lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
 
-  {- | Pretty prints a board to a human readable string representation -}
+  {- | Pretty prints a board to a human readable string representation. Helpful for development. -}
   prettyPrint :: Board -> String
   prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels
     where

@@ -1,6 +1,22 @@
-module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer,
- board, bag, dictionary, playerNumber, moveNumber, makeGame, getGameStatus,
-  GameStatus(InProgress, Finished), gameStatus, players, passes, numberOfPlayers, history, History(History),movesMade) where
+module Wordify.Rules.Game(Game,
+                          makeGame,
+                          movesMade,
+                          gameStatus,
+                          board,
+                          bag,
+                          dictionary,
+                          moveNumber,
+                          player1,
+                          player2,
+                          optionalPlayers,
+                          currentPlayer,
+                          playerNumber,
+                          GameStatus(InProgress, Finished),
+                          players,
+                          passes,
+                          numberOfPlayers,
+                          history,
+                          History(History)) where
 
   import Wordify.Rules.Player
   import Wordify.Rules.Board
@@ -81,9 +97,6 @@ module Wordify.Rules.Game(Game, player1, player2, optionalPlayers, currentPlayer
 
   players :: Game -> [Player]
   players game = [player1 game, player2 game] ++ optionalsToPlayers (optionalPlayers game)
-
-  getGameStatus :: Game -> GameStatus
-  getGameStatus = gameStatus
 
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)

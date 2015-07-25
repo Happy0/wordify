@@ -1,4 +1,9 @@
-module Wordify.Rules.Dictionary (Dictionary, isValidWord, makeDictionary, invalidWords, dictionaryFromWords) where
+module Wordify.Rules.Dictionary (Dictionary,
+                                 makeDictionary,
+                                 dictionaryFromWords,
+                                 isValidWord,
+                                 invalidWords
+                                 ) where
 
   import qualified Data.HashSet as HashSet
   import Wordify.Rules.ScrabbleError

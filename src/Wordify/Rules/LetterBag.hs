@@ -1,14 +1,14 @@
-module Wordify.Rules.LetterBag (
- LetterBag,
- makeBag,
- takeLetters,
- exchangeLetters,
- shuffleBag, bagSize,
- tiles,
- bagFromTiles, 
- makeBagUsingGenerator, 
- getGenerator, 
- shuffleWithNewGenerator) where
+module Wordify.Rules.LetterBag (LetterBag,
+                                makeBag,
+                                tiles,
+                                bagFromTiles, 
+                                makeBagUsingGenerator,
+                                takeLetters,
+                                exchangeLetters,
+                                shuffleBag,
+                                shuffleWithNewGenerator,
+                                bagSize,
+                                getGenerator) where
 
 import Wordify.Rules.Tile
 import System.Random

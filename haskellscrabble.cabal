@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                haskellscrabble
-version:             1.0
+version:             1.1
 synopsis:            A scrabble library capturing the core game logic of scrabble.
 description:         A scrabble library which enforces legal transitions between moves. Intended to facilitate the development of a playable game.
 homepage:            http://www.github.com/happy0/haskellscrabble
