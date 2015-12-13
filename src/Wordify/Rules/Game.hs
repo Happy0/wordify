@@ -10,6 +10,7 @@ module Wordify.Rules.Game(Game,
                           player2,
                           optionalPlayers,
                           currentPlayer,
+                          getPlayer,
                           playerNumber,
                           GameStatus(InProgress, Finished),
                           players,
@@ -30,6 +31,7 @@ module Wordify.Rules.Game(Game,
   import Safe
   import Control.Monad
   import Control.Applicative
+  import qualified Data.List.Safe as LS
 
   {- |
     Starts a new game. 
@@ -97,6 +99,9 @@ module Wordify.Rules.Game(Game,
 
   players :: Game -> [Player]
   players game = [player1 game, player2 game] ++ optionalsToPlayers (optionalPlayers game)
+
+  getPlayer :: Game -> Int -> Maybe Player
+  getPlayer game playerNumber = (players game) LS.!! (playerNumber - 1)
 
   numberOfPlayers :: Game -> Int
   numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)

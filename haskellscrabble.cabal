@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                haskellscrabble
-version:             1.1
+version:             1.2.1
 synopsis:            A scrabble library capturing the core game logic of scrabble.
 description:         A scrabble library which enforces legal transitions between moves. Intended to facilitate the development of a playable game.
 homepage:            http://www.github.com/happy0/haskellscrabble
@@ -35,7 +35,7 @@ library
   other-modules:       Wordify.Rules.Game.Internal
 
   build-depends:       base < 5, containers, array, random, mtl, transformers, QuickCheck, 
-                       parsec, unordered-containers, semigroups, errors < 2.0, safe, split, arrows
+                       parsec, unordered-containers, semigroups, errors < 2.0, listsafe, safe, split, arrows
   hs-source-dirs:      src
   
 test-suite tests
