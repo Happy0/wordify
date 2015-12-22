@@ -29,6 +29,7 @@ module Wordify.Rules.FormedWord (FormedWords,
   import qualified Data.Maybe as M
   import qualified Data.List.Split as S
   import Data.Char
+  import Data.Functor
 
   data FormedWords =  FirstWord FormedWord  | FormedWords {
                                               main :: FormedWord
@@ -52,7 +53,7 @@ module Wordify.Rules.FormedWord (FormedWords,
         denotePassThroughs placed formed =
           let breaks = brokenSquaresToChars $ S.split (splitter placed) formed
           in case breaks of
-            (part:parts) -> part ++ (concat $ Prelude.zipWith (++) (cycle ["(",")"]) parts)
+            (part:parts) -> part ++ (Prelude.concat $ Prelude.zipWith (++) (cycle ["(",")"]) parts)
             [] -> ""
 
         squareToChar :: Square -> Char
@@ -90,7 +91,7 @@ module Wordify.Rules.FormedWord (FormedWords,
   overallScore :: FormedWords -> Int
   overallScore formedWords =
     let wordsScore = Prelude.sum $ Prelude.map (scoreWord placed) $ allWords formedWords
-    in case (Prelude.length $ placed) of
+    in case (Prelude.length $ keys $ placed) of
       7 -> wordsScore + 50
       _ -> wordsScore
       where
