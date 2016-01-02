@@ -3,6 +3,7 @@ module Wordify.Rules.LetterBag (LetterBag,
                                 tiles,
                                 bagFromTiles, 
                                 makeBagUsingGenerator,
+                                bagLetters,
                                 takeLetters,
                                 exchangeLetters,
                                 shuffleBag,
@@ -18,13 +19,14 @@ import qualified Control.Exception as Exc
 import Wordify.Rules.ScrabbleError
 import Text.ParserCombinators.Parsec
 import Data.Char
+import qualified Data.Map as M
 import Wordify.Rules.LetterBag.Internal
 import System.IO
 import Data.Array.ST
 import Control.Monad.ST
 import Data.STRef
-
-
+import qualified Data.Set as S
+import qualified Data.Maybe as Mb
 
 {- |
   Creates a letter bag from a file where each line contains a space delimited letter character, letter value, and letter distribution.
@@ -58,6 +60,21 @@ parseBagString path bagString  =
 -}
 bagFromTiles :: [Tile] -> IO LetterBag
 bagFromTiles bagTiles = newStdGen >>= return . LetterBag bagTiles (length bagTiles)
+
+{-|
+    Maps each letter in the letter bag to the tile for that letter.
+    Ignores blank letters. 
+ -}
+bagLetters :: LetterBag -> M.Map Char Tile
+bagLetters letterBag = 
+    let maybeLetters =  Mb.mapMaybe pairIfTileHasLetter $ tiles letterBag
+    in M.fromList maybeLetters
+    where
+        pairIfTileHasLetter :: Tile -> Maybe (Char, Tile)
+        pairIfTileHasLetter tile =
+            case (tileLetter tile) of
+                Just lettr -> Just (lettr, tile)
+                _ -> Nothing
 
 {- |
   Takes 'n' numbers from a letter bag, yielding 'Nothing'

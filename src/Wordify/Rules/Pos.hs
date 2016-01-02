@@ -1,5 +1,6 @@
 
 module Wordify.Rules.Pos (Pos,
+                          Direction(Horizontal, Vertical),
                           posAt,
                           above,
                           below,
@@ -15,6 +16,8 @@ module Wordify.Rules.Pos (Pos,
   import qualified Data.Map as Map
   import Wordify.Rules.Pos.Internal
   import Data.Maybe
+
+  data Direction = Horizontal | Vertical deriving Eq
 
   posMin :: Int
   posMin = 1 

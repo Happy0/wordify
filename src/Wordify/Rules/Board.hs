@@ -70,6 +70,12 @@ module Wordify.Rules.Board(Board,
   lettersRight :: Board -> Pos -> Seq (Pos,Square)
   lettersRight board pos = walkFrom board pos right
 
+  {- | Finds the empty square positions horizontally or vertically from a given position,
+       skipping any squares that are occupied by a tile
+  -}
+  consecutiveEmptySquares :: Pos -> Int -> Direction -> [Pos]
+  consecutiveEmptySquares pos numSquares direction = undefined
+
   {- | Pretty prints a board to a human readable string representation. Helpful for development. -}
   prettyPrint :: Board -> String
   prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels

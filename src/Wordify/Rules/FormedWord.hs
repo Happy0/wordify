@@ -39,7 +39,6 @@ module Wordify.Rules.FormedWord (FormedWords,
                                   
   type FormedWord = Seq (Pos, Square)
   type PlacedSquares = Map Pos Square
-  data Direction = Horizontal | Vertical deriving Eq
 
   {- |
     Pretty prints the places a given formed word intersects with letters that were already on the board
