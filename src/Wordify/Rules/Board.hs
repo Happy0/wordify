@@ -82,8 +82,8 @@ module Wordify.Rules.Board(Board,
             L.filter (isJust . unoccupiedSquareAt board) $
                  mapMaybe posAt $ zipDirection (repeat constant) changing
     where
-        constant = if direction == Horizontal then xPos startPos else yPos startPos
-        zipDirection = if (direction == Horizontal) then L.zip else flip L.zip
+        constant = if direction == Horizontal then yPos startPos else xPos startPos
+        zipDirection = if (direction == Horizontal) then flip L.zip else L.zip
      
 
   {- | Pretty prints a board to a human readable string representation. Helpful for development. -}
