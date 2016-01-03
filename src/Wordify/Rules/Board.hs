@@ -3,6 +3,7 @@ module Wordify.Rules.Board(Board,
                            allSquares,
                            placeTile,
                            occupiedSquareAt,
+                           emptySquaresFrom,
                            lettersAbove,
                            lettersBelow,
                            lettersLeft,
@@ -20,7 +21,8 @@ module Wordify.Rules.Board(Board,
   import Wordify.Rules.Board.Internal
   import Control.Applicative
   import Data.List.Split
-  import Data.List
+  import qualified Data.List as L
+  import Data.Foldable as F
 
   instance Show Board where
     show = prettyPrint
@@ -73,20 +75,28 @@ module Wordify.Rules.Board(Board,
   {- | Finds the empty square positions horizontally or vertically from a given position,
        skipping any squares that are occupied by a tile
   -}
-  consecutiveEmptySquares :: Pos -> Int -> Direction -> [Pos]
-  consecutiveEmptySquares pos numSquares direction = undefined
+  emptySquaresFrom :: Board -> Pos -> Int -> Direction -> [Pos]
+  emptySquaresFrom board startPos numSquares direction =
+    let changing = [constant .. 15]
+    in  L.take numSquares $ 
+            L.filter (isJust . unoccupiedSquareAt board) $
+                 mapMaybe posAt $ zipDirection (repeat constant) changing
+    where
+        constant = if direction == Horizontal then xPos startPos else yPos startPos
+        zipDirection = if (direction == Horizontal) then L.zip else flip L.zip
+     
 
   {- | Pretty prints a board to a human readable string representation. Helpful for development. -}
   prettyPrint :: Board -> String
   prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels
     where
-      rows = transpose . chunksOf 15 . map (squareToString . snd) . allSquares
+      rows = L.transpose . chunksOf 15 . map (squareToString . snd) . allSquares
       rowsWithLabels = concatMap (\(rowNo, row) -> (rowStr rowNo) ++ concat row ++ "\n") . Prelude.zip [1 .. ] $ (rows board)
 
       rowStr :: Int -> String
       rowStr number = if number < 10 then ((show number) ++ " | ") else (show number) ++ "| "
       columnLabelSeparator = "  " ++ (Prelude.take (15 * 5) $ repeat '-') ++ "\n"
-      columnLabels = "      " ++ (concat $ Prelude.take (15 * 2) . intersperse "    " . map ( : []) $ ['A' .. ])
+      columnLabels = "      " ++ (concat $ Prelude.take (15 * 2) . L.intersperse "    " . map ( : []) $ ['A' .. ])
 
       squareToString square = 
         case (tileIfOccupied square) of
