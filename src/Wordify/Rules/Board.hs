@@ -34,11 +34,11 @@ module Wordify.Rules.Board(Board,
   allSquares (Board squares) = Map.toList squares
 
   {- |
-    Places a tile on a square and yields the new board, if the 
+    Places a tile on a square and yields the new board, if the
     target square is empty. Otherwise yields 'Nothing'.
   -}
   placeTile :: Board -> Tile -> Pos -> Maybe Board
-  placeTile board tile pos = 
+  placeTile board tile pos =
     (\sq -> insertSquare board pos (putTileOn sq tile)) <$> unoccupiedSquareAt board pos
 
   insertSquare :: Board -> Pos -> Square -> Board
@@ -49,13 +49,13 @@ module Wordify.Rules.Board(Board,
 
   {- | Returns the square at a given position if it is not occupied by a tile. Otherwise returns Nothing.-}
   unoccupiedSquareAt :: Board -> Pos -> Maybe Square
-  unoccupiedSquareAt board pos = 
+  unoccupiedSquareAt board pos =
     squareAt board pos >>= (\sq -> if isOccupied sq then Nothing else Just sq)
 
   {- | Returns the square at a given position if it is occupied by a tile. Otherwise returns Nothing.-}
   occupiedSquareAt :: Board -> Pos -> Maybe Square
   occupiedSquareAt board pos = squareAt board pos >>= squareIfOccupied
- 
+
   {- | All letters immediately above a given square until a non-occupied square -}
   lettersAbove :: Board -> Pos -> Seq (Pos,Square)
   lettersAbove board pos = walkFrom board pos above
@@ -77,14 +77,14 @@ module Wordify.Rules.Board(Board,
   -}
   emptySquaresFrom :: Board -> Pos -> Int -> Direction -> [Pos]
   emptySquaresFrom board startPos numSquares direction =
-    let changing = [constant .. 15]
-    in  L.take numSquares $ 
+    let changingOnwards = [changing .. 15]
+    in  L.take numSquares $
             L.filter (isJust . unoccupiedSquareAt board) $
-                 mapMaybe posAt $ zipDirection (repeat constant) changing
+                 mapMaybe posAt $ zipDirection (repeat constant) changingOnwards
     where
-        constant = if direction == Horizontal then yPos startPos else xPos startPos
+        (constant, changing) = if direction == Horizontal then (yPos startPos, xPos startPos) else (xPos startPos, yPos startPos)
         zipDirection = if (direction == Horizontal) then flip L.zip else L.zip
-     
+
 
   {- | Pretty prints a board to a human readable string representation. Helpful for development. -}
   prettyPrint :: Board -> String
@@ -98,10 +98,10 @@ module Wordify.Rules.Board(Board,
       columnLabelSeparator = "  " ++ (Prelude.take (15 * 5) $ repeat '-') ++ "\n"
       columnLabels = "      " ++ (concat $ Prelude.take (15 * 2) . L.intersperse "    " . map ( : []) $ ['A' .. ])
 
-      squareToString square = 
+      squareToString square =
         case (tileIfOccupied square) of
           Just sq -> maybe " |_| " (\lt -> " |" ++ lt : "| ") $ tileLetter sq
-          Nothing -> 
+          Nothing ->
             case square of
               (Normal _) -> "  N  "
               (DoubleLetter _) -> "  DL "
@@ -122,12 +122,12 @@ module Wordify.Rules.Board(Board,
         \sq -> return (nextPos, sq)
 
   {- |
-    Creates an empty board. 
+    Creates an empty board.
   -}
   emptyBoard :: Board
   emptyBoard = Board (Map.fromList posSquares)
     where
-      layout = 
+      layout =
         [["TW","N","N","DL","N","N","N","TW","N","N","N","DL","N","N","TW"]
        ,["N","DW","N","N","N","TL","N","N","N","TL","N","N","N","DW","N"]
        ,["N","N","DW","N","N","N","DL","N","DL","N","N","N","DW","N","N"]
