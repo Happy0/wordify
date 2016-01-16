@@ -19,10 +19,8 @@ module Tests.FullGameTest where
     import Data.Char
     import qualified Data.Sequence as Seq
     import qualified System.FilePath as F
-    import Control.Monad   
+    import Control.Monad
     import Data.List
-
-    data Direction = Horizontal | Vertical
 
     letterValues :: M.Map Char Int
     letterValues = M.fromList $ [('A', 1), ('B',3), ('C', 3), ('D', 2), ('E', 1), ('F',4),('G',2),('H',4),('I',1),('J',8),('K',5),('L',1) ,('M',3),('N',1),('O',1),('P',3),('Q',10),('R', 1), ('S',1), ('T',1),('U',1),('V',4),('W',4),('X',8),('Y',4),('Z',10)]
@@ -50,7 +48,7 @@ module Tests.FullGameTest where
 
 
 
-    placeMap :: String -> Direction -> (Int, Int) -> M.Map Pos Tile 
+    placeMap :: String -> Direction -> (Int, Int) -> M.Map Pos Tile
     placeMap letters direction pos = M.fromList $ zip positions tiles
         where
             positions =
@@ -61,7 +59,7 @@ module Tests.FullGameTest where
             tiles = map toTilePlaced letters
 
     toTileBag :: Char -> Tile
-    toTileBag lettr = 
+    toTileBag lettr =
         case lettr of
             '_' -> Blank Nothing
             x -> Letter x $ M.findWithDefault 0 x letterValues
@@ -75,7 +73,7 @@ module Tests.FullGameTest where
     moves = moveList
 
         where
-            moveList = 
+            moveList =
                 map PlaceTiles [
                       placeMap "RAVINE" Horizontal (8,8)
                     , placeMap "OVEl" Vertical (12,9)
@@ -105,7 +103,7 @@ module Tests.FullGameTest where
 
 
     playThroughTest :: Assertion
-    playThroughTest = 
+    playThroughTest =
       do
         game <- setupGame
         assertBool "Could not initialise game for test " $ isValid game
@@ -150,14 +148,14 @@ module Tests.FullGameTest where
             otherwise -> False
 
     gameEndsOnConsecutiveSkips :: Assertion
-    gameEndsOnConsecutiveSkips = 
+    gameEndsOnConsecutiveSkips =
         do
           game <- setupGame
           -- 8 consecutive passes ends the game
           let skipMoves = NE.fromList $ replicate 8 Pass
           assertBool "Could not initialise game for test " $ isValid game
 
-          let Right testGame = game 
+          let Right testGame = game
           let transitions = restoreGame testGame skipMoves
           let lastGame = fmap NE.last transitions
           assertBool ("Unexpected failure when playing moves ") $ isValid lastGame
@@ -165,7 +163,7 @@ module Tests.FullGameTest where
           let Right finalTrans = lastGame
 
           case finalTrans of
-              GameFinished _ _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8 
+              GameFinished _ _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8
               otherwise -> assertFailure "Unexpected end state. Expected 'Game finished' "
 
     gameDoesNotEndOnNonConsecutiveSkips :: Assertion
@@ -173,7 +171,7 @@ module Tests.FullGameTest where
       do
         game <- setupGame
         assertBool "Could not initialise game for test " $ isValid game
-        let Right testGame = game 
+        let Right testGame = game
         let movesWithSkips = take 10 $ concat $ intersperse (replicate 4 Pass) $ splitEvery 4 moves
         let transitions = restoreGame testGame $ NE.fromList movesWithSkips
 
@@ -187,14 +185,14 @@ module Tests.FullGameTest where
         assertEqual "Unexpected current player" (fmap fst (optionalPlayers lastGame)) ( Just (currentPlayer lastGame))
 
       where
-        splitEvery n = takeWhile (not . null) . unfoldr (Just . splitAt n) 
+        splitEvery n = takeWhile (not . null) . unfoldr (Just . splitAt n)
 
     exchangeMoveExchangesLetters :: Assertion
-    exchangeMoveExchangesLetters = 
+    exchangeMoveExchangesLetters =
         do
             game <- setupGame
             assertBool "Could not initialise game for test " $ isValid game
-            let Right testGame = game 
+            let Right testGame = game
             let firstPlayer = player1 testGame
             let playerTiles = tilesOnRack firstPlayer
             let move = Exchange playerTiles
@@ -207,8 +205,8 @@ module Tests.FullGameTest where
             let newPlayer1 = player1 nextGame
 
 
-            case transition of 
-                ExchangeTransition game playerBefore playerAfter -> 
+            case transition of
+                ExchangeTransition game playerBefore playerAfter ->
                     do
                         assertEqual "playerBefore in the transition should be the player before making the move" (firstPlayer) playerBefore
                         assertEqual "playerAfter in the transition should be the player after making the move" (newPlayer1) playerAfter
@@ -216,7 +214,7 @@ module Tests.FullGameTest where
             assertBool ("Player 1 should have new letters on their rack. Player 1 was: " ++ (show newPlayer1)) (not $ firstPlayer == newPlayer1)
 
             assertEqual "Game has transitioned to the next player " (currentPlayer nextGame)  (player2 testGame)
-            
+
             assertBool "Player number and move number incremented" $ (playerNumber nextGame == 2) && (moveNumber nextGame) == 2
 
             let originalLetterBag = bag testGame

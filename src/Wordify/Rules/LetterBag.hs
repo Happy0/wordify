@@ -1,9 +1,9 @@
 module Wordify.Rules.LetterBag (LetterBag,
+                                validLetters,
                                 makeBag,
                                 tiles,
-                                bagFromTiles, 
+                                bagFromTiles,
                                 makeBagUsingGenerator,
-                                bagLetters,
                                 takeLetters,
                                 exchangeLetters,
                                 shuffleBag,
@@ -43,14 +43,14 @@ makeBag path = do
   Right x -> return $ fmap shuffleBag x
 
 parseBagString :: String -> String -> IO (Either ScrabbleError LetterBag)
-parseBagString path bagString  = 
-  let parseResult = parseBag bagString in 
+parseBagString path bagString  =
+  let parseResult = parseBag bagString in
     case parseResult of
       Left _ -> return $ Left (MalformedLetterBagFile path)
       Right parsedTiles ->
-        do 
+        do
           gen <- newStdGen
-          return $ Right (LetterBag parsedTiles (length parsedTiles) gen)
+          return $ Right (LetterBag parsedTiles (length parsedTiles) gen (bagLetters parsedTiles))
 
 {- |
   Creates a letter bag from a list of tiles. The order of the tiles is retained in the resulting letter bag.
@@ -59,15 +59,18 @@ parseBagString path bagString  =
   it to be shuffled using this generator in the future.
 -}
 bagFromTiles :: [Tile] -> IO LetterBag
-bagFromTiles bagTiles = newStdGen >>= return . LetterBag bagTiles (length bagTiles)
+bagFromTiles bagTiles =
+    do
+        generator <- newStdGen
+        return $ LetterBag bagTiles (length bagTiles) generator (bagLetters bagTiles)
 
 {-|
-    Maps each letter in the letter bag to the tile for that letter.
-    Ignores blank letters. 
- -}
-bagLetters :: LetterBag -> M.Map Char Tile
-bagLetters letterBag = 
-    let maybeLetters =  Mb.mapMaybe pairIfTileHasLetter $ tiles letterBag
+    Helper function to construct a LetterBag. Maps the valid letters in a letter bag
+    to the tile representing that letter on the board.
+-}
+bagLetters :: [Tile] -> M.Map Char Tile
+bagLetters tiles =
+    let maybeLetters =  Mb.mapMaybe pairIfTileHasLetter tiles
     in M.fromList maybeLetters
     where
         pairIfTileHasLetter :: Tile -> Maybe (Char, Tile)
@@ -83,16 +86,16 @@ bagLetters letterBag =
   value is the new bag.
 -}
 takeLetters :: LetterBag -> Int -> Maybe ([Tile], LetterBag)
-takeLetters (LetterBag bagTiles lettersLeft gen) numTake =
+takeLetters (LetterBag bagTiles lettersLeft gen validLetters) numTake =
   if (newNumLetters < 0) then Nothing
-   else Just (taken, LetterBag newLetters newNumLetters gen)
+   else Just (taken, LetterBag newLetters newNumLetters gen validLetters)
   where
     newNumLetters = lettersLeft - numTake
     (taken, newLetters) = splitAt numTake bagTiles
 
 {- |
   Exchanges given tiles for the same number of tiles from the bag.
-  The exchanged letters are added to the bag, the bag is then shuffled, 
+  The exchanged letters are added to the bag, the bag is then shuffled,
   and then the same number of tiles as exchanged are drawn from the bag.
 
   Returns 'Nothing' if there are not enough letters in the bag to exchange
@@ -100,11 +103,11 @@ takeLetters (LetterBag bagTiles lettersLeft gen) numTake =
   given, and the new letterbag.
 -}
 exchangeLetters :: LetterBag -> [Tile] -> (Maybe ([Tile], LetterBag))
-exchangeLetters (LetterBag bagTiles lettersLeft gen) exchanged =
+exchangeLetters (LetterBag bagTiles lettersLeft gen validLetters) exchanged =
   if (lettersLeft == 0) then Nothing else takeLetters (shuffleBag intermediateBag) numLettersGiven
     where
       numLettersGiven = length exchanged
-      intermediateBag = LetterBag (exchanged ++ bagTiles) (lettersLeft + numLettersGiven) gen
+      intermediateBag = LetterBag (exchanged ++ bagTiles) (lettersLeft + numLettersGiven) gen validLetters
 
 {- |
   Shuffles the contents of a letter bag. The bag is shuffled using the random generator which was created
@@ -115,10 +118,10 @@ exchangeLetters (LetterBag bagTiles lettersLeft gen) exchanged =
  the same order.) When constructing an additional game, use shuffleWithNewGenerator.
 -}
 shuffleBag :: LetterBag -> LetterBag
-shuffleBag (LetterBag _ 0 gen) =  LetterBag [] 0 gen
-shuffleBag (LetterBag bagTiles size gen) =
+shuffleBag (LetterBag _ 0 gen validLetters) =  LetterBag [] 0 gen validLetters
+shuffleBag (LetterBag bagTiles size gen validLetters) =
   let (newTiles, newGenerator) = shuffle bagTiles gen size
-  in (LetterBag newTiles size newGenerator)
+  in (LetterBag newTiles size newGenerator validLetters)
 
   where
     -- Taken from http://www.haskell.org/haskellwiki/Random_shuffle
@@ -149,7 +152,7 @@ shuffleBag (LetterBag bagTiles size gen) =
   recorded, with any shuffling yielding the same bag as in the original game.
 -}
 makeBagUsingGenerator :: [Tile] -> StdGen -> LetterBag
-makeBagUsingGenerator bagTiles randomGenerator = LetterBag bagTiles (length bagTiles) randomGenerator
+makeBagUsingGenerator bagTiles randomGenerator = LetterBag bagTiles (length bagTiles) randomGenerator (bagLetters bagTiles)
 
 {- |
   Get the letter bag's current generator, which will be used to shuffle the contents of the bag in the next exchange
@@ -165,7 +168,7 @@ getGenerator = generator
 -}
 shuffleWithNewGenerator :: LetterBag -> IO LetterBag
 shuffleWithNewGenerator letterBag = fmap (\newGen -> shuffleBag $ letterBag { generator = newGen }) newStdGen
- 
+
 parseBag :: String -> Either ParseError [Tile]
 parseBag contents = parse bagFile "Malformed letter bag file" contents
   where
@@ -180,7 +183,7 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
          return bagTiles
 
     letterTiles =
-      do 
+      do
          tileCharacter <- letter
          _ <- space
          value <- many digit
@@ -190,7 +193,7 @@ parseBag contents = parse bagFile "Malformed letter bag file" contents
          return $ replicate (read distribution) (Letter (toUpper tileCharacter) (read value))
 
     blankTiles =
-      do 
+      do
         _ <- char '_'
         _ <- space
         distribution <- many digit

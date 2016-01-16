@@ -1,7 +1,7 @@
 module Tests.LetterBagTest where
 
     import Test.QuickCheck (Property, quickCheck)
-    import Test.QuickCheck.Monadic as Q (assert, monadicIO, pick, pre, run) 
+    import Test.QuickCheck.Monadic as Q (assert, monadicIO, pick, pre, run)
     import Wordify.Rules.LetterBag
     import Wordify.Rules.LetterBag.Internal
     import Wordify.Rules.Tile
@@ -18,9 +18,9 @@ module Tests.LetterBagTest where
     bagFromTilesProperty inputTiles = monadicIO $
       do
         bag <- run $ bagFromTiles inputTiles
-        let LetterBag resultingTiles numTiles generator = bag
+        let LetterBag resultingTiles numTiles generator validLetters = bag
         Q.assert $ numTiles == (length inputTiles) && resultingTiles == inputTiles
-    
+
     shuffleProperty :: LetterBag -> Bool
     shuffleProperty bag =
       let shuffled = shuffleBag bag
@@ -31,27 +31,27 @@ module Tests.LetterBagTest where
         bagIsShuffled originalBag shuffledBag = not $ originalBag == shuffledBag
 
     shuffleTwiceProperty :: LetterBag -> Bool
-    shuffleTwiceProperty bag = if (bagSize bag < 10) then True else not $ bag1 == bag2 && bagSize bag1 == bagSize bag2 
+    shuffleTwiceProperty bag = if (bagSize bag < 10) then True else not $ bag1 == bag2 && bagSize bag1 == bagSize bag2
       where
         bag1 = shuffleBag bag
         bag2 = shuffleBag bag1
 
     takeLettersProperty :: LetterBag -> Int -> Bool
-    takeLettersProperty letterBag numTake = 
+    takeLettersProperty letterBag numTake =
         if (originalBagSize < numTake) then takeLetters letterBag numTake == Nothing
          else
           takeLetters letterBag numTake == Just (expectedTiles, expectedBag)
         where
-            LetterBag originalBagTiles originalBagSize gen = letterBag
+            LetterBag originalBagTiles originalBagSize gen validLetters = letterBag
             expectedTiles = take numTake originalBagTiles
-            expectedBag = LetterBag (drop numTake originalBagTiles) (originalBagSize - numTake) gen
+            expectedBag = LetterBag (drop numTake originalBagTiles) (originalBagSize - numTake) gen validLetters
 
     exchangeLettersProperty :: LetterBag -> [Tile] -> Bool
     exchangeLettersProperty letterBag toExchange =
         let exchangeResult = exchangeLetters letterBag toExchange
         in case exchangeResult of
                 Nothing -> originalNumTiles == 0
-                Just (given, LetterBag newTiles newNumTiles newGenerator) ->
+                Just (given, LetterBag newTiles newNumTiles newGenerator validLetters) ->
                  (originalNumTiles == newNumTiles)
                   && length given == length toExchange
                    && forAll (\tile -> (getCount tile newTileCounts) == (getCount tile originalTileCounts) + (getCount tile exchangedCounts) - (getCount tile givenCounts) ) allTiles
@@ -66,11 +66,11 @@ module Tests.LetterBagTest where
                       getCount key m = findWithDefault 0 key m
 
                       forAll condition list = L.null $ L.filter (not . condition) list
-            where 
-                LetterBag originalTiles originalNumTiles generator = letterBag
+            where
+                LetterBag originalTiles originalNumTiles generator validLetters = letterBag
 
     makeBagInvalidlyFormattedBag :: Assertion
-    makeBagInvalidlyFormattedBag = 
+    makeBagInvalidlyFormattedBag =
       withTempFile $ \ filePath handle -> do
         let invalidStr = "A 2 2 3 4" -- Erroneous extra number
         hPutStrLn handle invalidStr
@@ -78,12 +78,12 @@ module Tests.LetterBagTest where
         hClose handle
         letterBag <- makeBag filePath
 
-        case letterBag of 
+        case letterBag of
           Left (MalformedLetterBagFile _) -> return ()
           x -> H.assertFailure $ "Input with invalidly formatted bag unexpectedly succeeded: " ++ show x
 
     makeBagTestSuccess :: Assertion
-    makeBagTestSuccess = 
+    makeBagTestSuccess =
         withTempFile $ \ filePath handle -> do
           let letters = ['A' .. ]
           let values = [1 .. 5]
@@ -94,13 +94,13 @@ module Tests.LetterBagTest where
           hFlush handle
           hClose handle
           letterBag <- makeBag filePath
-          
-          case letterBag of 
+
+          case letterBag of
             Left _ -> H.assertFailure "makeBag returned an error"
-            Right (LetterBag tiles numTiles generator) -> do
+            Right (LetterBag tiles numTiles generator validLetters) -> do
               let expectedLetters = zipWith3 (\letter value distribution -> replicate distribution $ Letter letter value  ) letters values distributions
               let expectedBlanks = replicate 2 $ Blank Nothing
-              let expectedTiles = concat $ expectedBlanks : expectedLetters 
+              let expectedTiles = concat $ expectedBlanks : expectedLetters
 
               H.assertBool "Letter bag contains expected letters" $ expectedTiles `L.intersect` tiles == expectedTiles
               H.assertBool "Letter bag contains expected number of letters" $ (length expectedTiles) == (length tiles)
@@ -108,8 +108,8 @@ module Tests.LetterBagTest where
     makeBagInvalidPath :: Assertion
     makeBagInvalidPath =
      do
-      letterBag <- makeBag "this is an invalid file path" 
-      case letterBag of 
+      letterBag <- makeBag "this is an invalid file path"
+      case letterBag of
         Left (LetterBagFileNotOpenable _) -> return ()
         _ -> H.assertFailure "Unexpected success"
 

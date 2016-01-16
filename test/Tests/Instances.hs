@@ -25,7 +25,7 @@ module Tests.Instances where
            tiles <- listOf (arbitrary :: Gen Tile)
            seed <- arbitrary :: Gen Int
            let generator = mkStdGen seed
-           return $ LetterBag tiles (length tiles) generator
+           return $ makeBagUsingGenerator tiles generator
 
     instance Arbitrary Pos where
         arbitrary = do
