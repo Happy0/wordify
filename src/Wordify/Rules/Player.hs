@@ -5,6 +5,7 @@ module Wordify.Rules.Player (
   name,
   rack,
   tilesOnRack,
+  endBonus,
   score,
   increaseScore,
   reduceScore,
