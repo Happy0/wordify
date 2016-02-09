@@ -7,12 +7,14 @@ module Wordify.Rules.Player (
   tilesOnRack,
   score,
   increaseScore,
+  reduceScore,
+  giveEndLosePenalty,
+  giveEndWinBonus,
   giveTiles,
   removePlayedTiles,
   removeTiles,
   hasEmptyRack,
   tileValues,
-  reduceScore,
   exchange) where
 
   import Wordify.Rules.Tile
@@ -27,13 +29,14 @@ module Wordify.Rules.Player (
 
   data Player = Player {name :: Name
                        , rack :: LetterRack
-                       , score :: Score } deriving (Show, Eq)
+                       , score :: Score
+                       , endBonus :: Int} deriving (Show, Eq)
 
   makePlayer :: String -> Player
-  makePlayer playerName = Player playerName (LetterRack []) 0
+  makePlayer playerName = Player playerName (LetterRack []) 0 0
 
   tilesOnRack :: Player -> [Tile]
-  tilesOnRack (Player _ (LetterRack letters) _) = letters
+  tilesOnRack (Player _ (LetterRack letters) _ _) = letters
 
   increaseScore :: Player -> Int -> Player
   increaseScore player justScored = player {score = currentScore + justScored}
@@ -44,6 +47,12 @@ module Wordify.Rules.Player (
   reduceScore player removeScore = player {score = currentScore - removeScore}
     where
       currentScore = score player
+
+  giveEndLosePenalty :: Player -> Int -> Player
+  giveEndLosePenalty player penalty = (reduceScore player penalty) {endBonus = -penalty}
+
+  giveEndWinBonus :: Player -> Int -> Player
+  giveEndWinBonus player bonus = (increaseScore player bonus) {endBonus = bonus}
 
   hasEmptyRack :: Player -> Bool
   hasEmptyRack player = null $ tilesOnRack player
@@ -63,7 +72,7 @@ module Wordify.Rules.Player (
   {- |
     Removes played tiles from the player's tile rack, if it was possible for the player
     to play those tiles in the first place. A player may play a tile on his rack, unless
-    it is a blank, which must first be assigned a letter. 
+    it is a blank, which must first be assigned a letter.
   -}
   removePlayedTiles :: Player -> [Tile] -> Maybe Player
   removePlayedTiles player tiles =
@@ -86,20 +95,20 @@ module Wordify.Rules.Player (
       isInvalid (tile, freq) =
        case tile of
         -- Tried to play a blank without a letter
-        Blank Nothing -> False 
+        Blank Nothing -> False
         -- Player doesn't have tiles
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
 
   exchange :: Player -> [Tile] -> [Tile] -> Maybe Player
-  exchange player exchanged received = 
+  exchange player exchanged received =
     if not (playerCanExchange player exchanged) then Nothing
-      else 
+      else
         Just $ giveTiles (removeTiles player exchanged) received
 
   playerCanExchange :: Player -> [Tile] -> Bool
-  playerCanExchange (Player _ ( LetterRack letterRack) _ ) exchanged = isNothing $ find cannotExchange exchangedList
-
+  playerCanExchange (Player _ ( LetterRack letterRack) _ _) exchanged =
+     isNothing $ find cannotExchange exchangedList
     where
       (exchangedFrequencies, rackFrequencies) = tileFrequencies exchanged letterRack
       exchangedList = Map.toList exchangedFrequencies
@@ -107,7 +116,7 @@ module Wordify.Rules.Player (
       cannotExchange (tile, freq) =
        case tile of
         -- Tried to exchange a blank letter which has been labeled. Client error.
-        Blank (Just _) -> False 
+        Blank (Just _) -> False
         -- Player doesn't have tiles
         Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies

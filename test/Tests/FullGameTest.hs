@@ -144,7 +144,7 @@ module Tests.FullGameTest where
       where
         isFinalTransition trans =
          case trans of
-            GameFinished _ _ _ -> True
+            GameFinished _ _ -> True
             otherwise -> False
 
     gameEndsOnConsecutiveSkips :: Assertion
@@ -163,7 +163,7 @@ module Tests.FullGameTest where
           let Right finalTrans = lastGame
 
           case finalTrans of
-              GameFinished _ _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8
+              GameFinished _ _ ->  assertEqual "Unexpected move number" (moveNumber (newGame finalTrans)) 8
               otherwise -> assertFailure "Unexpected end state. Expected 'Game finished' "
 
     gameDoesNotEndOnNonConsecutiveSkips :: Assertion
@@ -237,8 +237,3 @@ module Tests.FullGameTest where
                     do
                         assertEqual "Player should be the new state of the player in the game " (player1 game) player
                 otherwise -> assertFailure "Failed to set up test correctly."
-
-
-
-
-
