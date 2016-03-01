@@ -9,6 +9,7 @@ module Wordify.Rules.Pos (Pos,
                           xPos,
                           yPos,
                           gridValue,
+                          direction,
                           starPos,
                           posMin,
                           posMax) where
