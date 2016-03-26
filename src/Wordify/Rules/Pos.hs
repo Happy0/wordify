@@ -51,8 +51,8 @@ module Wordify.Rules.Pos (Pos,
 
   direction :: Pos -> Pos -> Maybe Direction
   direction startPos endPos
-    | xPos startPos == xPos endPos = Just Horizontal
-    | yPos startPos == yPos endPos = Just Vertical
+    | xPos startPos == xPos endPos = Just Vertical
+    | yPos startPos == yPos endPos = Just Horizontal
     | otherwise = Nothing
 
   {- A map keyed by tuples representing (x,y) co-ordinates, and valued by their
@@ -72,4 +72,3 @@ module Wordify.Rules.Pos (Pos,
 
   gridValue :: Pos -> String
   gridValue (Pos _ _ grid) = grid
-
