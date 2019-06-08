@@ -4,11 +4,12 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79613bdc5314247649ac94fdfe02db99a81c5a8cc9ab1e8c5b63369d17801a7b
+-- hash: f28111054d235bc18dc5e0d167dd433a32a9e0c4e9627cc10c02822b5b2ac44e
 
 name:           wordify
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
+category:       Game
 homepage:       https://github.com/happy0/wordify#readme
 bug-reports:    https://github.com/happy0/wordify/issues
 author:         Gordon Martin
