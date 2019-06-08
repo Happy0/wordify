@@ -1,10 +1,10 @@
 name:                wordify
 version:             0.1.0.0
-github:              "githubuser/wordify"
+github:              "happy0/wordify"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+author:              "Gordon Martin"
+maintainer:          "happy0"
+copyright:           "2019 Gordon Martin"
 
 extra-source-files:
 - README.md
@@ -12,7 +12,7 @@ extra-source-files:
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
-# category:            Web
+ category:            Game
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is

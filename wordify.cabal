@@ -4,16 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a014a6b80ece0a07af831e9107daa0a211db0f777e17aa0b06f1803adc0a7c7e
+-- hash: 79613bdc5314247649ac94fdfe02db99a81c5a8cc9ab1e8c5b63369d17801a7b
 
 name:           wordify
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
-homepage:       https://github.com/githubuser/wordify#readme
-bug-reports:    https://github.com/githubuser/wordify/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2019 Author name here
+homepage:       https://github.com/happy0/wordify#readme
+bug-reports:    https://github.com/happy0/wordify/issues
+author:         Gordon Martin
+maintainer:     happy0
+copyright:      2019 Gordon Martin
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/wordify
+  location: https://github.com/happy0/wordify
 
 library
   exposed-modules:
