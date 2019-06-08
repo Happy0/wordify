@@ -20,7 +20,7 @@ module Wordify.Rules.Board(Board,
   import Data.Sequence as Seq
   import Wordify.Rules.Board.Internal
   import Control.Applicative
-  import Data.List.Split
+  import Data.List.Split as S
   import qualified Data.List as L
   import Data.Foldable as F
 
@@ -90,7 +90,7 @@ module Wordify.Rules.Board(Board,
   prettyPrint :: Board -> String
   prettyPrint board = rowsWithLabels ++ columnLabelSeparator ++ columnLabels
     where
-      rows = L.transpose . chunksOf 15 . map (squareToString . snd) . allSquares
+      rows = L.transpose . S.chunksOf 15 . map (squareToString . snd) . allSquares
       rowsWithLabels = concatMap (\(rowNo, row) -> (rowStr rowNo) ++ concat row ++ "\n") . Prelude.zip [1 .. ] $ (rows board)
 
       rowStr :: Int -> String

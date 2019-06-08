@@ -43,8 +43,8 @@ module Tests.LetterBagTest where
           takeLetters letterBag numTake == Just (expectedTiles, expectedBag)
         where
             LetterBag originalBagTiles originalBagSize gen validLetters = letterBag
-            expectedTiles = take numTake originalBagTiles
-            expectedBag = LetterBag (drop numTake originalBagTiles) (originalBagSize - numTake) gen validLetters
+            expectedTiles = L.take numTake originalBagTiles
+            expectedBag = LetterBag (L.drop numTake originalBagTiles) (originalBagSize - numTake) gen validLetters
 
     exchangeLettersProperty :: LetterBag -> [Tile] -> Bool
     exchangeLettersProperty letterBag toExchange =

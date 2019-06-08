@@ -1,0 +1,130 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: a014a6b80ece0a07af831e9107daa0a211db0f777e17aa0b06f1803adc0a7c7e
+
+name:           wordify
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
+homepage:       https://github.com/githubuser/wordify#readme
+bug-reports:    https://github.com/githubuser/wordify/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/wordify
+
+library
+  exposed-modules:
+      Lib
+      Wordify.Rules.Board
+      Wordify.Rules.Board.Internal
+      Wordify.Rules.Dictionary
+      Wordify.Rules.FormedWord
+      Wordify.Rules.Game
+      Wordify.Rules.Game.Internal
+      Wordify.Rules.LetterBag
+      Wordify.Rules.LetterBag.Internal
+      Wordify.Rules.Move
+      Wordify.Rules.Player
+      Wordify.Rules.Pos
+      Wordify.Rules.Pos.Internal
+      Wordify.Rules.ScrabbleError
+      Wordify.Rules.Square
+      Wordify.Rules.Tile
+  other-modules:
+      Paths_wordify
+  hs-source-dirs:
+      src
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , containers
+    , errors
+    , listsafe
+    , mtl
+    , parsec
+    , random
+    , safe
+    , semigroups
+    , split
+    , transformers
+    , unordered-containers
+  default-language: Haskell2010
+
+executable wordify-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_wordify
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , containers
+    , errors
+    , listsafe
+    , mtl
+    , parsec
+    , random
+    , safe
+    , semigroups
+    , split
+    , transformers
+    , unordered-containers
+    , wordify
+  default-language: Haskell2010
+
+test-suite wordify-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Tests.BoardTest
+      Tests.FormedWordsTest
+      Tests.FullGameTest
+      Tests.Instances
+      Tests.LetterBagTest
+      Tests.PosTest
+      Tests.Properties
+      Tests.Regressions
+      Tests.SharedTestData
+      Tests.Utils
+      Paths_wordify
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit
+    , QuickCheck
+    , array
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , errors
+    , filepath
+    , listsafe
+    , mtl
+    , parsec
+    , random
+    , safe
+    , semigroups
+    , split
+    , test-framework
+    , test-framework-hunit
+    , test-framework-quickcheck2
+    , transformers
+    , unordered-containers
+    , wordify
+  default-language: Haskell2010
