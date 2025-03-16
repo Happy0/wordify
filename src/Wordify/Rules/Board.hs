@@ -154,6 +154,9 @@ textRepresentation board = L.intercalate "," (squareStrings board)
 
 loadFromTextRepresentation :: Board -> M.Map Char Tile -> Maybe Board
 loadFromTextRepresentation board validTiles = undefined
+  where
+    toPos :: Int -> Pos
+    toPos index = undefined
 
 -- |
 --    Creates an empty board.
