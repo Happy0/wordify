@@ -169,14 +169,15 @@ textRepresentation board = L.intercalate "," (squareStrings board)
 -}
 loadFromTextRepresentation :: M.Map Char Tile -> String -> Maybe Board
 loadFromTextRepresentation validTiles textRepresentation =
-  let positionsWithLetters = L.zip [1 ..] textRepresentation
+  let positionsWithLetters = L.zip [0 ..] (S.splitOn "," textRepresentation)
    in let placements = mapMaybe (uncurry positionWithLetter) positionsWithLetters
        in placeTiles emptyBoard placements
   where
-    positionWithLetter :: Int -> Char -> Maybe (Tile, Pos)
-    positionWithLetter oneDimensionalCoordinate letter = do
+    positionWithLetter :: Int -> [Char] -> Maybe (Tile, Pos)
+    positionWithLetter oneDimensionalCoordinate [] = Nothing 
+    positionWithLetter oneDimensionalCoordinate (letter: []) = do
       tile <- M.lookup letter validTiles
-      let x = (oneDimensionalCoordinate `div` 15) + 1
+      let x = (oneDimensionalCoordinate  `div` 15) + 1
       let y = (oneDimensionalCoordinate `mod` 15) + 1
       coordinate <- posAt (x, y)
       return (tile, coordinate)
