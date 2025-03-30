@@ -1,5 +1,6 @@
 module Wordify.Rules.LetterBag
   ( LetterBag,
+    ValidTiles,
     validLetters,
     makeBag,
     tiles,
