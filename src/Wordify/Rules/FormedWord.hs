@@ -20,15 +20,18 @@ module Wordify.Rules.FormedWord
 where
 
 import Control.Applicative
+import Control.Error (note)
 import Control.Monad
 import Data.Char
 import Data.Foldable as Foldable
 import Data.Functor
 import qualified Data.List.Split as S
 import Data.Map as Map
+import Data.Maybe (isJust)
 import qualified Data.Maybe as M
 import Data.Sequence as Seq
 import Wordify.Rules.Board
+import Wordify.Rules.LetterBag
 import Wordify.Rules.Pos
 import Wordify.Rules.ScrabbleError
 import Wordify.Rules.Square
@@ -183,6 +186,16 @@ wordStrings formed = Prelude.map makeString $ main formed : otherWords formed
 
 makeString :: FormedWord -> String
 makeString word = concat <$> M.mapMaybe (\(_, sq) -> tileIfOccupied sq >>= tileString) $ Foldable.toList word
+
+validateBlankAssignments :: ValidTiles -> [(Pos, Tile)] -> Either ScrabbleError ()
+validateBlankAssignments validTiles placed = undefined
+  where
+    validateTilePlacement :: ValidTiles -> (Pos, Tile) -> Either ScrabbleError ()
+    validateTilePlacement validTiles (pos, (Letter _ x)) = pure ()
+    validateTilePlacement validTiles (pos, (Blank (Just assigned))) = note (NotAssignableToBlank pos assigned validTileStrings) (Map.lookup assigned validTiles) >> pure ()
+    validateTilePlacement validTiles (pos, Blank Nothing) = Left (CannotPlaceBlankWithoutLetter pos)
+
+    validTileStrings = Map.keys validTiles
 
 {-
   Checks that the tiles can be placed, and if so returns a map of the squares at the placed positions.

@@ -10,6 +10,7 @@ where
 
 import Control.Applicative
 import Control.Arrow
+import Control.Error
 import Control.Error.Util
 import Control.Monad
 import qualified Data.List.NonEmpty as NE
@@ -61,7 +62,7 @@ makeBoardMove game placed =
     formed <- formedWords
     (overallScore, _) <- scoresIfWordsLegal dict formed
     nextBoard <- newBoard currentBoard placed
-    intermediatePlayer <- removeLettersandGiveScore validTiles player playedTiles overallScore
+    intermediatePlayer <- removeLettersandGiveScore player playedTiles overallScore
 
     if hasEmptyRack intermediatePlayer && (bagSize letterBag == 0)
       then do
@@ -97,7 +98,7 @@ exchangeMove game exchangedTiles =
         Just (givenTiles, newBag) ->
           let newPlayer = exchange player exchangedTiles givenTiles
            in maybe
-                (Left $ PlayerCannotExchange (rack player) exchangedTiles)
+                (Left $ PlayerCannotExchange (tilesOnRack player) exchangedTiles)
                 ( \exchangedPlayer ->
                     let gameState = updateGame game exchangedPlayer (board game) newBag
                      in Right $ ExchangeTransition gameState player exchangedPlayer
@@ -184,10 +185,10 @@ newBoard currentBoard placed = foldM (\oldBoard (pos, tile) -> newBoardIfUnoccup
   where
     newBoardIfUnoccupied brd pos tile = note (PlacedTileOnOccupiedSquare pos tile) $ placeTile brd tile pos
 
-removeLettersandGiveScore :: ValidTiles -> Player -> [Tile] -> Int -> Either ScrabbleError Player
-removeLettersandGiveScore validTiles player playedTiles justScored =
-  let newPlayer = flip increaseScore justScored <$> removePlayedTiles validTiles player playedTiles
-   in note (PlayerCannotPlace (rack player) playedTiles) newPlayer
+removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either ScrabbleError Player
+removeLettersandGiveScore player playedTiles justScored = do
+  let newPlayer = flip increaseScore justScored <$> removePlayedTiles player playedTiles
+   in note (PlayerCannotPlace (tilesOnRack player) playedTiles) newPlayer
 
 scoresIfWordsLegal :: Dictionary -> FormedWords -> Either ScrabbleError (Int, [(String, Int)])
 scoresIfWordsLegal dict formedWords =

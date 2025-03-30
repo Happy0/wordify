@@ -82,9 +82,9 @@ removeTiles player toRemove = player {rack = LetterRack $ tilesOnRack player \\ 
 --    Removes played tiles from the player's tile rack, if it was possible for the player
 --    to play those tiles in the first place. A player may play a tile on his rack, unless
 --    it is a blank, which must first be assigned a letter.
-removePlayedTiles :: ValidTiles -> Player -> [Tile] -> Maybe Player
-removePlayedTiles validTiles player tiles =
-  if playerCanPlace player validTiles tiles
+removePlayedTiles :: Player -> [Tile] -> Maybe Player
+removePlayedTiles player tiles =
+  if playerCanPlace player tiles
     then Just $ player `removedFromRack` tiles
     else Nothing
   where
@@ -93,8 +93,8 @@ removePlayedTiles validTiles player tiles =
 -- |
 --    Returns true if the player cannot place any of the given tiles. A player cannot play
 --    a Blank tile that they have not given a letter, or a tile not on their rack.
-playerCanPlace :: Player -> ValidTiles -> [Tile] -> Bool
-playerCanPlace player validTiles played = isNothing $ find isInvalid playedList
+playerCanPlace :: Player -> [Tile] -> Bool
+playerCanPlace player played = isNothing $ find isInvalid playedList
   where
     (playedFrequencies, rackFrequencies) = tileFrequencies played (tilesOnRack player)
     playedList = Map.toList playedFrequencies
@@ -102,14 +102,9 @@ playerCanPlace player validTiles played = isNothing $ find isInvalid playedList
     isInvalid :: (Tile, Int) -> Bool
     isInvalid (tile, freq) =
       case tile of
-        -- Tried to play a blank without a letter
-        Blank Nothing -> False
         -- Player doesn't have tiles
-        Blank (Just assignedValue) -> (freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies) && isValidTileString validTiles assignedValue
+        Blank _ -> freq > Map.findWithDefault 0 (Blank Nothing) rackFrequencies
         Letter chr val -> freq > Map.findWithDefault 0 (Letter chr val) rackFrequencies
-
-    isValidTileString :: ValidTiles -> String -> Bool
-    isValidTileString validTiles string = isJust $ Map.lookup string validTiles
 
 exchange :: Player -> [Tile] -> [Tile] -> Maybe Player
 exchange player exchanged received =
