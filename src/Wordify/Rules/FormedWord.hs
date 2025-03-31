@@ -187,16 +187,6 @@ wordStrings formed = Prelude.map makeString $ main formed : otherWords formed
 makeString :: FormedWord -> String
 makeString word = concat <$> M.mapMaybe (\(_, sq) -> tileIfOccupied sq >>= tileString) $ Foldable.toList word
 
-validateBlankAssignments :: ValidTiles -> [(Pos, Tile)] -> Either ScrabbleError ()
-validateBlankAssignments validTiles placed = undefined
-  where
-    validateTilePlacement :: ValidTiles -> (Pos, Tile) -> Either ScrabbleError ()
-    validateTilePlacement validTiles (pos, (Letter _ x)) = pure ()
-    validateTilePlacement validTiles (pos, (Blank (Just assigned))) = note (NotAssignableToBlank pos assigned validTileStrings) (Map.lookup assigned validTiles) >> pure ()
-    validateTilePlacement validTiles (pos, Blank Nothing) = Left (CannotPlaceBlankWithoutLetter pos)
-
-    validTileStrings = Map.keys validTiles
-
 {-
   Checks that the tiles can be placed, and if so returns a map of the squares at the placed positions.
   A tile may be placed if the square is not already occupied, and if it is not an unlabeled blank tile.

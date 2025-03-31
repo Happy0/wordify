@@ -11,6 +11,7 @@ module Wordify.Rules.ScrabbleError
         DoesNotCoverTheStarTile,
         PlacedTileOnOccupiedSquare,
         CannotPlaceBlankWithoutLetter,
+        InvalidTileLetters,
         NotAssignableToBlank,
         WordsNotInDictionary,
         PlayerCannotPlace,
@@ -59,6 +60,8 @@ data ScrabbleError
     PlayerCannotPlace LettersOnRack [Tile]
   | -- | The string applied to the blank letter isn't a valid tile value
     NotAssignableToBlank Pos String ValidBlankValues
+  | -- | The letters on the played tile aren't valid
+    InvalidTileLetters Pos String
   | -- | The caller allowed the player to attempt to exchange when no letters were left in the bag.
     CannotExchangeWhenNoLettersInBag
   | -- | The caller allowed the player to attempt to exchange tiles that they do not have.
@@ -81,6 +84,7 @@ instance Show ScrabbleError where
   show (PlacedTileOnOccupiedSquare pos _) = "Move replaces a tile already on the board at " ++ show pos ++ ". This is not a legal move."
   show (CannotPlaceBlankWithoutLetter pos) = "A played blank tile must be given a letter. Blank tile played at " ++ show pos ++ " was not given a letter."
   show (WordsNotInDictionary xs) = "The following words are not in the scrabble dictionary: " ++ show xs
+  show (InvalidTileLetters pos letters) = "A played tile is not a valid tile. " ++ letters ++ " played at " ++ show pos ++ " was not given a letter."
   show (PlayerCannotPlace letterRack tiles) = "The player cannot place: " ++ show tiles ++ ". Tiles on rack: " ++ show letterRack ++ ". Blank tiles must be labeled and the placed tiles must be on the rack."
   show (NotAssignableToBlank pos assigned validAssignments) = "Cannot assign value " ++ show assigned ++ " to blank tile. Valid values: " ++ (intercalate ", " validAssignments) ++ " Blank placed at " ++ show pos
   show (CannotExchangeWhenNoLettersInBag) = "Cannot exchange letters when there are no letters in the bag."

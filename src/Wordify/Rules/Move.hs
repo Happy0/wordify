@@ -59,9 +59,11 @@ makeMove game move
 makeBoardMove :: Game -> M.Map Pos Tile -> Either ScrabbleError GameTransition
 makeBoardMove game placed =
   do
+    validPlacedTiles <- validateTiles (validLetters letterBag) placed
+    let playedTiles = Map.elems validPlacedTiles
     formed <- formedWords
     (overallScore, _) <- scoresIfWordsLegal dict formed
-    nextBoard <- newBoard currentBoard placed
+    nextBoard <- newBoard currentBoard validPlacedTiles
     intermediatePlayer <- removeLettersandGiveScore player playedTiles overallScore
 
     if hasEmptyRack intermediatePlayer && (bagSize letterBag == 0)
@@ -70,12 +72,11 @@ makeBoardMove game placed =
         let finalisedGame = finaliseGame beforeFinalisingGame
         return $ GameFinished finalisedGame (Just formed)
       else do
-        let (newPlayer, newBag) = updatePlayerRackAndBag intermediatePlayer letterBag (Map.size placed)
+        let (newPlayer, newBag) = updatePlayerRackAndBag intermediatePlayer letterBag (Map.size validPlacedTiles)
         let updatedGame = updateGame game newPlayer nextBoard newBag
         return $ MoveTransition newPlayer updatedGame formed
   where
     player = currentPlayer game
-    playedTiles = Map.elems placed
     currentBoard = board game
     dict = dictionary game
     letterBag = bag game
@@ -136,6 +137,17 @@ restoreGameLazy :: Game -> NE.NonEmpty Move -> NE.NonEmpty (Either ScrabbleError
 restoreGameLazy game (mv NE.:| moves) = NE.scanl nextMove (makeMove game mv) moves
   where
     nextMove transition move = transition >>= \success -> makeMove (newGame success) move
+
+validateTiles :: ValidTiles -> M.Map Pos Tile -> Either ScrabbleError (M.Map Pos Tile)
+validateTiles validTiles placed = fromList <$> mapM (validateTilePlacement validTiles) (toList placed)
+  where
+    validateTilePlacement :: ValidTiles -> (Pos, Tile) -> Either ScrabbleError (Pos, Tile)
+    validateTilePlacement validTiles (pos, Letter letters x) = (,) pos <$> note (InvalidTileLetters pos letters) (Map.lookup letters validTiles)
+    validateTilePlacement validTiles (pos, Blank (Just assigned)) =
+      note (NotAssignableToBlank pos assigned validTileStrings) (Map.lookup assigned validTiles) >>= \x -> Right (pos, Blank (Just assigned))
+    validateTilePlacement validTiles (pos, Blank Nothing) = Left (CannotPlaceBlankWithoutLetter pos)
+
+    validTileStrings = Map.keys validTiles
 
 newGame :: GameTransition -> Game
 newGame (MoveTransition _ game _) = game
