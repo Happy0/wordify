@@ -31,40 +31,6 @@ letterBag = bagFromTiles $ map toTileBag tilesAsLetters
   where
     tilesAsLetters = "JEARVINENVO_NILLEWBKONUIEUWEAZBDESIAPAEOOURGOCDSNIADOAACAR_RMYELTUTYTEREOSITNIRFGPHAQLHESOIITXFDMETG"
 
-setupGame :: IO (Either ScrabbleError Game)
-setupGame =
-  do
-    bag <- letterBag
-    dict <- testDictionary
-    return $ resultGame bag dict
-  where
-    resultGame bag dict =
-      do
-        dc <- dict
-        let [player1, player2, player3, player4] = map makePlayer ["a", "b", "c", "d"]
-        makeGame (player1, player2, Just (player3, Just player4)) bag dc
-
-placeMap :: String -> Direction -> (Int, Int) -> M.Map Pos Tile
-placeMap letters direction pos = M.fromList $ zip positions tiles
-  where
-    positions =
-      case direction of
-        Horizontal -> catMaybes $ takeWhile isJust <$> map posAt $ iterate (\(x, y) -> (x + 1, y)) pos
-        Vertical -> catMaybes $ takeWhile isJust <$> map posAt $ iterate (\(x, y) -> (x, y + 1)) pos
-
-    tiles = map toTilePlaced letters
-
-toTileBag :: Char -> Tile
-toTileBag lettr =
-  case lettr of
-    '_' -> Blank Nothing
-    x -> Letter [x] $ M.findWithDefault 0 [x] letterValues
-
-toTilePlaced :: Char -> Tile
-toTilePlaced char
-  | isLower char = Blank $ Just ([toUpper char])
-  | otherwise = toTileBag char
-
 moves :: [Move]
 moves = moveList
   where
@@ -100,7 +66,7 @@ moves = moveList
 playThroughTest :: Assertion
 playThroughTest =
   do
-    game <- setupGame
+    game <- letterBag >>= setupGame
     assertBool "Could not initialise game for test " $ isValid game
 
     let Right testGame = game
@@ -144,7 +110,7 @@ playThroughTest =
 gameEndsOnConsecutiveSkips :: Assertion
 gameEndsOnConsecutiveSkips =
   do
-    game <- setupGame
+    game <- letterBag >>= setupGame
     -- 8 consecutive passes ends the game
     let skipMoves = NE.fromList $ replicate 8 Pass
     assertBool "Could not initialise game for test " $ isValid game
@@ -163,7 +129,7 @@ gameEndsOnConsecutiveSkips =
 gameDoesNotEndOnNonConsecutiveSkips :: Assertion
 gameDoesNotEndOnNonConsecutiveSkips =
   do
-    game <- setupGame
+    game <- letterBag >>= setupGame
     assertBool "Could not initialise game for test " $ isValid game
     let Right testGame = game
     let movesWithSkips = take 10 $ concat $ intersperse (replicate 4 Pass) $ splitEvery 4 moves
@@ -183,7 +149,7 @@ gameDoesNotEndOnNonConsecutiveSkips =
 exchangeMoveExchangesLetters :: Assertion
 exchangeMoveExchangesLetters =
   do
-    game <- setupGame
+    game <- letterBag >>= setupGame
     assertBool "Could not initialise game for test " $ isValid game
     let Right testGame = game
     let firstPlayer = player1 testGame
@@ -217,7 +183,7 @@ exchangeMoveExchangesLetters =
 playerInMoveTransitionIsAsExpected :: Assertion
 playerInMoveTransitionIsAsExpected =
   do
-    game <- setupGame
+    game <- letterBag >>= setupGame
     assertBool "Could not initialise game for test " $ isValid game
     let Right testGame = game
 
