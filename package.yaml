@@ -33,6 +33,9 @@ dependencies:
   - listsafe
   - safe
   - split
+  - text
+  - conduit
+  - bytestring
 
 library:
   source-dirs: src
