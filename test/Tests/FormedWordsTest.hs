@@ -588,17 +588,6 @@ nonContigiousVertical =
 
     assertEqual "Unexpected outcome when placing tiles which are not in a connected line while passing through a word" (Left $ MisplacedLetter (Pos 10 9 "J9")) formed
 
-placeBlankNothing :: Assertion
-placeBlankNothing =
-  do
-    let positions = catMaybes $ map posAt $ iterate (\(x, y) -> (x + 1, y)) (10, 7)
-    let tiles = [Letter "T" 1, Blank Nothing, Letter "A" 1]
-    let placed = M.fromList $ zip positions tiles
-
-    let formed = wordsFormedMidGame testBoard placed
-
-    assertEqual "Unexpected outcome when placing a blank tile without a chosen letter" (Left $ CannotPlaceBlankWithoutLetter $ Pos 11 7 "K7") formed
-
 placeOnOccupiedSquare :: Assertion
 placeOnOccupiedSquare =
   do

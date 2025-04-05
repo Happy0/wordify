@@ -197,14 +197,11 @@ placedSquares board tiles = squares
     squares =
       Map.fromList
         <$> sequence
-          ( ( \(pos, tile) ->
-                posTileIfNotBlank (pos, tile) >>= squareIfUnoccupied
+          ( ( \(pos, tile) -> squareIfUnoccupied (pos, tile)
             )
               <$> mapAsList
           )
 
-    posTileIfNotBlank (pos, tile) =
-      if tile == Blank Nothing then Left (CannotPlaceBlankWithoutLetter pos) else Right (pos, tile)
     squareIfUnoccupied (pos, tile) =
       maybe
         (Left (PlacedTileOnOccupiedSquare pos tile))
