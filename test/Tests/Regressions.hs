@@ -8,6 +8,7 @@ import qualified Test.Framework.Providers.HUnit as F
 import Tests.BoardTest
 import Tests.FormedWordsTest
 import Tests.FullGameTest
+import Tests.Internationalisation.Spanish.LetterBagTest (makeSpanishBagTestSuccess)
 import Tests.LetterBagTest
 import Tests.MoveTest
 
@@ -78,5 +79,9 @@ tests =
         [ F.testCase "Cannot place a blank tile without an assigned level" movePlayedWithEmptyBlankTile,
           F.testCase "Cannot place a blank tile with an invalid letter" movePlayedWithInvalidBlankTileAssignment,
           F.testCase "Can place a blank tile with a valid assignment" movePlayedWithInvalidBlankTileAssignment
+        ],
+      F.testGroup
+        "Internationalisation LetterBag"
+        [ F.testCase "Can construct a spanish letter bag" makeSpanishBagTestSuccess
         ]
     ]

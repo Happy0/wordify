@@ -105,6 +105,7 @@ test-suite wordify-test
       Tests.Regressions
       Tests.SharedTestData
       Tests.Utils
+      Tests.Internationalisation.Spanish.LetterBagTest
       Paths_wordify
   hs-source-dirs:
       test
