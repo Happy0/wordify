@@ -14,4 +14,4 @@ makeSpanishBagTestSuccess = do
   case letterBagResult of
     Left err -> H.assertFailure $ "makeBag returned an error " ++ show err
     Right letterBag -> do
-      undefined
+      assertEqual "Expected 100 tiles in the bag" (length (validLetters letterBag)) 28
