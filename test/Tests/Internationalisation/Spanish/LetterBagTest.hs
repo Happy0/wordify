@@ -14,4 +14,12 @@ makeSpanishBagTestSuccess = do
   case letterBagResult of
     Left err -> H.assertFailure $ "makeBag returned an error " ++ show err
     Right letterBag -> do
-      assertEqual "Expected 100 tiles in the bag" (length (validLetters letterBag)) 28
+      assertEqual "Expected 28 different valid letters in the bag" (length (validLetters letterBag)) 28
+
+      let takeResult = takeLetters letterBag 103
+
+      case takeResult of
+        Nothing -> H.assertFailure $ "takeLetters returned Nothing, Expected Just"
+        Just (tiles, newBag) -> do
+          assertEqual "Expected 103 tiles to be taken from the bag" (length tiles) 103
+          assertEqual "Expect no letters to left in the bag" (bagSize newBag) 0
