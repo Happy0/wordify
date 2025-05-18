@@ -35,7 +35,7 @@ data ScrabbleError
   = -- | The caller has supplied an invalid path to a letter bag file, or the file is not openable
     LetterBagFileNotOpenable String
   | -- | The letter bag file is marformed, so could not be parsed.
-    MalformedLetterBagFile FilePath
+    MalformedLetterBagFile FilePath String
   | -- | The path given to a dictionary file was invalid.
     DictionaryFileNotFound FilePath
   | -- | The dictionary file could not be parsed as it was malformed.
@@ -73,7 +73,7 @@ data ScrabbleError
 
 instance Show ScrabbleError where
   show (MalformedDictionaryFile reason) = "Dictionary file could not be parsed for the following reason: " ++ reason
-  show (MalformedLetterBagFile path) = "Letter bag file " ++ path ++ " was malformed."
+  show (MalformedLetterBagFile path err) = "Letter bag file " ++ path ++ " was malformed. Reason: " ++ err
   show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."
   show (LetterBagFileNotOpenable path) = "Letter bag file " ++ path ++ " was not openable"
   show (NotEnoughLettersInStartingBag num) = "A starting bag must have enough tiles to distribute to the players to start a game. Bag has " ++ show num ++ " tiles."

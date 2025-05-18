@@ -48,7 +48,7 @@ parseBagString :: String -> String -> IO (Either ScrabbleError LetterBag)
 parseBagString path bagString =
   let parseResult = parseBag bagString
    in case parseResult of
-        Left _ -> return $ Left (MalformedLetterBagFile path)
+        Left err -> return $ Left (MalformedLetterBagFile path (show err))
         Right parsedTiles ->
           do
             gen <- newStdGen

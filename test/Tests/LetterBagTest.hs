@@ -77,7 +77,7 @@ makeBagInvalidlyFormattedBag =
     letterBag <- makeBag filePath
 
     case letterBag of
-      Left (MalformedLetterBagFile _) -> return ()
+      Left (MalformedLetterBagFile _ _) -> return ()
       x -> H.assertFailure $ "Input with invalidly formatted bag unexpectedly succeeded: " ++ show x
 
 makeBagTestSuccess :: Assertion
