@@ -21,49 +21,50 @@ makeSpanishBagTestSuccess = do
   letterBagResult <- makeBag spanishBagFilePath
 
   let expectedTileQuantities =
-        [ ("A", 9)
-        , ("B", 2)
-        , ("C", 2)
-        , ("CH", 4)
+        [ ("A", 11)
+        , ("B", 3)
+        , ("C", 4)
         , ("D", 4)
-        , ("E", 12)
+        , ("E", 11)
         , ("F", 2)
-        , ("G", 3)
+        , ("G", 2)
         , ("H", 2)
-        , ("I", 9)
-        , ("J", 1)
+        , ("I", 6)
+        , ("J", 2)
         , ("K", 1)
         , ("L", 4)
-        , ("LL", 3)
-        , ("M", 2)
-        , ("N", 6)
+        , ("LL", 1)
+        , ("M", 3)
+        , ("N", 5)
         , ("O", 8)
         , ("P", 2)
         , ("Q", 1)
-        , ("R", 6)
-        , ("S", 4)
-        , ("T", 6)
-        , ("U", 4)
+        , ("R", 4)
+        , ("RR", 1)
+        , ("S", 7)
+        , ("T", 4)
+        , ("U", 6)
         , ("V", 2)
+        , ("W", 1)
         , ("X", 1)
-        , ("Y", 2)
+        , ("Y", 1)
         , ("Z", 1)
         , ("_", 2)
-        , ("Ñ", 3)
+        , ("Ñ", 1)
         ]
   
 
   case letterBagResult of
     Left err -> H.assertFailure $ "makeBag returned an error " ++ show err
     Right letterBag -> do
-      assertEqual "Expected 28 different valid letters in the bag" (length (validLetters letterBag)) 28
+      assertEqual "Expected 28 different valid letters in the bag" (length (validLetters letterBag)) 29
 
-      let takeResult = takeLetters letterBag 108
+      let takeResult = takeLetters letterBag 103
 
       case takeResult of
         Nothing -> H.assertFailure $ "takeLetters returned Nothing, Expected Just"
         Just (tiles, newBag) -> do
-          assertEqual "Expected 103 tiles to be taken from the bag" (length tiles) 108
+          assertEqual "Expected 103 tiles to be taken from the bag" (length tiles) 103
           assertEqual "Expect no letters to left in the bag" (bagSize newBag) 0
           let actualTileQuantities = M.toList (countLetters tiles)
           assertEqual "Expected the tiles" expectedTileQuantities actualTileQuantities
