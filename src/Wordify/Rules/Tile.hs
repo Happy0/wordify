@@ -4,7 +4,7 @@ import Data.Char
 
 -- |
 -- A tile is a string with a value, or a Blank tile
--- which may have been given a letter. Blank tiles
+-- which may have been given a string. Blank tiles
 -- always have the value '0'.
 data Tile = Letter String Int | Blank (Maybe String) deriving (Show, Eq, Ord)
 
