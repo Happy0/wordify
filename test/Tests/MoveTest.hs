@@ -53,7 +53,7 @@ movePlayedWithInvalidBlankTileAssignment = do
   let Left err = moveResult
 
   let validTiles = map (: []) ['A' .. 'Z']
-  assertEqual "Unexpected result for placing tiles which do not intersect the star on the first move" (NotAssignableToBlank (Pos 8 8 "H8") "😎" validTiles) err
+  assertEqual "Unexpected result for placing blank tile with invalid value" (NotAssignableToBlank (Pos 8 8 "H8") "😎" validTiles) err
 
 movePlayedWithValidBlankTileAssignment :: Assertion
 movePlayedWithValidBlankTileAssignment = do
