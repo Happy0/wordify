@@ -1,10 +1,12 @@
-module Wordify.Rules.LetterBag.Internal (LetterBag(LetterBag), tiles, bagSize, validLetters, generator) where
+module Wordify.Rules.LetterBag.Internal (LetterBag (LetterBag), ValidTiles, tiles, bagSize, validLetters, generator) where
 
-    import Wordify.Rules.Tile
-    import System.Random
-    import Data.Map
+import Data.Map
+import System.Random
+import Wordify.Rules.Tile
 
-    data LetterBag = LetterBag { tiles :: [Tile],  bagSize :: Int, generator :: StdGen, validLetters :: Map Char Tile } deriving (Show)
+type ValidTiles = Map String Tile
 
-    instance Eq LetterBag where
-        bag1 == bag2 = (bagSize bag1 == bagSize bag2 && tiles bag1 == tiles bag2)
+data LetterBag = LetterBag {tiles :: [Tile], bagSize :: Int, generator :: StdGen, validLetters :: ValidTiles} deriving (Show)
+
+instance Eq LetterBag where
+  bag1 == bag2 = bagSize bag1 == bagSize bag2 && tiles bag1 == tiles bag2

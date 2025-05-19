@@ -1,70 +1,73 @@
-name:                wordify
-version:             0.1.0.0
-github:              "happy0/wordify"
-license:             BSD3
-author:              "Gordon Martin"
-maintainer:          "happy0"
-copyright:           "2019 Gordon Martin"
+name: wordify
+version: 0.3.0.0
+github: "happy0/wordify"
+license: BSD3
+author: "Gordon Martin"
+maintainer: "happy0"
+copyright: "2019 Gordon Martin"
 
 extra-source-files:
-- README.md
-- ChangeLog.md
+  - README.md
+  - ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
-category:            Game
+category: Game
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
+description: Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- containers
-- array
-- random
-- mtl
-- transformers
-- parsec
-- unordered-containers
-- semigroups
-- errors
-- listsafe
-- safe
-- split
+  - base >= 4.7 && < 5
+  - containers
+  - array
+  - random
+  - mtl
+  - transformers
+  - parsec
+  - unordered-containers
+  - semigroups
+  - errors
+  - listsafe
+  - safe
+  - split
+  - text
+  - conduit
+  - bytestring
 
 library:
   source-dirs: src
 
 executables:
   wordify-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - wordify
+      - wordify
 
 tests:
   wordify-test:
-    main:                Main.hs
-    source-dirs:         test
+    main: Main.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - wordify
-    - QuickCheck
-    - HUnit
-    - test-framework
-    - test-framework-hunit
-    - test-framework-quickcheck2
-    - directory
-    - containers
-    - random
-    - semigroups
-    - filepath
+      - wordify
+      - QuickCheck
+      - HUnit
+      - test-framework
+      - test-framework-hunit
+      - test-framework-quickcheck2
+      - directory
+      - containers
+      - random
+      - semigroups
+      - filepath
