@@ -11,6 +11,7 @@ import Tests.FullGameTest
 import Tests.Internationalisation.Spanish.LetterBagTest (makeSpanishBagTestSuccess)
 import Tests.LetterBagTest
 import Tests.MoveTest
+import Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest)
 
 tests :: F.Test
 tests =
@@ -82,6 +83,7 @@ tests =
         ],
       F.testGroup
         "Internationalisation LetterBag"
-        [ F.testCase "Can construct a spanish letter bag" makeSpanishBagTestSuccess
+        [ F.testCase "Can construct a spanish letter bag" makeSpanishBagTestSuccess,
+          F.testCase "Can play a move in a game setup with a spanish dictionary and letter bag" playSpanishMoveTest
         ]
     ]
