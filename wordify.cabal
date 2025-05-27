@@ -30,6 +30,8 @@ library
       Wordify.Rules.Board
       Wordify.Rules.Board.Internal
       Wordify.Rules.Dictionary
+      Wordify.Rules.Extra.ExtraRule
+      Wordify.Rules.Extra.SpanishExtraRule
       Wordify.Rules.FormedWord
       Wordify.Rules.Game
       Wordify.Rules.Game.Internal
