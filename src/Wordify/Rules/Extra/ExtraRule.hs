@@ -1,7 +1,6 @@
 module Wordify.Rules.Extra.ExtraRule (ExtraRule, makeExtraRule, applyExtraRules, RuleExecutionError(RuleExecutionError)) where
-    import Wordify.Rules.Game
-    import Wordify.Rules.Move
     import Control.Monad (foldM)
+    import Wordify.Rules.Move (GameTransition)
 
     data RuleExecutionError = RuleExecutionError {errorCode :: String, description :: String }
 
