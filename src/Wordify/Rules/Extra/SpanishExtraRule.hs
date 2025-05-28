@@ -1,5 +1,5 @@
-module Wordify.Rules.ExtraRule.SpanishExtraRule where
-    import Wordify.Rules.Extra.ExtraRule (ExtraRule, RuleExecutionError (RuleExecutionError), makeExtraRule)
+module Wordify.Rules.Extra.SpanishExtraRule (spanishGameExtraRules) where
+    import Wordify.Rules.Extra.ExtraRule (ExtraRule, RuleExecutionError (RuleExecutionError), makeExtraRule, RuleApplicationResult(RuleApplicationResult))
     import qualified Data.Text as T
     import Wordify.Rules.Game (Game)
     import Wordify.Rules.Move (Move (Pass, PlaceTiles , Exchange), GameTransition (MoveTransition))
@@ -21,12 +21,12 @@ module Wordify.Rules.ExtraRule.SpanishExtraRule where
     makeDisallowedConsecutiveLettersRule firstTile secondTile = makeExtraRule $ \gameTransition ->
         case gameTransition of
             MoveTransition game players formedWords -> validateDoesNotResultInConsecutiveLetters gameTransition formedWords firstTile secondTile
-            other -> Right other
+            other -> Right (RuleApplicationResult other Nothing)
 
-    validateDoesNotResultInConsecutiveLetters :: GameTransition -> FormedWords -> String -> String -> Either RuleExecutionError GameTransition
+    validateDoesNotResultInConsecutiveLetters :: GameTransition -> FormedWords -> String -> String -> Either RuleExecutionError RuleApplicationResult
     validateDoesNotResultInConsecutiveLetters gameTransition formedWords firstTile secondTile
         | any (containsConsecutiveTiles firstTile secondTile) allFormedWords = Left (RuleExecutionError "InvalidConsecutiveTiles" ruleDescription)
-        | otherwise = Right gameTransition
+        | otherwise = Right (RuleApplicationResult gameTransition Nothing)
         where
             allFormedWords = allWords formedWords
             ruleDescription = concat ["Cannot place ", firstTile, " and ", secondTile, " consecutively"]
