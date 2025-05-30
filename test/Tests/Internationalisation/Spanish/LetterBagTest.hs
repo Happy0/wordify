@@ -68,4 +68,3 @@ makeSpanishBagTestSuccess = do
           assertEqual "Expect no letters to left in the bag" (bagSize newBag) 0
           let actualTileQuantities = M.toList (countLetters tiles)
           assertEqual "Expected the tiles" expectedTileQuantities actualTileQuantities
-

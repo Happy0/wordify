@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           wordify
-version:        0.3.0.1
+version:        0.4.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
 category:       Game
 homepage:       https://github.com/happy0/wordify#readme
@@ -30,6 +30,8 @@ library
       Wordify.Rules.Board
       Wordify.Rules.Board.Internal
       Wordify.Rules.Dictionary
+      Wordify.Rules.Extra.ExtraRule
+      Wordify.Rules.Extra.SpanishExtraRule
       Wordify.Rules.FormedWord
       Wordify.Rules.Game
       Wordify.Rules.Game.Internal
@@ -102,6 +104,7 @@ test-suite wordify-test
       Tests.Instances
       Tests.Internationalisation.Spanish.LetterBagTest
       Tests.Internationalisation.Spanish.MoveTest
+      Tests.Internationalisation.SpanishExtraRuleTest
       Tests.LetterBagTest
       Tests.MoveTest
       Tests.PosTest

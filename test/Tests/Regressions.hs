@@ -12,6 +12,7 @@ import Tests.Internationalisation.Spanish.LetterBagTest (makeSpanishBagTestSucce
 import Tests.LetterBagTest
 import Tests.MoveTest
 import Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest)
+import Tests.Internationalisation.SpanishExtraRuleTest (testCannotPlayCandHOnOwn, testCanPlayCHtile, testCannotPlayCNextToExistingH)
 
 tests :: F.Test
 tests =
@@ -85,5 +86,10 @@ tests =
         "Internationalisation LetterBag"
         [ F.testCase "Can construct a spanish letter bag" makeSpanishBagTestSuccess,
           F.testCase "Can play a move in a game setup with a spanish dictionary and letter bag" playSpanishMoveTest
-        ]
+        ],
+      F.testGroup "Extra Rules Tests (Spanish)" [
+        F.testCase "Cannot play C and H tiles from a hand on their own" testCannotPlayCandHOnOwn,
+        F.testCase  "Test can play CH tile" testCanPlayCHtile,
+        F.testCase "Cannot play C next to existing H" testCannotPlayCNextToExistingH
+      ]
     ]

@@ -32,7 +32,7 @@ module Wordify.Rules.Game(Game,
   import Control.Monad
   import Control.Applicative
   import qualified Data.List.Safe as LS
-
+  
   {- |
     Starts a new game. 
 
