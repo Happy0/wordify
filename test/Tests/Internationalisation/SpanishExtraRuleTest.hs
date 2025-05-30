@@ -11,7 +11,7 @@ module Tests.Internationalisation.SpanishExtraRuleTest where
     import Test.HUnit.Base (assertFailure)
     import Wordify.Rules.Move (GameTransition(..), Move (..), makeMove, newGame)
     import qualified Data.Map as M
-    import Wordify.Rules.Pos (rightPositions, starPos, abovePositions, right, belowPositions)
+    import Wordify.Rules.Pos (rightPositions, starPos, abovePositions, right, belowPositions, above, below)
     import Wordify.Rules.Extra.SpanishExtraRule (spanishGameExtraRules)
     import Wordify.Rules.Extra.ExtraRule (applyExtraRules, RuleExecutionError (..))
     import Control.Error (isLeft)
@@ -19,7 +19,8 @@ module Tests.Internationalisation.SpanishExtraRuleTest where
     import Data.Either (fromRight)
     import Wordify.Rules.Extra.ExtraRule (RuleApplicationResult(..), RuleApplicationsResult(..))
     import Data.Maybe (fromJust)
-    
+    import qualified Control.Arrow as A
+
     testSpanishDictionary :: IO (Either ScrabbleError Dictionary)
     testSpanishDictionary = makeDictionary $ "Config" ++ [F.pathSeparator] ++ "spanishSet" ++ [F.pathSeparator] ++ "dictionary.txt"
 
@@ -108,7 +109,7 @@ module Tests.Internationalisation.SpanishExtraRuleTest where
                         let Right (RuleApplicationsResult gameTransition _) = result
                         let secondMove = makeMove (newGame gameTransition) move2
 
-                        case secondMove of 
+                        case secondMove of
                             Left err -> assertFailure $ "Expected second move success. Error was " ++ show err
                             Right _ -> do
                                 let result2 = applyExtraRules moveTransition spanishGameExtraRules
@@ -116,6 +117,30 @@ module Tests.Internationalisation.SpanishExtraRuleTest where
 
                     Right _ -> assertFailure "Unexpected move transition type"
 
+    testCannotPlayCNextToExistingH :: Assertion
+    testCannotPlayCNextToExistingH = do
+        gameResult <- testGame
+        case gameResult of
+            Left err -> assertFailure $ "Failed to set up game: " ++ show err
+            Right game -> do
+                let positions = rightPositions starPos 2
+                let tiles = [Letter "H" 4, Letter "A" 1]
+                let moveMap = M.fromList $ zip positions tiles
+                let move = PlaceTiles moveMap
+                let result = A.left show (makeMove game move)
 
-    testCannotPlayLNextToExistingL :: Assertion
-    testCannotPlayLNextToExistingL = undefined
+                let validated = result >>= A.left show <$> flip applyExtraRules spanishGameExtraRules
+                assertBool "Should pass extra rule in first move" (isRight validated)
+
+                let positionsMove2 = [above starPos, below starPos]
+                let placedLettersMove2 = [Letter "C" 3, Letter "A" 1]
+                let moveMap2 = M.fromList $ zip positionsMove2 placedLettersMove2
+                let move2 = PlaceTiles moveMap
+                let result2 = A.left show (makeMove game move2)
+
+                assertBool "Move should succeed prior to extra rule" (isRight result2)
+
+                let validated = result2 >>= A.left show <$> flip applyExtraRules spanishGameExtraRules
+                assertBool "Should not pass extra validation on second move" (isRight validated)
+
+

@@ -21,6 +21,9 @@ module Wordify.Rules.Extra.ExtraRule (
     data RuleApplicationResult = RuleApplicationResult {transition :: GameTransition, bonusApplied :: Maybe BonusApplied }
     data RuleApplicationsResult = RuleApplicationsResult {finalTransition :: GameTransition, bonusesApplied :: [BonusApplied] }
 
+    instance Show RuleExecutionError where
+        show (RuleExecutionError _ description) = description
+
     newtype ExtraRule = ExtraRule
         {rule :: GameTransition -> Either RuleExecutionError RuleApplicationResult}
 
