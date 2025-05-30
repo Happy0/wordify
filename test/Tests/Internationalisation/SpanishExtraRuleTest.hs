@@ -143,4 +143,9 @@ module Tests.Internationalisation.SpanishExtraRuleTest where
                 let validated = result2 >>= A.left show <$> flip applyExtraRules spanishGameExtraRules
                 assertBool "Should not pass extra validation on second move" (isRight validated)
 
+                case validated of 
+                    Left description -> assertEqual "Description should be as expected" "Cannot place C and H consecutively" description
+                    Right _ -> return ()
+
+
 
