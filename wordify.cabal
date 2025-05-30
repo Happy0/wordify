@@ -104,6 +104,7 @@ test-suite wordify-test
       Tests.Instances
       Tests.Internationalisation.Spanish.LetterBagTest
       Tests.Internationalisation.Spanish.MoveTest
+      Tests.Internationalisation.SpanishExtraRuleTest
       Tests.LetterBagTest
       Tests.MoveTest
       Tests.PosTest

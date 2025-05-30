@@ -5,7 +5,11 @@ module Wordify.Rules.Extra.ExtraRule (
     applyExtraRules,
     RuleExecutionError(RuleExecutionError),
     RuleApplicationResult(RuleApplicationResult),
-    RuleApplicationsResult(RuleApplicationsResult)
+    RuleApplicationsResult(RuleApplicationsResult),
+    finalTransition,
+    bonusesApplied,
+    transition,
+    bonusApplied
     ) where
     
     import Control.Monad (foldM)
