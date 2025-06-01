@@ -32,8 +32,8 @@ import Wordify.Rules.Tile
 data GameTransition
   = -- | The new player (with their updated letter rack and score), new game state, and the words formed by the move
     MoveTransition Player Game FormedWords
-  | -- | The new game state, and the player with their rack before and after the exchange respectively.
-    ExchangeTransition Game Player Player
+  | -- | The new game state, the player with their rack before and after the exchange respectively.and the exchanged tiles
+    ExchangeTransition Game Player Player [Tile]
   | -- | The new game state with the opportunity to play passed on to the next player.
     PassTransition Game
   | -- |
@@ -102,7 +102,7 @@ exchangeMove game exchangedTiles =
                 (Left $ PlayerCannotExchange (tilesOnRack player) exchangedTiles)
                 ( \exchangedPlayer ->
                     let gameState = updateGame game exchangedPlayer (board game) newBag
-                     in Right $ ExchangeTransition gameState player exchangedPlayer
+                     in Right $ ExchangeTransition gameState player exchangedPlayer exchangedTiles
                 )
                 newPlayer
   where
@@ -151,13 +151,13 @@ validateTiles validTiles placed = fromList <$> mapM (validateTilePlacement valid
 
 newGame :: GameTransition -> Game
 newGame (MoveTransition _ game _) = game
-newGame (ExchangeTransition game _ _) = game
+newGame (ExchangeTransition game _ _ _) = game
 newGame (PassTransition game) = game
 newGame (GameFinished game _) = game
 
 addMoveToHistory :: GameTransition -> Move -> GameTransition
 addMoveToHistory (MoveTransition player game formedWords) move = MoveTransition player (updateHistory game move) formedWords
-addMoveToHistory (ExchangeTransition game oldPlayer newPlayer) move = ExchangeTransition (updateHistory game move) oldPlayer newPlayer
+addMoveToHistory (ExchangeTransition game oldPlayer newPlayer exchangedTiles) move = ExchangeTransition (updateHistory game move) oldPlayer newPlayer exchangedTiles
 addMoveToHistory (PassTransition game) move = PassTransition (updateHistory game move)
 addMoveToHistory (GameFinished game wordsFormed) move = GameFinished (updateHistory game move) wordsFormed
 

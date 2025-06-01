@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           wordify
-version:        0.4.0.0
+version:        0.5.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/wordify#readme>
 category:       Game
 homepage:       https://github.com/happy0/wordify#readme

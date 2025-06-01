@@ -154,7 +154,7 @@ exchangeMoveExchangesLetters =
     let Right testGame = game
     let firstPlayer = player1 testGame
     let playerTiles = tilesOnRack firstPlayer
-    let move = Exchange playerTiles
+    let move = Exchange (drop 1 playerTiles)
     let outcome = makeMove testGame move
 
     assertBool ("Expected move to be successful. ") $ isValid outcome
@@ -164,10 +164,11 @@ exchangeMoveExchangesLetters =
     let newPlayer1 = player1 nextGame
 
     case transition of
-      ExchangeTransition game playerBefore playerAfter ->
+      ExchangeTransition game playerBefore playerAfter tiles ->
         do
           assertEqual "playerBefore in the transition should be the player before making the move" (firstPlayer) playerBefore
           assertEqual "playerAfter in the transition should be the player after making the move" (newPlayer1) playerAfter
+          assertEqual "Exchanged tiles in the transition should be the tiles exchanged in the move" (drop 1 playerTiles) tiles
 
     assertBool ("Player 1 should have new letters on their rack. Player 1 was: " ++ (show newPlayer1)) (not $ firstPlayer == newPlayer1)
 
@@ -176,7 +177,7 @@ exchangeMoveExchangesLetters =
     assertBool "Player number and move number incremented" $ (playerNumber nextGame == 2) && (moveNumber nextGame) == 2
 
     let originalLetterBag = bag testGame
-    let exchangedLetterBag = fmap snd (exchangeLetters originalLetterBag playerTiles)
+    let exchangedLetterBag = fmap snd (exchangeLetters originalLetterBag (drop 1 playerTiles))
 
     assertEqual "The letter bag for the game transition is as expected " exchangedLetterBag (Just $ bag nextGame)
 
