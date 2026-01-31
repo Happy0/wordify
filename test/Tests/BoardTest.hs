@@ -4,6 +4,7 @@ import Control.Monad
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.List as L
 import qualified Data.Sequence as Seq
 import qualified Data.Set as S
 import Test.HUnit.Base
@@ -142,3 +143,63 @@ boardCorrectlyFormed =
 
     let expectedNormals = allPositions \\ (expectedTripleWords ++ expectedDoubleWords ++ expectedTripleLetters ++ expectedDoubleLetters)
     mapM_ (\pos -> assertEqual ("Normal square not where expected " ++ show pos) (Just (Normal Nothing)) (unoccupiedSquareAt emptyBoard pos)) expectedNormals
+
+-- | A map from letter strings to tiles, used for testing loadFromTextRepresentation
+testValidTiles :: M.Map String Tile
+testValidTiles = M.fromList $ map (\(str, val) -> (str, Letter str val)) $ M.toList letterValues
+
+-- | Tests that the text representation of an empty board is 224 commas
+textRepresentationEmptyBoardTest :: Assertion
+textRepresentationEmptyBoardTest =
+  do
+    let expected = replicate 224 ','
+    let actual = textRepresentation emptyBoard
+    assertEqual "Empty board text representation should be 224 commas" expected actual
+
+-- | Tests that round-tripping a board through text representation preserves the board
+textRepresentationRoundTripTest :: Assertion
+textRepresentationRoundTripTest =
+  do
+    -- Create a board with known tiles, including a blank tile
+    -- Horizontal word "CATS" at row 8, vertical word "BAR" through the A at column I
+    let pos1 = fromJust $ posAt (8, 8)   -- H8 - C
+    let pos2 = fromJust $ posAt (9, 8)   -- I8 - A (shared by both words)
+    let pos3 = fromJust $ posAt (10, 8)  -- J8 - T
+    let pos4 = fromJust $ posAt (11, 8)  -- K8 - S (blank)
+    let pos5 = fromJust $ posAt (9, 7)   -- I7 - B (above A)
+    let pos6 = fromJust $ posAt (9, 9)   -- I9 - R (below A)
+    let tile1 = Letter "C" 3
+    let tile2 = Letter "A" 1
+    let tile3 = Letter "T" 1
+    let tile4 = Blank (Just "S")  -- Blank tile representing S
+    let tile5 = Letter "B" 3
+    let tile6 = Letter "R" 1
+    let board1 = fromJust $ placeTile emptyBoard tile1 pos1
+    let board2 = fromJust $ placeTile board1 tile2 pos2
+    let board3 = fromJust $ placeTile board2 tile3 pos3
+    let board4 = fromJust $ placeTile board3 tile4 pos4
+    let board5 = fromJust $ placeTile board4 tile5 pos5
+    let board6 = fromJust $ placeTile board5 tile6 pos6
+
+    let textRep = textRepresentation board6
+    let loadedBoard = loadFromTextRepresentation testValidTiles textRep
+
+    assertBool "Round trip should succeed" (isJust loadedBoard)
+    let Just roundTripped = loadedBoard
+
+    -- Check each tile is in the correct position
+    assertEqual "Tile at H8 should be C" (Just $ DoubleWord $ Just tile1) (occupiedSquareAt roundTripped pos1)
+    assertEqual "Tile at I8 should be A" (Just $ Normal $ Just tile2) (occupiedSquareAt roundTripped pos2)
+    assertEqual "Tile at J8 should be T" (Just $ Normal $ Just tile3) (occupiedSquareAt roundTripped pos3)
+    assertEqual "Tile at K8 should be blank S" (Just $ Normal $ Just tile4) (occupiedSquareAt roundTripped pos4)
+    assertEqual "Tile at I7 should be B" (Just $ DoubleLetter $ Just tile5) (occupiedSquareAt roundTripped pos5)
+    assertEqual "Tile at I9 should be R" (Just $ DoubleLetter $ Just tile6) (occupiedSquareAt roundTripped pos6)
+
+-- | Tests that loading invalid text representation returns Nothing
+loadFromTextRepresentationInvalidTileTest :: Assertion
+loadFromTextRepresentationInvalidTileTest =
+  do
+    -- Try to load a tile that isn't in validTiles
+    let textWithInvalidTile = "INVALID" ++ replicate 224 ','
+    let result = loadFromTextRepresentation testValidTiles textWithInvalidTile
+    assertEqual "Loading invalid tile should return Nothing" Nothing result

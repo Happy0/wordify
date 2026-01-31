@@ -36,7 +36,14 @@ tests =
           F.testCase "occupiedSquareAt function behaves as expected where the square is unoccupied" occupiedSquareAtUnoccupiedTest,
           F.testCase "unoccupiedSquareAt function behaves as expected where the square is unoccupied" unoccupiedSquareAtTest,
           F.testCase "unoccupiedSquareAt function behaves as expected where the square is occupied" unoccupiedSquareAtTestOccupied,
-          F.testCase "Bonus squres and normal squares are where they are expected on the board" boardCorrectlyFormed
+          F.testCase "Bonus squres and normal squares are where they are expected on the board" boardCorrectlyFormed,
+          F.testCase "Text representation of empty board is 224 commas" textRepresentationEmptyBoardTest,
+          F.testCase "Text representation of board with tiles contains expected letters" textRepresentationWithTilesTest,
+          F.testCase "Text representation of board with blank tile uses square brackets" textRepresentationWithBlankTileTest,
+          F.testCase "Loading empty text representation yields empty board" loadFromTextRepresentationEmptyBoardTest,
+          F.testCase "Loading text representation with single tile works correctly" loadFromTextRepresentationSingleTileTest,
+          F.testCase "Round-tripping board through text representation preserves tiles" textRepresentationRoundTripTest,
+          F.testCase "Loading invalid text representation returns Nothing" loadFromTextRepresentationInvalidTileTest
         ],
       F.testGroup
         "FormedWord"
