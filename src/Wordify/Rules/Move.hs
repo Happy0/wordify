@@ -3,8 +3,6 @@ module Wordify.Rules.Move
     GameTransition (MoveTransition, ExchangeTransition, PassTransition, GameFinished),
     makeMove,
     newGame,
-    restoreGame,
-    restoreGameLazy,
   )
 where
 
@@ -13,20 +11,17 @@ import Control.Arrow
 import Control.Error
 import Control.Error.Util
 import Control.Monad
-import qualified Data.List.NonEmpty as NE
 import Data.Map
 import qualified Data.Map as M
 import qualified Data.Map as Map
-import qualified Data.Traversable as T
 import Wordify.Rules.Board
 import Wordify.Rules.Dictionary
 import Wordify.Rules.FormedWord
-import Wordify.Rules.Game
 import Wordify.Rules.Game.Internal
 import Wordify.Rules.LetterBag
 import Wordify.Rules.Player
 import Wordify.Rules.Pos
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Tile
 
 data GameTransition
@@ -45,8 +40,8 @@ data GameTransition
 -- |
 --    Transitiions the game to the next state. If the move places tiles, the player must have the tiles to place and
 --    place the tiles legally. If the move exchanges tiles, the bag must not be empty and the player must have the
---    tiles to exchange. A ScrabbleError is returned if these condtions are not the case.
-makeMove :: Game -> Move -> Either ScrabbleError GameTransition
+--    tiles to exchange. A WordifyError is returned if these condtions are not the case.
+makeMove :: Game -> Move -> Either WordifyError GameTransition
 makeMove game move
   | gameStatus game /= InProgress = Left GameNotInProgress
   | otherwise = flip addMoveToHistory move <$> gameTransition
@@ -56,7 +51,7 @@ makeMove game move
       Exchange exchanged -> exchangeMove game exchanged
       Pass -> (Right . passMove) game
 
-makeBoardMove :: Game -> M.Map Pos Tile -> Either ScrabbleError GameTransition
+makeBoardMove :: Game -> M.Map Pos Tile -> Either WordifyError GameTransition
 makeBoardMove game placed =
   do
     validPlacedTiles <- validateTiles (validLetters letterBag) placed
@@ -91,7 +86,7 @@ makeBoardMove game placed =
       PlaceTiles _ -> True
       _ -> False
 
-exchangeMove :: Game -> [Tile] -> Either ScrabbleError GameTransition
+exchangeMove :: Game -> [Tile] -> Either WordifyError GameTransition
 exchangeMove game exchangedTiles =
   let exchangeOutcome = exchangeLetters (bag game) exchangedTiles
    in case exchangeOutcome of
@@ -118,30 +113,11 @@ passMove game =
     numPasses = passes game + 1
     gameFinished = numPasses == numberOfPlayers game * 2
 
--- |
---    Restores a game from a list of moves. The game must be set up in the way the original game was set up
---    (including the letter bag constructed with the same tiles and random generator, dictionary and the list of players
---    in the original order.)
---
---    If the game is not set up as it was originally, this function will return a scrabble error with the move which was invalid
---    with the given state. For example, if the original players are not ordered in the correct way then the player will not have
---    the required tiles to make the move.
-restoreGame :: Game -> NE.NonEmpty Move -> Either ScrabbleError (NE.NonEmpty GameTransition)
-restoreGame game = T.sequence . restoreGameLazy game
 
--- |
---    Maps each move to a resulting game transition, if the move is legal. Has the same semantics as 'restoreGame'
---    but returns a list of 'Either' so that laziness can be maintained, meaning all the game transitions
---    dont have to be buffered before they can be consumed.
-restoreGameLazy :: Game -> NE.NonEmpty Move -> NE.NonEmpty (Either ScrabbleError GameTransition)
-restoreGameLazy game (mv NE.:| moves) = NE.scanl nextMove (makeMove game mv) moves
-  where
-    nextMove transition move = transition >>= \success -> makeMove (newGame success) move
-
-validateTiles :: ValidTiles -> M.Map Pos Tile -> Either ScrabbleError (M.Map Pos Tile)
+validateTiles :: ValidTiles -> M.Map Pos Tile -> Either WordifyError (M.Map Pos Tile)
 validateTiles validTiles placed = fromList <$> mapM (validateTilePlacement validTiles) (toList placed)
   where
-    validateTilePlacement :: ValidTiles -> (Pos, Tile) -> Either ScrabbleError (Pos, Tile)
+    validateTilePlacement :: ValidTiles -> (Pos, Tile) -> Either WordifyError (Pos, Tile)
     validateTilePlacement validTiles (pos, Letter letters x) = (,) pos <$> note (InvalidTileLetters pos letters) (Map.lookup letters validTiles)
     validateTilePlacement validTiles (pos, Blank (Just assigned)) =
       note (NotAssignableToBlank pos assigned validTileStrings) (Map.lookup assigned validTiles) >>= \x -> Right (pos, Blank (Just assigned))
@@ -192,17 +168,17 @@ updatePlayerRackAndBag player letterBag numPlayed
   where
     tilesInBag = bagSize letterBag
 
-newBoard :: Board -> M.Map Pos Tile -> Either ScrabbleError Board
+newBoard :: Board -> M.Map Pos Tile -> Either WordifyError Board
 newBoard currentBoard placed = foldM (\oldBoard (pos, tile) -> newBoardIfUnoccupied oldBoard pos tile) currentBoard $ Map.toList placed
   where
     newBoardIfUnoccupied brd pos tile = note (PlacedTileOnOccupiedSquare pos tile) $ placeTile brd tile pos
 
-removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either ScrabbleError Player
+removeLettersandGiveScore :: Player -> [Tile] -> Int -> Either WordifyError Player
 removeLettersandGiveScore player playedTiles justScored = do
   let newPlayer = flip increaseScore justScored <$> removePlayedTiles player playedTiles
    in note (PlayerCannotPlace (tilesOnRack player) playedTiles) newPlayer
 
-scoresIfWordsLegal :: Dictionary -> FormedWords -> Either ScrabbleError (Int, [(String, Int)])
+scoresIfWordsLegal :: Dictionary -> FormedWords -> Either WordifyError (Int, [(String, Int)])
 scoresIfWordsLegal dict formedWords =
   let strings = wordStrings formedWords
    in case invalidWords dict strings of

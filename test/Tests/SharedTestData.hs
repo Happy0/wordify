@@ -10,7 +10,7 @@ import Wordify.Rules.LetterBag
 import Wordify.Rules.Player
 import Wordify.Rules.Pos
 import Wordify.Rules.Pos.Internal
-import Wordify.Rules.ScrabbleError (ScrabbleError)
+import Wordify.Rules.WordifyError (WordifyError)
 import Wordify.Rules.Square
 import Wordify.Rules.Tile
 
@@ -34,7 +34,7 @@ rogueBelow = (Pos 7 11 "G11", Normal $ Just (Letter "Z" 2))
 
 verticals = zip verticalPositions verticalSquares
 
-testDictionary :: IO (Either ScrabbleError Dictionary)
+testDictionary :: IO (Either WordifyError Dictionary)
 testDictionary = makeDictionary $ "Config" ++ [F.pathSeparator] ++ "engSet" ++ [F.pathSeparator] ++ "en.txt"
 
 letterValues :: M.Map String Int
@@ -61,7 +61,7 @@ toTileBag lettr =
     '_' -> Blank Nothing
     x -> Letter [x] $ M.findWithDefault 0 [x] letterValues
 
-setupGame :: LetterBag -> IO (Either ScrabbleError Game)
+setupGame :: LetterBag -> IO (Either WordifyError Game)
 setupGame bag =
   do
     dict <- testDictionary

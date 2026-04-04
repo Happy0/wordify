@@ -24,7 +24,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 
 data Dictionary = Dictionary (HashSet.HashSet T.Text) deriving (Show)
 
@@ -56,7 +56,7 @@ loadDictionaryFromFile filePath = do
 
 -- |
 --    Creates a dictionary from a file containing a list of valid words, each word being seperated by a newline.
-makeDictionary :: FilePath -> IO (Either ScrabbleError Dictionary)
+makeDictionary :: FilePath -> IO (Either WordifyError Dictionary)
 makeDictionary filePath = do
   convertFileError <$> (Exc.try (loadDictionaryFromFile filePath) :: (IO (Either Exc.IOException Dictionary)))
   where

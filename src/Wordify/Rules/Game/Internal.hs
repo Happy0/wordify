@@ -16,7 +16,11 @@ module Wordify.Rules.Game.Internal (updateGame, Game(Game),
       updateHistory,
       Move(PlaceTiles, Exchange, Pass),
       History(History),
-      history) where
+      history,
+      movesMade,
+      players,
+      numberOfPlayers,
+      optionalsToPlayers) where
 
   import Wordify.Rules.Player
   import Wordify.Rules.Board
@@ -24,6 +28,8 @@ module Wordify.Rules.Game.Internal (updateGame, Game(Game),
   import Wordify.Rules.Dictionary
   import Control.Applicative
   import Data.Map
+  import Data.Maybe (isJust)
+  import qualified Data.Foldable as F
   import Wordify.Rules.Pos
   import Wordify.Rules.Tile
   import Data.Sequence
@@ -105,3 +111,20 @@ module Wordify.Rules.Game.Internal (updateGame, Game(Game),
   updateHistory game move = game {history = History originalBag (moveList |> move) }
     where
       History originalBag moveList = history game
+
+  optionalsToPlayers :: Maybe (Player, Maybe Player) -> [Player]
+  optionalsToPlayers optionals = case optionals of
+    Nothing -> []
+    Just (player3, Nothing) -> [player3]
+    Just (player3, Just player4) -> [player3, player4]
+
+  players :: Game -> [Player]
+  players game = [player1 game, player2 game] ++ optionalsToPlayers (optionalPlayers game)
+
+  numberOfPlayers :: Game -> Int
+  numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
+
+  movesMade :: Game -> [Move]
+  movesMade game =
+    case history game of
+      History _ moves -> F.toList moves

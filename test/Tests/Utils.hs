@@ -6,7 +6,7 @@ module Tests.Utils (withTempFile) where
 	import System.Directory (removeFile, getTemporaryDirectory)
 
 	withTempFile :: (FilePath -> Handle -> IO a) -> IO a
-	withTempFile = bracket (getTemporaryDirectory >>= \tempDir -> openTempFile tempDir "scrabbleTest.txt") cleanupTemp . uncurry
+	withTempFile = bracket (getTemporaryDirectory >>= \tempDir -> openTempFile tempDir "wordifyTest.txt") cleanupTemp . uncurry
 	  where
 	    cleanupTemp (path,h) = do
 	      open <- hIsOpen h

@@ -29,7 +29,7 @@ import System.IO
 import System.Random
 import Text.ParserCombinators.Parsec
 import Wordify.Rules.LetterBag.Internal
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Tile
 
 -- |
@@ -37,14 +37,14 @@ import Wordify.Rules.Tile
 --  A blank letter is represented by a '_' character and has a disribution, but no value.
 --
 -- If successful, the letter bag is shuffled before it is returned.
-makeBag :: FilePath -> IO (Either ScrabbleError LetterBag)
+makeBag :: FilePath -> IO (Either WordifyError LetterBag)
 makeBag path = do
-  ioOutcome <- Exc.try $ withFile path ReadMode (hGetContents >=> parseBagString path) :: IO (Either Exc.IOException (Either ScrabbleError LetterBag))
+  ioOutcome <- Exc.try $ withFile path ReadMode (hGetContents >=> parseBagString path) :: IO (Either Exc.IOException (Either WordifyError LetterBag))
   case ioOutcome of
     Left _ -> return $ Left (LetterBagFileNotOpenable path)
     Right x -> return $ fmap shuffleBag x
 
-parseBagString :: String -> String -> IO (Either ScrabbleError LetterBag)
+parseBagString :: String -> String -> IO (Either WordifyError LetterBag)
 parseBagString path bagString =
   let parseResult = parseBag bagString
    in case parseResult of

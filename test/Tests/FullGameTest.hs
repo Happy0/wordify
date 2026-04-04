@@ -17,19 +17,20 @@ import Wordify.Rules.LetterBag
 import Wordify.Rules.Move
 import Wordify.Rules.Player
 import Wordify.Rules.Pos
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Tile
 
 letterValues :: M.Map String Int
 letterValues = M.fromList $ [("A", 1), ("B", 3), ("C", 3), ("D", 2), ("E", 1), ("F", 4), ("G", 2), ("H", 4), ("I", 1), ("J", 8), ("K", 5), ("L", 1), ("M", 3), ("N", 1), ("O", 1), ("P", 3), ("Q", 10), ("R", 1), ("S", 1), ("T", 1), ("U", 1), ("V", 4), ("W", 4), ("X", 8), ("Y", 4), ("Z", 10)]
 
-testDictionary :: IO (Either ScrabbleError Dictionary)
-testDictionary = makeDictionary $ "Config" ++ [F.pathSeparator] ++ "engSet" ++ [F.pathSeparator] ++ "en.txt"
-
 letterBag :: IO LetterBag
 letterBag = bagFromTiles $ map toTileBag tilesAsLetters
   where
     tilesAsLetters = "JEARVINENVO_NILLEWBKONUIEUWEAZBDESIAPAEOOURGOCDSNIADOAACAR_RMYELTUTYTEREOSITNIRFGPHAQLHESOIITXFDMETG"
+
+testPlayers :: (Player, Player, Maybe (Player, Maybe Player))
+testPlayers = let [p1, p2, p3, p4] = map makePlayer ["a", "b", "c", "d"]
+              in (p1, p2, Just (p3, Just p4))
 
 moves :: [Move]
 moves = moveList
@@ -66,12 +67,9 @@ moves = moveList
 playThroughTest :: Assertion
 playThroughTest =
   do
-    game <- letterBag >>= setupGame
-    assertBool "Could not initialise game for test " $ isValid game
-
-    let Right testGame = game
     bag <- letterBag
-    let moveTransitions = restoreGame testGame $ NE.fromList $ moves
+    Right dict <- testDictionary
+    let moveTransitions = restoreGame testPlayers bag dict $ NE.fromList $ moves
 
     case moveTransitions of
       Left err ->
@@ -110,13 +108,11 @@ playThroughTest =
 gameEndsOnConsecutiveSkips :: Assertion
 gameEndsOnConsecutiveSkips =
   do
-    game <- letterBag >>= setupGame
+    bag <- letterBag
+    Right dict <- testDictionary
     -- 8 consecutive passes ends the game
     let skipMoves = NE.fromList $ replicate 8 Pass
-    assertBool "Could not initialise game for test " $ isValid game
-
-    let Right testGame = game
-    let transitions = restoreGame testGame skipMoves
+    let transitions = restoreGame testPlayers bag dict skipMoves
     let lastGame = fmap NE.last transitions
     assertBool ("Unexpected failure when playing moves ") $ isValid lastGame
 
@@ -129,11 +125,10 @@ gameEndsOnConsecutiveSkips =
 gameDoesNotEndOnNonConsecutiveSkips :: Assertion
 gameDoesNotEndOnNonConsecutiveSkips =
   do
-    game <- letterBag >>= setupGame
-    assertBool "Could not initialise game for test " $ isValid game
-    let Right testGame = game
+    bag <- letterBag
+    Right dict <- testDictionary
     let movesWithSkips = take 10 $ concat $ intersperse (replicate 4 Pass) $ splitEvery 4 moves
-    let transitions = restoreGame testGame $ NE.fromList movesWithSkips
+    let transitions = restoreGame testPlayers bag dict $ NE.fromList movesWithSkips
 
     assertBool "Unexpected error making moves" $ isValid transitions
 

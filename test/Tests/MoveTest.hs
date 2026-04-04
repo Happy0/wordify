@@ -14,7 +14,7 @@ import Wordify.Rules.Move (Move (PlaceTiles), makeMove)
 import Wordify.Rules.Player
 import Wordify.Rules.Pos
 import Wordify.Rules.Pos.Internal
-import Wordify.Rules.ScrabbleError (ScrabbleError (CannotPlaceBlankWithoutLetter, NotAssignableToBlank))
+import Wordify.Rules.WordifyError (WordifyError (CannotPlaceBlankWithoutLetter, NotAssignableToBlank))
 import Wordify.Rules.Tile
 
 letterBag :: IO LetterBag

@@ -1,5 +1,5 @@
-module Wordify.Rules.ScrabbleError
-  ( ScrabbleError
+module Wordify.Rules.WordifyError
+  ( WordifyError
       ( LetterBagFileNotOpenable,
         MalformedLetterBagFile,
         MalformedDictionaryFile,
@@ -31,7 +31,7 @@ type LettersOnRack = [Tile]
 
 type ValidBlankValues = [String]
 
-data ScrabbleError
+data WordifyError
   = -- | The caller has supplied an invalid path to a letter bag file, or the file is not openable
     LetterBagFileNotOpenable String
   | -- | The letter bag file is marformed, so could not be parsed.
@@ -71,7 +71,7 @@ data ScrabbleError
   | MiscError String
   deriving (Eq)
 
-instance Show ScrabbleError where
+instance Show WordifyError where
   show (MalformedDictionaryFile reason) = "Dictionary file could not be parsed for the following reason: " ++ reason
   show (MalformedLetterBagFile path err) = "Letter bag file " ++ path ++ " was malformed. Reason: " ++ err
   show (DictionaryFileNotFound path) = "Dictionary file " ++ path ++ " was not found."

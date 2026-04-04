@@ -1,5 +1,7 @@
 module Wordify.Rules.Game(Game,
                           makeGame,
+                          restoreGame,
+                          restoreGameLazy,
                           movesMade,
                           gameStatus,
                           board,
@@ -23,11 +25,13 @@ module Wordify.Rules.Game(Game,
   import Wordify.Rules.Board
   import Wordify.Rules.Dictionary
   import Wordify.Rules.LetterBag
-  import Wordify.Rules.ScrabbleError
+  import Wordify.Rules.WordifyError
+  import Wordify.Rules.Move (makeMove, newGame, GameTransition)
   import Data.Maybe
   import Wordify.Rules.Game.Internal
+  import qualified Data.List.NonEmpty as NE
   import qualified Data.Sequence as Seq
-  import qualified Data.Foldable as F
+  import qualified Data.Traversable as T
   import Safe
   import Control.Monad
   import Control.Applicative
@@ -44,7 +48,7 @@ module Wordify.Rules.Game(Game,
     Yields a tuple with the first player and the initial game state. Returns a 'Left' if there are not enough
     tiles in the letter bag to distribute to the players.
   -}
-  makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either ScrabbleError Game
+  makeGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> Either WordifyError Game
   makeGame playing startBag dict =
     do
       (remainingBag, initialPlayers) <- initialisePlayers playing startBag
@@ -66,7 +70,7 @@ module Wordify.Rules.Game(Game,
         toOptionalPlayers _ = Nothing
 
 
-  initialisePlayers :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Either ScrabbleError (LetterBag, [Player])
+  initialisePlayers :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Either WordifyError (LetterBag, [Player])
   initialisePlayers (play1, play2, maybePlayers) initialBag = 
     let transitions = distributeFinite givePlayerTiles initialBag allPlayers
     in case (join . lastMay) transitions of
@@ -90,26 +94,31 @@ module Wordify.Rules.Game(Game,
                 Just (currentDistributer, currentReceiver) : go giveBy (Just currentDistributer) receivers
 
 
-  optionalsToPlayers :: Maybe (Player, Maybe Player) -> [Player]
-  optionalsToPlayers optionals = case optionals of 
-                    Nothing -> []
-                    Just (player3, Nothing) -> [player3]
-                    Just (player3, Just player4) -> [player3, player4]
-
-
-  players :: Game -> [Player]
-  players game = [player1 game, player2 game] ++ optionalsToPlayers (optionalPlayers game)
-
   getPlayer :: Game -> Int -> Maybe Player
-  getPlayer game playerNumber = (players game) LS.!! (playerNumber - 1)
+  getPlayer game playerNo = (players game) LS.!! (playerNo - 1)
 
-  numberOfPlayers :: Game -> Int
-  numberOfPlayers game = 2 + maybe 0 (\(_, maybePlayer4) -> if isJust maybePlayer4 then 2 else 1) (optionalPlayers game)
+  -- |
+  --    Restores a game from a list of moves. Constructs the initial game from the given players, letter bag
+  --    and dictionary, then replays each move in order.
+  --
+  --    The letter bag must be constructed with the same tiles and random generator as the original game,
+  --    the same dictionary must be used and the players must be in the original order.
+  --
+  --    Returns an error if the game cannot be constructed, or if any move is invalid.
+  restoreGame :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> NE.NonEmpty Move -> Either WordifyError (NE.NonEmpty GameTransition)
+  restoreGame playersSetup letterBag dict moves = do
+    game <- makeGame playersSetup letterBag dict
+    T.sequence $ replayMoves game moves
 
-  {- |
-    Returns a history of the moves made in the game.
-  -}
-  movesMade :: Game -> [Move]
-  movesMade game = 
-    case history game of 
-      History _ moves -> F.toList moves
+  -- |
+  --    Like 'restoreGame' but returns a list of 'Either' so that laziness can be maintained,
+  --    meaning all the game transitions don't have to be buffered before they can be consumed.
+  restoreGameLazy :: (Player, Player, Maybe (Player, Maybe Player)) -> LetterBag -> Dictionary -> NE.NonEmpty Move -> Either WordifyError (NE.NonEmpty (Either WordifyError GameTransition))
+  restoreGameLazy playersSetup letterBag dict moves = do
+    game <- makeGame playersSetup letterBag dict
+    return $ replayMoves game moves
+
+  replayMoves :: Game -> NE.NonEmpty Move -> NE.NonEmpty (Either WordifyError GameTransition)
+  replayMoves game (mv NE.:| moves) = NE.scanl nextMove (makeMove game mv) moves
+    where
+      nextMove transition move = transition >>= \success -> makeMove (newGame success) move

@@ -12,7 +12,7 @@ import Wordify.Rules.Board.Internal
 import Wordify.Rules.FormedWord
 import Wordify.Rules.Pos
 import Wordify.Rules.Pos.Internal
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Square
 import Wordify.Rules.Tile
 

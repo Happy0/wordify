@@ -1,7 +1,7 @@
 module Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest) where
 
     import Wordify.Rules.LetterBag
-    import Wordify.Rules.ScrabbleError (ScrabbleError)
+    import Wordify.Rules.WordifyError (WordifyError)
     import Wordify.Rules.Dictionary (Dictionary, makeDictionary)
     import qualified System.FilePath as F
     import Wordify.Rules.Game (Game, makeGame)
@@ -13,7 +13,7 @@ module Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest) where
     import Wordify.Rules.Pos (starPos, rightPositions)
     import Wordify.Rules.Player(makePlayer)
     
-    testSpanishDictionary :: IO (Either ScrabbleError Dictionary)
+    testSpanishDictionary :: IO (Either WordifyError Dictionary)
     testSpanishDictionary = makeDictionary $ "Config" ++ [F.pathSeparator] ++ "spanishSet" ++ [F.pathSeparator] ++ "dictionary.txt"
 
     testSpanishLetterBag :: IO LetterBag
@@ -33,7 +33,7 @@ module Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest) where
                 Letter "E" 1,Letter "U" 1,Letter "P" 3,Letter "N" 1,Letter "S" 1,Letter "O" 1,Letter "S" 1,Letter "N" 1,
                 Letter "U" 1,Letter "RR" 8,Letter "A" 1,Letter "D" 2,Letter "N" 1,Letter "H" 4,Letter "A" 1]
 
-    testGame :: IO (Either ScrabbleError Game)
+    testGame :: IO (Either WordifyError Game)
     testGame = do
         letterBag <- testSpanishLetterBag
         dictionaryResult <- testSpanishDictionary
@@ -43,7 +43,7 @@ module Tests.Internationalisation.Spanish.MoveTest (playSpanishMoveTest) where
             Right dict -> pure $ setupGame letterBag dict
 
         where
-            setupGame :: LetterBag -> Dictionary -> Either ScrabbleError Game
+            setupGame :: LetterBag -> Dictionary -> Either WordifyError Game
             setupGame bag dict = makeGame (player1, player2, Nothing) bag dict
                 where
                     player1 = makePlayer "player 1"

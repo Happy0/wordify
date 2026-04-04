@@ -33,7 +33,7 @@ import Data.Sequence as Seq
 import Wordify.Rules.Board
 import Wordify.Rules.LetterBag
 import Wordify.Rules.Pos
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Square
 import Wordify.Rules.Tile
 
@@ -121,7 +121,7 @@ allWords (FirstWord firstWord) = [firstWord]
 -- |
 --     Returns the word formed by the first move on the board. The word must cover
 --     the star tile, and be linear. Any blank tiles must be labeled.
-wordFormedFirstMove :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
+wordFormedFirstMove :: Board -> Map Pos Tile -> Either WordifyError FormedWords
 wordFormedFirstMove board tiles
   | starPos `Map.notMember` tiles = Left DoesNotCoverTheStarTile
   | otherwise = placedSquares board tiles >>= fmap (FirstWord . main) . wordsFormed board
@@ -130,7 +130,7 @@ wordFormedFirstMove board tiles
 --    Returns the words formed by the tiles played on the board. A played word
 --    must be connected to a tile already on the board (or intersect tiles on the board),
 --    and be formed linearly. Any blank tiles must be labeled.
-wordsFormedMidGame :: Board -> Map Pos Tile -> Either ScrabbleError FormedWords
+wordsFormedMidGame :: Board -> Map Pos Tile -> Either WordifyError FormedWords
 wordsFormedMidGame board tiles =
   placedSquares board tiles
     >>= \squares ->
@@ -191,7 +191,7 @@ makeString word = concat <$> M.mapMaybe (\(_, sq) -> tileIfOccupied sq >>= tileS
   Checks that the tiles can be placed, and if so returns a map of the squares at the placed positions.
   A tile may be placed if the square is not already occupied, and if it is not an unlabeled blank tile.
 -}
-placedSquares :: Board -> Map Pos Tile -> Either ScrabbleError (Map Pos Square)
+placedSquares :: Board -> Map Pos Tile -> Either WordifyError (Map Pos Square)
 placedSquares board tiles = squares
   where
     squares =
@@ -211,7 +211,7 @@ placedSquares board tiles = squares
         $ unoccupiedSquareAt board pos
     mapAsList = Map.toList tiles
 
-wordsFormed :: Board -> Map Pos Square -> Either ScrabbleError FormedWords
+wordsFormed :: Board -> Map Pos Square -> Either WordifyError FormedWords
 wordsFormed board tiles
   | Map.null tiles = Left NoTilesPlaced
   | otherwise =

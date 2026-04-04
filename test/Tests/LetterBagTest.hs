@@ -11,7 +11,7 @@ import Tests.Instances
 import Tests.Utils
 import Wordify.Rules.LetterBag
 import Wordify.Rules.LetterBag.Internal
-import Wordify.Rules.ScrabbleError
+import Wordify.Rules.WordifyError
 import Wordify.Rules.Tile
 
 bagFromTilesProperty :: [Tile] -> Property
